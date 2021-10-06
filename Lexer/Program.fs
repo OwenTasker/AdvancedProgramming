@@ -51,8 +51,10 @@ module Lexer =
 
 
 [<EntryPoint>]
-let main args= 
-    let varToUse = "*+-/ 123"
+let main args=
+    printf ">> "
+    let varToUse = System.Console.ReadLine()
+    printfn $"Check Input - %s{varToUse}"
     let finalAtr = Lexer.lexInput varToUse
     printf "%A - %A - %A"  varToUse finalAtr Lexer.arrayOfNumbers
     0
