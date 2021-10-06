@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 namespace ConsoleApplication
 {
     class Program
@@ -6,20 +8,17 @@ namespace ConsoleApplication
         static void Main(string[] args)
         {
             System.Console.Write("Enter an arithmetic operation: \n >> ");;
-            var arithmeticOperationInput = System.Console.ReadLine();
-            System.Console.WriteLine("You Wrote: " + arithmeticOperationInput);
+            var rawInput = System.Console.ReadLine();
+            System.Console.WriteLine("You Wrote: " + rawInput);
 
+            var inputList = new List<string>();
 
-            var charArrayRepresentationOfArithmeticInput = arithmeticOperationInput.ToCharArray();
-
-            var stringArrayRepresentationOfArithmeticInput = new string[arithmeticOperationInput.Length];
-
-            for(int i = 0; i < stringArrayRepresentationOfArithmeticInput.Length; i++)
+            foreach (char c in rawInput.ToCharArray())
             {
-                stringArrayRepresentationOfArithmeticInput[i] = charArrayRepresentationOfArithmeticInput[i].ToString();
+                inputList.Add(c.ToString());
             }
 
-            //var tokenizedInput = global::Program.Lexer.lexInput(stringArrayRepresentationOfArithmeticInput);
+            //var tokenizedInput = global::Program.Lexer.lexInput(inputList.ToArray());
         }
     }
 }
