@@ -1,4 +1,5 @@
 ﻿open System
+open Lexer.Parser
 
 module Lexer = 
     
@@ -23,5 +24,12 @@ let main args=
     Console.WriteLine(sprintf "%A" (Lexer.lex ["1"; "*"; "1"; "0"; "0"; "+"; "1"; "2"; "3"; "4"; "1"; "2"; "1";]))
     Console.WriteLine(sprintf "%A" (Lexer.lex ["+"; "*"; "+"; "+"; "0"; "+"; "1"; "2"; "3"; "4"; "1"; "2"; "1";]))
     Console.WriteLine(sprintf "%A" (Lexer.lex ["1"; "*"; "1"; "0"; "0"; "+"; "1"; "2"; "3"; "4"; "1"; "2"; "+";]))
-    0
+    
+    let tokens = [Parser.Int(1); Parser.Plus; Parser.Int(2)]
+    
+    let res = Parser.expression tokens
+    
+    Console.WriteLine(sprintf "%A" res)
+    
+    0;;
    
