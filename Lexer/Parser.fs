@@ -20,42 +20,43 @@ module Parser =
     let rec scan tokens output  =
         match tokens with
         | [] -> List.rev output
-        | x :: xr ->
-            match x with
-            | "+" -> scan xr (Plus :: output)
-            | "*" -> scan xr (Times :: output)
-            | "(" -> scan xr (Lpar :: output)
-            | ")" -> scan xr (Rpar :: output)
+        | tokenHead :: tokensTail ->
+            match tokenHead with
+            | "+" -> scan tokensTail (Plus :: output)
+            | "*" -> scan tokensTail (Times :: output)
+            | "(" -> scan tokensTail (Lpar :: output)
+            | ")" -> scan tokensTail (Rpar :: output)
             | _ ->
-                if strContainsOnlyNumber x then scan xr (Int(System.Int32.Parse x) :: output) else failwith "invalid token"
+                if strContainsOnlyNumber tokenHead then scan tokensTail (Int(System.Int32.Parse tokenHead) :: output)
+                else failwith "invalid token"
     
     // BNF defined recursively
     // expression ::= term expression'
-    let rec expression tokens = (term >> expressionP) tokens
+    let rec expression terminals = (term >> expressionP) terminals
 
     // expression' ::= + term expression' | empty
-    and expressionP tokens =
-        match tokens with
-        | Plus :: tokensTail -> (term >> expressionP) tokensTail
-        | _ -> tokens
+    and expressionP terminals =
+        match terminals with
+        | Plus :: terminalsTail -> (term >> expressionP) terminalsTail
+        | _ -> terminals
     
     // term ::= factor term'
-    and term tokens = (factor >> termP) tokens
+    and term terminals = (factor >> termP) terminals
 
     // term' ::= * factor term' | empty
-    and termP tokens =
-        match tokens with
-        | Times :: tokensTail -> (factor >> termP) tokensTail
-        | _ -> tokens
+    and termP terminals =
+        match terminals with
+        | Times :: terminalsTail -> (factor >> termP) terminalsTail
+        | _ -> terminals
 
     // factor ::= int | ( expression )
     // Here the and keyword has allowed us to define the function with mutual recursion - an expression contains a
     // factor and a factor contains an expression
-    and factor tokens =
-        match tokens with
-        | Int _ :: tokensTail -> tokensTail
-        | Lpar :: tokensTail ->
-            match expression tokensTail with
-            | Rpar :: tokensTail -> tokensTail
+    and factor terminals =
+        match terminals with
+        | Int _ :: terminalsTail -> terminalsTail
+        | Lpar :: terminalsTail ->
+            match expression terminalsTail with
+            | Rpar :: terminalsTail -> terminalsTail
             | _ -> raise Parseerror
         | _ -> raise Parseerror
