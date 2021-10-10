@@ -12,6 +12,7 @@ module Parser =
         | Int of int
 
     exception Parseerror
+    exception Scanerror
     
     // https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
     let strContainsOnlyNumber (s:string) = System.Int32.TryParse s |> fst
@@ -28,7 +29,7 @@ module Parser =
             | ")" -> scan tokensTail (Rpar :: output)
             | _ ->
                 if strContainsOnlyNumber tokenHead then scan tokensTail (Int(System.Int32.Parse tokenHead) :: output)
-                else failwith "invalid token"
+                else raise Scanerror
     
     // BNF defined recursively
     // expression ::= term expression'

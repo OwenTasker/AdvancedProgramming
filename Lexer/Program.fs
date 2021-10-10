@@ -1,5 +1,4 @@
 ﻿open System
-open Lexer.Parser
 open Lexer.Parser.Parser
 
 module Lexer = 
@@ -47,7 +46,7 @@ let main args=
     Console.WriteLine(sprintf "%A" terminals)
     
     // Expect []
-    let expr = Parser.expression terminals
+    let expr = expression terminals
     Console.WriteLine(sprintf "%A" expr)
     
     0;;
