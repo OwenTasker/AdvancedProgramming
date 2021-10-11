@@ -12,6 +12,7 @@ let rec expression terminals = (term >> expressionP) terminals
 and expressionP terminals =
     match terminals with
     | Plus :: terminalsTail -> (term >> expressionP) terminalsTail
+    | Minus :: terminalsTail -> (term >> expressionP) terminalsTail
     | _ -> terminals
     
 // term ::= factor term'
@@ -28,9 +29,15 @@ and termP terminals =
 // factor and a factor contains an expression
 and factor terminals =
     match terminals with
-    | Int _ :: terminalsTail -> terminalsTail
+    | Int _ :: terminalsTail -> exponent terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
-        | Rpar :: terminalsTail -> terminalsTail
+        | Rpar :: terminalsTail -> exponent terminalsTail
         | _ -> raise Parseerror
     | _ -> raise Parseerror
+    
+and exponent terminals =
+    match terminals with
+    | Exponent :: terminalsTail -> factor terminalsTail
+    | _ -> terminals
+        
