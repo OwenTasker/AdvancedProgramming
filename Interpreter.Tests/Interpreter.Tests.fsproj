@@ -14,12 +14,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="LexerTests.fs" />
     <Compile Include="ParserTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Lexer\Lexer.fsproj" />
+    <ProjectReference Include="..\Interpreter\Interpreter.fsproj" />
   </ItemGroup>
 
 </Project>
