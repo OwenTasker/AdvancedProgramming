@@ -15,14 +15,23 @@ and expressionP terminals =
     | Minus :: terminalsTail -> (term >> expressionP) terminalsTail
     | _ -> terminals
     
-// term ::= factor term'
-and term terminals = (factor >> termP) terminals
+// term ::= exponent term'
+and term terminals = (exponent >> termP) terminals
 
-// term' ::= * factor term' | empty
+// term' ::= * exponent term' | empty
 and termP terminals =
     match terminals with
-    | Times :: terminalsTail -> (factor >> termP) terminalsTail
-    | Divide :: terminalsTail -> (factor >> termP) terminalsTail
+    | Times :: terminalsTail -> (exponent >> termP) terminalsTail
+    | Divide :: terminalsTail -> (exponent >> termP) terminalsTail
+    | _ -> terminals
+
+// exponent ::= factor exponent'
+and exponent terminals = (factor >> exponentP) terminals
+
+// exponent' ::= ^ factor exponent' | empty
+and exponentP terminals =
+    match terminals with
+    | Exponent :: terminalsTail -> (factor >> exponentP) terminalsTail
     | _ -> terminals
 
 // factor ::= int | ( expression )
@@ -30,16 +39,18 @@ and termP terminals =
 // factor and a factor contains an expression
 and factor terminals =
     match terminals with
-    | Int _ :: terminalsTail -> exponent terminalsTail
-    | Float _ :: terminalsTail -> exponent terminalsTail
+    | Int _ :: terminalsTail ->
+        match terminalsTail with
+        | Lpar :: tailTail -> raise Parseerror
+        | _ -> terminalsTail
+    | Float _ :: terminalsTail -> terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
-        | Rpar :: terminalsTail -> exponent terminalsTail
+        | Rpar :: terminalsTail ->
+            match terminalsTail with
+            | Int _ :: tailTail -> raise Parseerror
+            | _ -> terminalsTail
         | _ -> raise Parseerror
     | _ -> raise Parseerror
     
-and exponent terminals =
-    match terminals with
-    | Exponent :: terminalsTail -> factor terminalsTail
-    | _ -> terminals
         
