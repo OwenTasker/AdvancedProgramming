@@ -30,6 +30,7 @@ and termP terminals =
 and factor terminals =
     match terminals with
     | Int _ :: terminalsTail -> exponent terminalsTail
+    | Float _ :: terminalsTail -> exponent terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail -> exponent terminalsTail

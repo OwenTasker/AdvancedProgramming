@@ -8,6 +8,7 @@ type terminal =
     | Lpar
     | Rpar
     | Int of int
+    | Float of float
 
 exception Parseerror
 exception Scanerror
