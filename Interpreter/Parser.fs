@@ -22,6 +22,7 @@ and term terminals = (factor >> termP) terminals
 and termP terminals =
     match terminals with
     | Times :: terminalsTail -> (factor >> termP) terminalsTail
+    | Divide :: terminalsTail -> (factor >> termP) terminalsTail
     | _ -> terminals
 
 // factor ::= int | ( expression )

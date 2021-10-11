@@ -3,6 +3,7 @@
 type terminal =
     | Plus
     | Times
+    | Divide
     | Minus
     | Exponent
     | Lpar
