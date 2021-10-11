@@ -3,6 +3,8 @@
 type terminal =
     | Plus
     | Times
+    | Minus
+    | Exponent
     | Lpar
     | Rpar
     | Int of int
