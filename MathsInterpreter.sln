@@ -9,7 +9,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Interpreter", "Interpreter\
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Interpreter.Tests", "Interpreter.Tests\Interpreter.Tests.fsproj", "{6E08CF9E-A7A4-44D7-9AC8-6E641D035CA7}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ConsoleApplication", "ConsoleApplication\ConsoleApplication.csproj", "{6E08CF9E-A7A4-44D7-9AC8-6E641D035CA7}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ConsoleApplication", "ConsoleApplication\ConsoleApplication.csproj", "{B9069AE1-6848-4563-B329-09679F05F69C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +29,8 @@ Global
 		{6E08CF9E-A7A4-44D7-9AC8-6E641D035CA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E08CF9E-A7A4-44D7-9AC8-6E641D035CA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E08CF9E-A7A4-44D7-9AC8-6E641D035CA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9069AE1-6848-4563-B329-09679F05F69C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9069AE1-6848-4563-B329-09679F05F69C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
