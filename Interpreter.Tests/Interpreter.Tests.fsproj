@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Lexer\Lexer.fsproj" />
+    <ProjectReference Include="..\Interpreter\Interpreter.fsproj" />
   </ItemGroup>
 
 </Project>

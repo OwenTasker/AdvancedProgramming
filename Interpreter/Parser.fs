@@ -1,35 +1,9 @@
-﻿module Lexer.Parser
+﻿module Interpreter.Parser
 
+open Interpreter.Util
 module Parser =
     
     // https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf
-    
-    type terminal =
-        | Plus
-        | Times
-        | Lpar
-        | Rpar
-        | Int of int
-
-    exception Parseerror
-    exception Scanerror
-    
-    // https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
-    let strContainsOnlyNumber (s:string) = System.Int32.TryParse s |> fst
-    
-    // Scan each token by recursively scanning the list tail. Prepend elements to output and reverse for efficiency.
-    let rec scan tokens output  =
-        match tokens with
-        | [] -> List.rev output
-        | tokenHead :: tokensTail ->
-            match tokenHead with
-            | "+" -> scan tokensTail (Plus :: output)
-            | "*" -> scan tokensTail (Times :: output)
-            | "(" -> scan tokensTail (Lpar :: output)
-            | ")" -> scan tokensTail (Rpar :: output)
-            | _ ->
-                if strContainsOnlyNumber tokenHead then scan tokensTail (Int(System.Int32.Parse tokenHead) :: output)
-                else raise Scanerror
     
     // BNF defined recursively
     // expression ::= term expression'
