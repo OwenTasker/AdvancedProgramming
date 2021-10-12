@@ -15,7 +15,7 @@ let rec lex input =
         // Match first string char as numbers can contain multiple characters and so will match with _
         // Perhaps change number matching to be generic rather than digit based.
         match head.[head.Length-1].ToString() with
-        | "+" | "*" | "-" | "^" ->  head :: lex tail
+        | "+" | "*" | "-" | "^" | "/" | "." ->  head :: lex tail
         | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ->
             // If we already have a number in head and the first tail element is a digit
                 if head.Length > 1 && List.contains tail.[0] digits then (
@@ -39,6 +39,9 @@ let rec scan tokens output  =
         | "*" -> scan tokensTail (Times :: output)
         | "(" -> scan tokensTail (Lpar :: output)
         | ")" -> scan tokensTail (Rpar :: output)
+        | "/" -> scan tokensTail (Divide :: output)
+        | "." -> scan tokensTail (terminal.Decimal :: output)
         | _ ->
-            if strContainsOnlyNumber tokenHead then scan tokensTail (Int(System.Int32.Parse tokenHead) :: output)
+            if strContainsOnlyNumber(tokenHead) then
+                scan tokensTail (Int(Int32.Parse tokenHead) :: output)
             else raise Scanerror    

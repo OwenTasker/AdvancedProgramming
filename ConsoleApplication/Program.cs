@@ -23,9 +23,16 @@ namespace ConsoleApplication
           
             var tokenizedInput = Lexer.lex(fsharpList);
             var scannedInput = Lexer.scan(tokenizedInput, FSharpList<Util.terminal>.Empty);
-            var parsedInput = Parser.expression(scannedInput);
 
-
+            foreach (var VARIABLE in tokenizedInput)
+            {
+                Console.WriteLine("{0}", VARIABLE);
+            }
+            Console.WriteLine();
+            foreach (var VARIABLE in scannedInput)
+            {
+                Console.WriteLine("{0}", VARIABLE);
+            }
         }
     }
 }

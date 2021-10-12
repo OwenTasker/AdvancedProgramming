@@ -8,6 +8,7 @@ type terminal =
     | Exponent
     | Lpar
     | Rpar
+    | Decimal
     | Int of int
     | Float of float
 
@@ -16,4 +17,3 @@ exception Scanerror
     
 // https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
 let strContainsOnlyNumber (s:string) = System.Int32.TryParse s |> fst
-    
