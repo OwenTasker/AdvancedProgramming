@@ -1,5 +1,9 @@
 ﻿
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Interpreter;
+using Microsoft.FSharp.Collections;
 
 namespace ConsoleApplication
 {
@@ -7,18 +11,21 @@ namespace ConsoleApplication
     {
         static void Main(string[] args)
         {
-            System.Console.Write("Enter an arithmetic operation: \n >> ");;
-            var rawInput = System.Console.ReadLine();
-            System.Console.WriteLine("You Wrote: " + rawInput);
+            Console.Write("Enter an arithmetic operation: \n >> ");
+            var rawInput = Console.ReadLine();
+            Console.WriteLine("You Wrote: " + rawInput);
 
-            var inputList = new List<string>();
+            //Take an input and implicitly turn it into a List of strings
+            var inputList = rawInput.Select(c => c.ToString()).ToList();
+            
+            //Need to turn Generic System.List to fSharpList
+            var fsharpList = ListModule.OfSeq(inputList);
+          
+            var tokenizedInput = Lexer.lex(fsharpList);
+            var scannedInput = Lexer.scan(tokenizedInput, FSharpList<Util.terminal>.Empty);
+            var parsedInput = Parser.expression(scannedInput);
 
-            foreach (char c in rawInput.ToCharArray())
-            {
-                inputList.Add(c.ToString());
-            }
 
-            //var tokenizedInput = global::Program.Lexer.lexInput(inputList.ToArray());
         }
     }
 }
