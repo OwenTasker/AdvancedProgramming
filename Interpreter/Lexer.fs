@@ -18,7 +18,7 @@ let rec lex input =
         | "+" | "*" | "-" | "^" ->  head :: lex tail
         | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ->
             // If we already have a number in head and the first tail element is a digit
-                if head.Length > 0 && List.contains tail.[0] digits then (
+                if head.Length > 1 && List.contains tail.[0] digits then (
                     // If the tail has further elements to lex after the digit
                     // then append the digit to the number being built and lex the remaining characters
                     if tail.Length > 1 then lex (head + tail.[0] :: tail.[1 ..])
