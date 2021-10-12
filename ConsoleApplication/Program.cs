@@ -12,8 +12,7 @@ namespace ConsoleApplication
         static void Main(string[] args)
         {
             Console.Write("Enter an arithmetic operation: \n >> ");
-            // var rawInput = Console.ReadLine();
-            var rawInput = "1*100+1234121";
+            var rawInput = Console.ReadLine();
             Console.WriteLine("You Wrote: " + rawInput);
 
             //Take an input and implicitly turn it into a List of strings
@@ -24,7 +23,8 @@ namespace ConsoleApplication
           
             var tokenizedInput = Lexer.lex(fsharpList);
             var scannedInput = Lexer.scan(tokenizedInput, FSharpList<Util.terminal>.Empty);
-            
+            var parsedInput = Parser.expression(scannedInput);
+
 
         }
     }
