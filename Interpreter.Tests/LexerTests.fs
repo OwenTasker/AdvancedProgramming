@@ -106,6 +106,7 @@ type LexerTests ()=
         Assert.That(result, Is.EqualTo(["1.5"]))
         
     [<Test>]
-    member this.GivenLex_WhenPassedExpressionConsistingOfNumberDecimalPointNumberPlusNumber() =
+    member this.GivenLex_WhenPassedExpressionConsistingOfNumberDecimalPointNumberPlusNumber_ThenReturnCorrectTokens() =
         let result = lex["1";".";"5";"+";"5"]
         Assert.That(result, Is.EqualTo(["1.5";"+";"5"]))
+    
