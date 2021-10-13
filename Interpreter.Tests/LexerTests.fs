@@ -51,7 +51,7 @@ type LexerTests ()=
     //Lex function testing
     [<Test>]
     member this.GivenLex_WhenPassedExpressionEndingInSingleCharacterInt_ThenReturnCorrectTokens() =
-        let result = lex ["11"; "+"; "2";]
+        let result = lex ["1"; "1"; "+"; "2";]
         Assert.That(result, Is.EqualTo(["11"; "+"; "2";]))
         
     [<Test>]
@@ -92,15 +92,15 @@ type LexerTests ()=
     
     [<Test>]
     member this.GivenLex_WhenPassedExpressionConsistingOfJustMultipleIntegerCharacter_ThenReturnCorrectTokens() =
-        let result = lex["123"]
+        let result = lex["1";"2";"3"]
         Assert.That(result, Is.EqualTo(["123"]))
     
     [<Test>]
     member this.GivenLex_WhenPassedExpressionConsistingOfNumberDecimalPointNumber_ThenReturnCorrectTokens() =
-        let result = lex["1.5"]
+        let result = lex["1";".";"5"]
         Assert.That(result, Is.EqualTo(["1.5"]))
         
     [<Test>]
     member this.GivenLex_WhenPassedExpressionConsistingOfNumberDecimalPointNumberPlusNumber() =
-        let result = ["1.5+5"]
+        let result = ["1";".";"5+5"]
         Assert.That(result, Is.EqualTo(["1.5"; "+"; "5"]))
