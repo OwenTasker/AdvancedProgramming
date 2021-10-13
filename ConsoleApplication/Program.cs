@@ -22,13 +22,13 @@ namespace ConsoleApplication
             var fSharpList = ListModule.OfSeq(inputList);
           
             var tokenizedInput = Lexer.lex(fSharpList);
-            var scannedInput = Lexer.scan(tokenizedInput, FSharpList<Util.terminal>.Empty);
-
             foreach (var VARIABLE in tokenizedInput)
             {
                 Console.WriteLine("{0}", VARIABLE);
             }
+
             Console.WriteLine();
+            var scannedInput = Lexer.scan(tokenizedInput, FSharpList<Util.terminal>.Empty);
             foreach (var VARIABLE in scannedInput)
             {
                 Console.WriteLine("{0}", VARIABLE);
