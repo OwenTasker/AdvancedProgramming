@@ -10,7 +10,7 @@ let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
 // Build numbers by concatenating the individual chars into a single string and calling lex on the tail of the tail.
 let rec lex input =
     match input with
-    | [] -> []
+    | [] | [""] -> []
     | head : string :: tail ->
         // Match first string char as numbers can contain multiple characters and so will match with _
         // Perhaps change number matching to be generic rather than digit based.
