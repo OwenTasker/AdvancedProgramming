@@ -19,13 +19,20 @@ namespace ConsoleApplication
             var inputList = rawInput.Select(c => c.ToString()).ToList();
             
             //Need to turn Generic System.List to fSharpList
-            var fsharpList = ListModule.OfSeq(inputList);
+            var fSharpList = ListModule.OfSeq(inputList);
           
-            var tokenizedInput = Lexer.lex(fsharpList);
+            var tokenizedInput = Lexer.lex(fSharpList);
+            foreach (var VARIABLE in tokenizedInput)
+            {
+                Console.WriteLine("{0}", VARIABLE);
+            }
+
+            Console.WriteLine();
             var scannedInput = Lexer.scan(tokenizedInput, FSharpList<Util.terminal>.Empty);
-            var parsedInput = Parser.expression(scannedInput);
-
-
+            foreach (var VARIABLE in scannedInput)
+            {
+                Console.WriteLine("{0}", VARIABLE);
+            }
         }
     }
 }
