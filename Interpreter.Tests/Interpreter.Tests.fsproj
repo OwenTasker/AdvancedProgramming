@@ -14,8 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="LexerTests.fs" />
-    <Compile Include="ParserTests.fs" />
+    <Compile Include="LexerTests\ScannerTests.fs" />
+    <Compile Include="ParserTests\ParserTests.fs" />
+    <Compile Include="LexerTests\TokenizerTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
