@@ -10,7 +10,7 @@ type terminal =
     | Rpar
     | Decimal
     | Equals
-    | Word of string
+    | Word of System.String
     | Float of float
 
 exception Parseerror

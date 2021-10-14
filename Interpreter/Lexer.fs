@@ -10,13 +10,21 @@ let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m"
     
     
 let (|AlphabetMatch|_|) (input:string)  =
-    if Regex.IsMatch(input, "[a-zA-Z]") then
+    if Regex.IsMatch(input, "[a-zA-Z]+") then
         Some(input)
     else
         None
         
-let (|NumberMatch|_|) (input:string) =
-    if Regex.IsMatch(input, "[0-9]|[.]") then
+let (|NumberMatchLex|_|) (input:string) =
+    //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
+    if Regex.IsMatch(input, "[0-9]+|[.]") then
+        Some(input)
+    else
+        None
+        
+let (|NumberMatchScan|_|) (input:string) =
+    //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
+    if Regex.IsMatch(input, "[+-]?([0-9]*[.])?[0-9]+") then
         Some(input)
     else
         None
@@ -35,30 +43,32 @@ let rec lex input =
         match h1 with
         | " " -> lex tail
         | "+" | "*" | "-" | "^" | "/" | "="->  head :: lex tail
-        | NumberMatch h1 ->
+        | NumberMatchLex h1 ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
                 if head.Length >= 1 && (List.contains tail.[0] digits || tail.[0] = ".") then (
                     // If the tail has further elements to lex after the digit
                     // then append the digit to the number being built and lex the remaining characters
-                    if tail.Length > 1 then lex (head + tail.[0] :: tail.[1 ..])
+                    if tail.Length > 1 then
+                        lex (head + tail.[0] :: tail.[1 ..])
                     // else append the digit and don't call lex
                     else [head + tail.[0]])
                     // Build single digit number, lex next element
                 else head :: lex tail
-                )else [head]
+            )else [head]
         | AlphabetMatch h1 ->
             if tail.Length > 0 then(
             // If we already have a letter in head and the first tail element is a letter
                 if head.Length >= 1 && (List.contains tail.[0] alphabet) then (
                     // If the tail has further elements to lex after the digit
                     // then append the digit to the number being built and lex the remaining characters
-                    if tail.Length > 1 then lex (head + tail.[0] :: tail.[1 ..])
+                    if tail.Length > 1 then
+                        lex (head + tail.[0] :: tail.[1 ..])
                     // else append the digit and don't call lex
                     else [head + tail.[0]])
                     // Build single digit number, lex next element
                 else head :: lex tail
-                )else [head]
+            )else [head]
         | _ -> failwith "invalid value";;
         
 
@@ -78,7 +88,8 @@ let rec scan tokens output  =
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
         | "=" -> scan tokensTail (Equals :: output)
-        | _ ->
-            if strContainsOnlyNumber(tokenHead) then
-                scan tokensTail (Float(Double.Parse tokenHead) :: output)
-            else raise Scanerror    
+        
+        | NumberMatchScan tokenHead -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
+        | AlphabetMatch tokenHead -> scan tokensTail (Word tokenHead :: output)
+        
+        | _ -> raise Scanerror    

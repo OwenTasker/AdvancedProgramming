@@ -45,8 +45,8 @@ type LexerTests ()=
         Assert.That(result, Is.EqualTo[terminal.Float 1.0; terminal.Rpar; terminal.Float 5.0; terminal.Times; terminal.Lpar; terminal.Times; terminal.Plus; terminal.Float 6.0; terminal.Rpar;])
 
     [<Test>]
-    member this.GivenScan_WhenPassedInvalidToken_ThenRaiseScanerror() =
-        Assert.Throws<Scanerror>(fun () -> scan ["1a23";] [] |> ignore) |> ignore
+    member this.GivenScan_WhenPassedInvalidToken_ThenRaiseFormatException() =
+        Assert.Throws<System.FormatException>(fun () -> scan ["1a23";] [] |> ignore) |> ignore
          
     //Lex function testing
     [<Test>]
