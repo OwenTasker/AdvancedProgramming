@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="mymathspal_logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Interpreter\Interpreter.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="mymathspal_logo.ico" />
   </ItemGroup>
 
 </Project>
