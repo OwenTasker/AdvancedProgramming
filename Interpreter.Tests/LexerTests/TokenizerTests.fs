@@ -5,7 +5,7 @@ open Interpreter.Util
 open Interpreter.Lexer
 
 [<TestFixture>]
-type LexerTests ()=
+type TokenizerTests ()=
     
     //Expect Empty Lists
     [<Test>]
@@ -63,6 +63,16 @@ type LexerTests ()=
     member this.GivenTokenize_WhenPassedExpressionConsistingOfRightParenthesis_ThenReturnCorrectTokens() =
         let result = tokenize[")"]
         Assert.That(result, Is.EqualTo([")"]))
+    
+    [<Test>]
+    member this.GivenTokenize_WhenPassedExpressionConsistingOfMultipleAlphabeticalCharacters_ThenReturnCorrectTokens() =
+        let result = tokenize["T";"h";"i";"s"]
+        Assert.That(result, Is.EqualTo(["This"]))
+    
+    [<Test>]
+    member this.GivenTokenize_WhenPassedExpressionConsistingOfMultipleAlphabeticalCharactersAndDigits_ThenReturnCorrectTokens() =
+        let result = tokenize["T";"h";"i";"s";"5";"T";"h";"a";"t"]
+        Assert.That(result, Is.EqualTo(["This";"5";"That"]))
         
     [<Test>]
     member this.GivenTokenize_WhenPassedExpressionConsistingOfQuestionMark_ThenFailWithTokenizeError() =
