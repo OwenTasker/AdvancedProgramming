@@ -41,15 +41,15 @@ and factor terminals =
     match terminals with
     | Float _ :: terminalsTail ->
         match terminalsTail with
-        | Lpar :: tailTail -> raise Parseerror
+        | Lpar :: tailTail -> raise ParseError
         | _ -> terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
             match terminalsTail with
-            | Float _ :: tailTail -> raise Parseerror
+            | Float _ :: tailTail -> raise ParseError
             | _ -> terminalsTail
-        | _ -> raise Parseerror
-    | _ -> raise Parseerror
+        | _ -> raise ParseError
+    | _ -> raise ParseError
     
         

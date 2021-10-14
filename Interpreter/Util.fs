@@ -13,8 +13,9 @@ type terminal =
     | Word of System.String
     | Float of float
 
-exception Parseerror
-exception Scanerror
+exception ParseError
+exception ScanError
+exception TokenizeError
     
 // https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
 let strContainsOnlyNumber (s:string) = System.Double.TryParse s |> fst

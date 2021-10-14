@@ -43,7 +43,7 @@ let rec tokenize input =
         let h1 = head.[head.Length-1].ToString();
         match h1 with
         | " " -> tokenize tail
-        | "+" | "*" | "-" | "^" | "/" | "="->  head :: tokenize tail
+        | "+" | "*" | "-" | "^" | "/" | "=" | "(" | ")" ->  head :: tokenize tail
         | NumberMatchLex h1 ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
@@ -70,7 +70,7 @@ let rec tokenize input =
                     // Build single digit number, lex next element
                 else head :: tokenize tail
             )else [head]
-        | _ -> failwith "invalid value";;
+        | _ -> raise TokenizeError
         
 // Scan each token by recursively scanning the list tail. Prepend elements to output and reverse for efficiency.
 let rec scan tokens output  =
@@ -90,7 +90,7 @@ let rec scan tokens output  =
         | NumberMatchScan tokenHead -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
         | AlphabetMatch tokenHead -> scan tokensTail (Word tokenHead :: output)
         
-        | _ -> raise Scanerror
+        | _ -> raise ScanError
         
 let lexer input =
     let tokenizedVal = tokenize input
