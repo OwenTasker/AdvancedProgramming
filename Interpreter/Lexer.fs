@@ -17,7 +17,6 @@ let (|AlphabetMatch|_|) (input:string)  =
         None
         
 let (|NumberMatchLex|_|) (input:string) =
-    //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
     if Regex.IsMatch(input, "[0-9]+|[.]") then
         Some(input)
     else
@@ -38,8 +37,6 @@ let rec tokenize input =
     match input with
     | [] | [""] -> []
     | head : string :: tail ->
-        // Match first string char as numbers can contain multiple characters and so will match with _
-        // Perhaps change number matching to be generic rather than digit based.
         let h1 = head.[head.Length-1].ToString();
         match h1 with
         | " " -> tokenize tail
@@ -75,7 +72,7 @@ let rec tokenize input =
 // Scan each token by recursively scanning the list tail. Prepend elements to output and reverse for efficiency.
 let rec scan tokens output  =
     match tokens with
-    | [] -> List.rev output
+    | [] | [""] -> List.rev output
     | tokenHead :: tokensTail ->
         match tokenHead with
         | "+" -> scan tokensTail (Plus :: output)
