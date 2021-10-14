@@ -10,7 +10,6 @@ let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
                 "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
                 "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
     
-    
 let (|AlphabetMatch|_|) (input:string)  =
     if Regex.IsMatch(input, "[a-zA-Z]+") then
         Some(input)
@@ -31,11 +30,11 @@ let (|NumberMatchScan|_|) (input:string) =
     else
         None
     
-    
 // Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
 // elements.
-// Build numbers by concatenating the individual chars into a single string and calling lex on the tail of the tail.
-let rec lex input =
+// Build numbers/words by concatenating the individual chars into a single string and calling lex on the tail
+// of the tail.
+let rec tokenize input =
     match input with
     | [] | [""] -> []
     | head : string :: tail ->
@@ -43,8 +42,8 @@ let rec lex input =
         // Perhaps change number matching to be generic rather than digit based.
         let h1 = head.[head.Length-1].ToString();
         match h1 with
-        | " " -> lex tail
-        | "+" | "*" | "-" | "^" | "/" | "="->  head :: lex tail
+        | " " -> tokenize tail
+        | "+" | "*" | "-" | "^" | "/" | "="->  head :: tokenize tail
         | NumberMatchLex h1 ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
@@ -52,11 +51,11 @@ let rec lex input =
                     // If the tail has further elements to lex after the digit
                     // then append the digit to the number being built and lex the remaining characters
                     if tail.Length > 1 then
-                        lex (head + tail.[0] :: tail.[1 ..])
+                        tokenize (head + tail.[0] :: tail.[1 ..])
                     // else append the digit and don't call lex
                     else [head + tail.[0]])
                     // Build single digit number, lex next element
-                else head :: lex tail
+                else head :: tokenize tail
             )else [head]
         | AlphabetMatch h1 ->
             if tail.Length > 0 then(
@@ -65,17 +64,14 @@ let rec lex input =
                     // If the tail has further elements to lex after the digit
                     // then append the digit to the number being built and lex the remaining characters
                     if tail.Length > 1 then
-                        lex (head + tail.[0] :: tail.[1 ..])
+                        tokenize (head + tail.[0] :: tail.[1 ..])
                     // else append the digit and don't call lex
                     else [head + tail.[0]])
                     // Build single digit number, lex next element
-                else head :: lex tail
+                else head :: tokenize tail
             )else [head]
         | _ -> failwith "invalid value";;
         
-
-
-    
 // Scan each token by recursively scanning the list tail. Prepend elements to output and reverse for efficiency.
 let rec scan tokens output  =
     match tokens with
@@ -94,4 +90,9 @@ let rec scan tokens output  =
         | NumberMatchScan tokenHead -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
         | AlphabetMatch tokenHead -> scan tokensTail (Word tokenHead :: output)
         
-        | _ -> raise Scanerror    
+        | _ -> raise Scanerror
+        
+let lexer input =
+    let tokenizedVal = tokenize input
+    let scannedInput = scan tokenizedVal []
+    (tokenizedVal, scannedInput)
