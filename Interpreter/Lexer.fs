@@ -14,7 +14,7 @@ let rec lex input =
     | head : string :: tail ->
         // Match first string char as numbers can contain multiple characters and so will match with _
         // Perhaps change number matching to be generic rather than digit based.
-        match head.[head.Length-1].ToString() with
+        match head.[head.Length-1].ToString().ToLower() with
         | "+" | "*" | "-" | "^" | "/" | "="->  head :: lex tail
         | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "." ->
             if tail.Length > 0 then(
