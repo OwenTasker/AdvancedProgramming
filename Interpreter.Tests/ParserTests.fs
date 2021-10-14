@@ -1,7 +1,6 @@
 module Lexer.Tests.ParserTests
 
 open NUnit.Framework
-open Interpreter
 open Interpreter.Parser
 open Interpreter.Util
 
