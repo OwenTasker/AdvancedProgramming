@@ -57,33 +57,33 @@ let CalculateExponentData =
         TestCaseData(0, 5, 0)
         TestCaseData(5, 0, 1)
         TestCaseData(0, 0, 1)
-        TestCaseData(-10, -10, -10.0**(-10.0))
+        TestCaseData(-10, -10, -10.0 ** -10.0)
         TestCaseData(7, 2, 49.0)
         TestCaseData(-7, 2, 49.0)
     ]
     
 [<TestCaseSource("CalculatePlusData")>]
 let GivenCalculate_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
-    let result = calculate Plus (Float op1) (Float op2)
+    let result = calculate Plus op1 op2
     Assert.That(result, Is.EqualTo(float res))
     
 [<TestCaseSource("CalculateMinusData")>]
 let GivenCalculate_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
-    let result = calculate Minus (Float op1) (Float op2)
+    let result = calculate Minus op1 op2
     Assert.That(result, Is.EqualTo(float res))
     
 [<TestCaseSource("CalculateTimesData")>]
 let GivenCalculate_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
-    let result = calculate Times (Float op1) (Float op2)
+    let result = calculate Times op1 op2
     Assert.That(result, Is.EqualTo(float res))
     
 [<TestCaseSource("CalculateDivideData")>]
 let GivenCalculate_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
-    let result = calculate Divide (Float op1) (Float op2)
+    let result = calculate Divide op1 op2
     Assert.That(result, Is.EqualTo(float res))
     
 [<TestCaseSource("CalculateExponentData")>]
 let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
-    let result = calculate Exponent (Float op1) (Float op2)
+    let result = calculate Exponent op1 op2
     Assert.That(result, Is.EqualTo(float res))
         
