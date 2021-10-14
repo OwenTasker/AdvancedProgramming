@@ -10,6 +10,7 @@ let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
                 "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
                 "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
     
+//https://sodocumentation.net/fsharp/topic/962/active-patterns
 let (|AlphabetMatch|_|) (input:string)  =
     if Regex.IsMatch(input, "[a-zA-Z]+") then
         Some(input)
@@ -21,7 +22,6 @@ let (|SymbolMatch|_|) (input:string)  =
         Some(input)
     else
         None
-        
         
 let (|NumberMatchLex|_|) (input:string) =
     if Regex.IsMatch(input, "[0-9]+|[.]") then
