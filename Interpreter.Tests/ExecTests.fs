@@ -98,6 +98,15 @@ let ReduceCases =
         TestCaseData([Float -5.0; Plus; Float -5.0], -10.0)
         TestCaseData([Float -5.0; Plus; Float 5.0], 0.0)
         TestCaseData([Float 10.0; Plus; Float -100.0], -90.0)
+        //SIMPLE SUBTRACTION CASES
+        TestCaseData([Float 1.0; Minus; Float 1.0], 0.0)
+        TestCaseData([Float 1.0; Minus; Float 0.0], 1.0)
+        TestCaseData([Float 0.0; Minus; Float 67.0], -67.0)
+        TestCaseData([Float 0.0; Minus; Float 0.0], 0.0)
+        TestCaseData([Float 5.0; Minus; Float -5.0], 10.0)
+        TestCaseData([Float -5.0; Minus; Float -5.0], 0.0)
+        TestCaseData([Float -5.0; Minus; Float 5.0], -10.0)
+        TestCaseData([Float 10.0; Minus; Float -100.0], 110.0)
         //SIMPLE MULTIPLY CASES
         TestCaseData([Float 1.0; Times; Float 8.0], 8.0)
         TestCaseData([Float 8.0; Times; Float 1.0], 8.0)
