@@ -16,6 +16,13 @@ let (|AlphabetMatch|_|) (input:string)  =
     else
         None
         
+let (|SymbolMatch|_|) (input:string)  =
+    if Regex.IsMatch(input, "[\+]|[\*]|[\-]|[\^]|[\/]|[\=]|[\(]|[\)]") then
+        Some(input)
+    else
+        None
+        
+        
 let (|NumberMatchLex|_|) (input:string) =
     if Regex.IsMatch(input, "[0-9]+|[.]") then
         Some(input)
@@ -40,7 +47,7 @@ let rec tokenize input =
         let h1 = head.[head.Length-1].ToString();
         match h1 with
         | " " -> tokenize tail
-        | "+" | "*" | "-" | "^" | "/" | "=" | "(" | ")" ->  head :: tokenize tail
+        | SymbolMatch h1 ->  head :: tokenize tail
         | NumberMatchLex h1 ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
