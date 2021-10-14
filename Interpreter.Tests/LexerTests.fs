@@ -32,17 +32,17 @@ type LexerTests ()=
     [<Test>]
     member this.GivenScan_WhenPassedNumber_ThenRecordIntNumber() =
         let result = scan ["123";] []
-        Assert.That(result, Is.EqualTo[terminal.Int 123;])
+        Assert.That(result, Is.EqualTo[terminal.Float 123.0;])
         
     [<Test>]
     member this.GivenScan_WhenPassedTokensRepresentingValidExpression_ThenRecordEquivalentTerminalsInSameOrder() =
         let result = scan ["1"; "*"; "5"; "*"; "("; "5"; "+"; "6"; ")"] []
-        Assert.That(result, Is.EqualTo[terminal.Int 1; terminal.Times; terminal.Int 5; terminal.Times; terminal.Lpar; terminal.Int 5; terminal.Plus; terminal.Int 6; terminal.Rpar;])
+        Assert.That(result, Is.EqualTo[terminal.Float 1.0; terminal.Times; terminal.Float 5.0; terminal.Times; terminal.Lpar; terminal.Float 5.0; terminal.Plus; terminal.Float 6.0; terminal.Rpar;])
         
     [<Test>]
     member this.GivenScan_WhenPassedTokensRepresentingInvalidExpression_ThenRecordEquivalentTerminalsInSameOrder() =
         let result = scan ["1"; ")"; "5"; "*"; "("; "*"; "+"; "6"; ")"] []
-        Assert.That(result, Is.EqualTo[terminal.Int 1; terminal.Rpar; terminal.Int 5; terminal.Times; terminal.Lpar; terminal.Times; terminal.Plus; terminal.Int 6; terminal.Rpar;])
+        Assert.That(result, Is.EqualTo[terminal.Float 1.0; terminal.Rpar; terminal.Float 5.0; terminal.Times; terminal.Lpar; terminal.Times; terminal.Plus; terminal.Float 6.0; terminal.Rpar;])
 
     [<Test>]
     member this.GivenScan_WhenPassedInvalidToken_ThenRaiseScanerror() =

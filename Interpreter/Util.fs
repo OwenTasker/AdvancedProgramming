@@ -10,7 +10,6 @@ type terminal =
     | Rpar
     | Decimal
     | Equals
-    | Int of int
     | Float of float
 
 exception Parseerror

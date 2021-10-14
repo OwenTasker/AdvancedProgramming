@@ -47,7 +47,5 @@ let rec scan tokens output  =
         | "=" -> scan tokensTail (Equals :: output)
         | _ ->
             if strContainsOnlyNumber(tokenHead) then
-                match Int32.TryParse tokenHead with
-                | true, i -> scan tokensTail (Int(i) :: output)
-                | _ -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
+                scan tokensTail (Float(Double.Parse tokenHead) :: output)
             else raise Scanerror    
