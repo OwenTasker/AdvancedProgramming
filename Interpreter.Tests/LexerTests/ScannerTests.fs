@@ -84,6 +84,10 @@ type ScannerTests ()=
         Assert.Throws<System.FormatException>(fun () -> scan ["1a23";] [] |> ignore) |> ignore
     
     [<Test>]
+    member this.GivenScan_WhenPassedInvalidLetter_ThenRaiseFormatException() =
+        Assert.Throws<System.FormatException>(fun () -> scan ["a1a23";] [] |> ignore) |> ignore
+    
+    [<Test>]
     member this.GivenScan_WhenPassedInvalidToken_ThenRaiseScanError() =
         Assert.Throws<ScanError>(fun () -> scan ["?";] [] |> ignore) |> ignore
         
