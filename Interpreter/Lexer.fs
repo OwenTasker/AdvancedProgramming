@@ -47,8 +47,8 @@ let rec tokenize input =
         let h1 = head.[head.Length-1].ToString();
         match h1 with
         | " " -> tokenize tail
-        | SymbolMatch h1 ->  head :: tokenize tail
-        | NumberMatchLex h1 ->
+        | SymbolMatch _ ->  head :: tokenize tail
+        | NumberMatchLex _ ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
                 if head.Length >= 1 && (List.contains tail.[0] digits || tail.[0] = ".") then (
@@ -61,7 +61,7 @@ let rec tokenize input =
                     // Build single digit number, lex next element
                 else head :: tokenize tail
             )else [head]
-        | AlphabetMatch h1 ->
+        | AlphabetMatch _ ->
             if tail.Length > 0 then(
             // If we already have a letter in head and the first tail element is a letter
                 if head.Length >= 1 && (List.contains tail.[0] alphabet) then (
