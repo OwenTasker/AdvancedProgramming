@@ -9,6 +9,17 @@ let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
                 "n";"o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z";
                 "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
                 "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
+let functionRegexString =
+    let functions = ["ceil";"floor";"sqrt";"round"]
+    let functionRegex = [for i in functions -> "(^" + i + "$)|"]
+    let generateRegex = (String.concat "" functionRegex)
+    generateRegex.Remove(generateRegex.Length-1)
+
+let symbolRegexString =
+    let symbols = ["+";"*";"-";"^";"/";"=";"(";")"]
+    let functionRegex = [for i in symbols -> "[\\" + i + "]|"]
+    let generateRegex = (String.concat "" functionRegex)
+    generateRegex.Remove(generateRegex.Length-1)
     
 //https://sodocumentation.net/fsharp/topic/962/active-patterns
 let (|AlphabetMatch|_|) (input:string)  =
@@ -18,7 +29,7 @@ let (|AlphabetMatch|_|) (input:string)  =
         None
         
 let (|SymbolMatch|_|) (input:string)  =
-    if Regex.IsMatch(input, "[\+]|[\*]|[\-]|[\^]|[\/]|[\=]|[\(]|[\)]") then
+    if Regex.IsMatch(input, symbolRegexString) then
         Some(input)
     else
         None
@@ -30,7 +41,7 @@ let (|NumberMatchLex|_|) (input:string) =
         None
         
 let (|FunctionMatch|_|) (input:string) =
-    if Regex.IsMatch(input, "(?:ceil)|(?:sqrt)") then
+    if Regex.IsMatch(input, functionRegexString) then
         Some(input)
     else
         None
@@ -44,8 +55,8 @@ let (|NumberMatchScan|_|) (input:string) =
     
 // Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
 // elements.
-// Build numbers/words by concatenating the individual chars into a single string and calling lex on the tail
-// of the tail.
+// Build numbers/words by concatenating the individual chars into a single string and calling
+// lex on the tail of the tail.
 let rec tokenize input =
     match input with
     | [] | [""] -> []
@@ -82,7 +93,8 @@ let rec tokenize input =
             )else [head]
         | _ -> raise TokenizeError
         
-// Scan each token by recursively scanning the list tail. Prepend elements to output and reverse for efficiency.
+// Scan each token by recursively scanning the list tail. Prepend elements to output and
+// reverse for efficiency.
 let rec scan tokens output  =
     match tokens with
     | [] | [""] -> List.rev output
@@ -96,7 +108,6 @@ let rec scan tokens output  =
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
         | "=" -> scan tokensTail (Equals :: output)
-//        | "sqrt" -> scan tokensTail (Function tokenHead :: output) 
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
         | NumberMatchScan _ -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
