@@ -17,3 +17,9 @@ type StrContainsOnlyNumberTests () =
     [<Test>]
     member this.GivenString_WhenPassedInvalidValue_ReturnFalse() =
         Assert.False(strContainsOnlyNumber "a")
+         
+    [<Test>]
+    member this.GivenString_WhenPassedEmptyValue_ReturnFalse() =
+        Assert.False(strContainsOnlyNumber "")
+    
+    
