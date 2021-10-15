@@ -18,6 +18,7 @@
     <Compile Include="LexerTests\LexerTests.fs" />
     <Compile Include="LexerTests\TokenizerTests.fs" />
     <Compile Include="ParserTests\ParserTests.fs" />
+    <Compile Include="UtilTests\StrContainsOnlyNumberTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
