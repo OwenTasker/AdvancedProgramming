@@ -29,6 +29,12 @@ let (|NumberMatchLex|_|) (input:string) =
     else
         None
         
+let (|FunctionMatch|_|) (input:string) =
+    if Regex.IsMatch(input, "(?:ceil)|(?:sqrt)") then
+        Some(input)
+    else
+        None
+        
 let (|NumberMatchScan|_|) (input:string) =
     //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
     if Regex.IsMatch(input, "[+-]?([0-9]*[.])?[0-9]+") then
@@ -90,9 +96,10 @@ let rec scan tokens output  =
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
         | "=" -> scan tokensTail (Equals :: output)
-        
-        | NumberMatchScan tokenHead -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
-        | AlphabetMatch tokenHead -> scan tokensTail (Word tokenHead :: output)
+//        | "sqrt" -> scan tokensTail (Function tokenHead :: output) 
+        | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
+        | NumberMatchScan _ -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
+        | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
         
         | _ -> raise ScanError
         

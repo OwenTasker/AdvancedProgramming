@@ -1,4 +1,4 @@
-﻿module Lexer.Tests.ExecTests
+﻿module Interpreter.Tests.ExecTests
 
 open NUnit.Framework
 open Interpreter.Exec
