@@ -187,6 +187,17 @@ type LexerTests ()=
         Assert.That(result, Is.EqualTo[terminal.Word "abc"; terminal.Word "abc"])
     
     [<Test>]
+    member this.GivenScan_WhenPassedFunction_ThenRecordFunction() =
+        let result = scan ["sqrt";] []
+        Assert.That(result, Is.EqualTo[terminal.Function "sqrt";])
+
+    [<Test>]
+    member this.GivenScan_WhenPassedMultipleFunctions_ThenRecordFunctionS() =
+        let result = scan ["sqrt";"ceil";] []
+        Assert.That(result, Is.EqualTo[terminal.Function "sqrt"; terminal.Function "ceil"])
+    
+    
+    [<Test>]
     member this.GivenScan_WhenPassedInvalidNumber_ThenRaiseFormatException() =
         Assert.Throws<System.FormatException>(fun () -> scan ["1a23";] [] |> ignore) |> ignore
     
