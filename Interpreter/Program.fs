@@ -19,5 +19,5 @@ module Program =
         Console.WriteLine $"%A{lexedVal}"
         Console.WriteLine $"%A{scannedVals}"
         Console.WriteLine $"%A{parsed}"
-        Console.WriteLine (sprintf $"{reduce [Float 1.0; Times; Float 1.0]}")
+        Console.WriteLine (sprintf $"{reduce scannedVals}")
         0
