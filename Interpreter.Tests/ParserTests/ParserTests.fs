@@ -1,4 +1,4 @@
-module Interpreter.Tests.ParserTests
+module Interpreter.Tests.ParserTests.ParserTests
 
 open NUnit.Framework
 open Interpreter.Parser
