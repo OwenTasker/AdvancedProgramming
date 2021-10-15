@@ -10,14 +10,20 @@ let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
                 "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
                 "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
     
+//https://sodocumentation.net/fsharp/topic/962/active-patterns
 let (|AlphabetMatch|_|) (input:string)  =
     if Regex.IsMatch(input, "[a-zA-Z]+") then
         Some(input)
     else
         None
         
+let (|SymbolMatch|_|) (input:string)  =
+    if Regex.IsMatch(input, "[\+]|[\*]|[\-]|[\^]|[\/]|[\=]|[\(]|[\)]") then
+        Some(input)
+    else
+        None
+        
 let (|NumberMatchLex|_|) (input:string) =
-    //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
     if Regex.IsMatch(input, "[0-9]+|[.]") then
         Some(input)
     else
@@ -38,12 +44,10 @@ let rec tokenize input =
     match input with
     | [] | [""] -> []
     | head : string :: tail ->
-        // Match first string char as numbers can contain multiple characters and so will match with _
-        // Perhaps change number matching to be generic rather than digit based.
         let h1 = head.[head.Length-1].ToString();
         match h1 with
         | " " -> tokenize tail
-        | "+" | "*" | "-" | "^" | "/" | "="->  head :: tokenize tail
+        | SymbolMatch h1 ->  head :: tokenize tail
         | NumberMatchLex h1 ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
@@ -70,12 +74,12 @@ let rec tokenize input =
                     // Build single digit number, lex next element
                 else head :: tokenize tail
             )else [head]
-        | _ -> failwith "invalid value";;
+        | _ -> raise TokenizeError
         
 // Scan each token by recursively scanning the list tail. Prepend elements to output and reverse for efficiency.
 let rec scan tokens output  =
     match tokens with
-    | [] -> List.rev output
+    | [] | [""] -> List.rev output
     | tokenHead :: tokensTail ->
         match tokenHead with
         | "+" -> scan tokensTail (Plus :: output)
@@ -90,7 +94,7 @@ let rec scan tokens output  =
         | NumberMatchScan tokenHead -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
         | AlphabetMatch tokenHead -> scan tokensTail (Word tokenHead :: output)
         
-        | _ -> raise Scanerror
+        | _ -> raise ScanError
         
 let lexer input =
     let tokenizedVal = tokenize input
