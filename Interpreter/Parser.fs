@@ -39,16 +39,15 @@ and exponentP terminals =
 // factor and a factor contains an expression
 and factor terminals =
     match terminals with
-    | Int _ :: terminalsTail ->
+    | Float _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: tailTail -> raise Parseerror
         | _ -> terminalsTail
-    | Float _ :: terminalsTail -> terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
             match terminalsTail with
-            | Int _ :: tailTail -> raise Parseerror
+            | Float _ :: tailTail -> raise Parseerror
             | _ -> terminalsTail
         | _ -> raise Parseerror
     | _ -> raise Parseerror

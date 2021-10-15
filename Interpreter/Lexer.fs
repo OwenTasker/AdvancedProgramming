@@ -2,35 +2,76 @@
 
 open System
 open Interpreter.Util
+open System.Text.RegularExpressions
 
 let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
+let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
+                "n";"o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z";
+                "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
+                "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
+    
+let (|AlphabetMatch|_|) (input:string)  =
+    if Regex.IsMatch(input, "[a-zA-Z]+") then
+        Some(input)
+    else
+        None
+        
+let (|NumberMatchLex|_|) (input:string) =
+    //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
+    if Regex.IsMatch(input, "[0-9]+|[.]") then
+        Some(input)
+    else
+        None
+        
+let (|NumberMatchScan|_|) (input:string) =
+    //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
+    if Regex.IsMatch(input, "[+-]?([0-9]*[.])?[0-9]+") then
+        Some(input)
+    else
+        None
     
 // Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
 // elements.
-// Build numbers by concatenating the individual chars into a single string and calling lex on the tail of the tail.
-let rec lex input =
+// Build numbers/words by concatenating the individual chars into a single string and calling lex on the tail
+// of the tail.
+let rec tokenize input =
     match input with
     | [] | [""] -> []
     | head : string :: tail ->
         // Match first string char as numbers can contain multiple characters and so will match with _
         // Perhaps change number matching to be generic rather than digit based.
-        match head.[head.Length-1].ToString() with
-        | "+" | "*" | "-" | "^" | "/" | "="->  head :: lex tail
-        | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "." ->
+        let h1 = head.[head.Length-1].ToString();
+        match h1 with
+        | " " -> tokenize tail
+        | "+" | "*" | "-" | "^" | "/" | "="->  head :: tokenize tail
+        | NumberMatchLex h1 ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
                 if head.Length >= 1 && (List.contains tail.[0] digits || tail.[0] = ".") then (
                     // If the tail has further elements to lex after the digit
                     // then append the digit to the number being built and lex the remaining characters
-                    if tail.Length > 1 then lex (head + tail.[0] :: tail.[1 ..])
+                    if tail.Length > 1 then
+                        tokenize (head + tail.[0] :: tail.[1 ..])
                     // else append the digit and don't call lex
                     else [head + tail.[0]])
                     // Build single digit number, lex next element
-                else head :: lex tail
-                )else [head]
+                else head :: tokenize tail
+            )else [head]
+        | AlphabetMatch h1 ->
+            if tail.Length > 0 then(
+            // If we already have a letter in head and the first tail element is a letter
+                if head.Length >= 1 && (List.contains tail.[0] alphabet) then (
+                    // If the tail has further elements to lex after the digit
+                    // then append the digit to the number being built and lex the remaining characters
+                    if tail.Length > 1 then
+                        tokenize (head + tail.[0] :: tail.[1 ..])
+                    // else append the digit and don't call lex
+                    else [head + tail.[0]])
+                    // Build single digit number, lex next element
+                else head :: tokenize tail
+            )else [head]
         | _ -> failwith "invalid value";;
-
-    
+        
 // Scan each token by recursively scanning the list tail. Prepend elements to output and reverse for efficiency.
 let rec scan tokens output  =
     match tokens with
@@ -45,9 +86,13 @@ let rec scan tokens output  =
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
         | "=" -> scan tokensTail (Equals :: output)
-        | _ ->
-            if strContainsOnlyNumber(tokenHead) then
-                match Int32.TryParse tokenHead with
-                | true, i -> scan tokensTail (Int(i) :: output)
-                | _ -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
-            else raise Scanerror    
+        
+        | NumberMatchScan tokenHead -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
+        | AlphabetMatch tokenHead -> scan tokensTail (Word tokenHead :: output)
+        
+        | _ -> raise Scanerror
+        
+let lexer input =
+    let tokenizedVal = tokenize input
+    let scannedInput = scan tokenizedVal []
+    (tokenizedVal, scannedInput)

@@ -11,7 +11,7 @@ module Program =
     let main args =
         
         let rawInput = ["1"; "*"; "1"; "0"; "0"; "+"; "1"; "2"; "3"; "4"; "1"; "2"; "1";]
-        let lexedVal = lex rawInput
+        let lexedVal = tokenize rawInput
         let scannedVals = scan lexedVal []
         let parsed = expression scannedVals
         
