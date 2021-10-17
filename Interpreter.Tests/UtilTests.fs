@@ -1,10 +1,10 @@
-﻿module Interpreter.Tests.UtilTests.strContainsOnlyNumberTests
+﻿module Interpreter.Tests.UtilTests
 
 open NUnit.Framework
 open Interpreter.Util
 
 [<TestFixture>]
-type StrContainsOnlyNumberTests () =
+type UtilTests () =
         
     [<Test>]
     member this.GivenString_WhenPassedValidNumberWithNoDecimal_ReturnTrue() =

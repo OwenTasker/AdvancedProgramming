@@ -25,9 +25,7 @@ let precedenceAssociativity =
          (Minus, (1, "l"))]
     
 let getPrecedence operator =
-    match operator with
-    | Lpar -> failwith "how?"
-    | _ -> (Map.find operator precedenceAssociativity) |> fst
+    (Map.find operator precedenceAssociativity) |> fst
     
 let getAssociativity operator =
     (Map.find operator precedenceAssociativity) |> snd

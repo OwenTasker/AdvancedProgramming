@@ -2,44 +2,17 @@
 
 open System
 open Interpreter.Util
-open System.Text.RegularExpressions
 
 let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
 let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
                 "n";"o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z";
                 "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
                 "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
-    
-//https://sodocumentation.net/fsharp/topic/962/active-patterns
-let (|AlphabetMatch|_|) (input:string)  =
-    if Regex.IsMatch(input, "[a-zA-Z]+") then
-        Some(input)
-    else
-        None
-        
-let (|SymbolMatch|_|) (input:string)  =
-    if Regex.IsMatch(input, "[\+]|[\*]|[\-]|[\^]|[\/]|[\=]|[\(]|[\)]") then
-        Some(input)
-    else
-        None
-        
-let (|NumberMatchLex|_|) (input:string) =
-    if Regex.IsMatch(input, "[0-9]+|[.]") then
-        Some(input)
-    else
-        None
-        
-let (|NumberMatchScan|_|) (input:string) =
-    //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
-    if Regex.IsMatch(input, "[+-]?([0-9]*[.])?[0-9]+") then
-        Some(input)
-    else
-        None
-    
+
 // Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
 // elements.
-// Build numbers/words by concatenating the individual chars into a single string and calling lex on the tail
-// of the tail.
+// Build numbers/words by concatenating the individual chars into a single string and calling
+// lex on the tail of the tail.
 let rec tokenize input =
     match input with
     | [] | [""] -> []
@@ -47,8 +20,8 @@ let rec tokenize input =
         let h1 = head.[head.Length-1].ToString();
         match h1 with
         | " " -> tokenize tail
-        | SymbolMatch h1 ->  head :: tokenize tail
-        | NumberMatchLex h1 ->
+        | SymbolMatch _ ->  head :: tokenize tail
+        | NumberMatchLex _ ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
                 if head.Length >= 1 && (List.contains tail.[0] digits || tail.[0] = ".") then (
@@ -61,7 +34,7 @@ let rec tokenize input =
                     // Build single digit number, lex next element
                 else head :: tokenize tail
             )else [head]
-        | AlphabetMatch h1 ->
+        | AlphabetMatch _ ->
             if tail.Length > 0 then(
             // If we already have a letter in head and the first tail element is a letter
                 if head.Length >= 1 && (List.contains tail.[0] alphabet) then (
@@ -76,7 +49,8 @@ let rec tokenize input =
             )else [head]
         | _ -> raise TokenizeError
         
-// Scan each token by recursively scanning the list tail. Prepend elements to output and reverse for efficiency.
+// Scan each token by recursively scanning the list tail. Prepend elements to output and
+// reverse for efficiency.
 let rec scan tokens output  =
     match tokens with
     | [] | [""] -> List.rev output
@@ -90,9 +64,9 @@ let rec scan tokens output  =
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
         | "=" -> scan tokensTail (Equals :: output)
-        
-        | NumberMatchScan tokenHead -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
-        | AlphabetMatch tokenHead -> scan tokensTail (Word tokenHead :: output)
+        | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
+        | NumberMatchScan _ -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
+        | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
         
         | _ -> raise ScanError
         
