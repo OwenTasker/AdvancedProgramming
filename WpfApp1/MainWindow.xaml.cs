@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Interpreter;
+using Microsoft.FSharp.Collections;
 
 namespace WpfApp1
 {
@@ -33,20 +36,19 @@ namespace WpfApp1
 
         private void EnterButtonPress(object sender, RoutedEventArgs e)
         {
-            if (inputText.Text == "Enter query here..." || String.IsNullOrEmpty(inputText.Text) || String.IsNullOrWhiteSpace(inputText.Text))
+            if (!(inputText.Text == "Enter query here..." || String.IsNullOrEmpty(inputText.Text) || String.IsNullOrWhiteSpace(inputText.Text)))
             {
-                // do nothing
-            }
-            else
-            {
-                String input = inputText.Text;
+                var input = inputText.Text;
+                var inputList = input.Select(c => c.ToString()).ToList();
+                var inputfSharpList = ListModule.OfSeq(inputList);
                 consoleText.AppendText(" " + input + "\n");
                 consoleText.ScrollToEnd();
                 inputText.Clear();
-
+                var lexerOutput = Lexer.lexer(inputfSharpList);
+                var execOutput = Exec.reduce(lexerOutput.Item2);
                 // 1. send query to lexer/parser/executor
                 // 2. put received answer on new line
-
+                consoleText.AppendText(execOutput.ToString(CultureInfo.InvariantCulture) + "\n");
                 consoleText.AppendText(">>");
                 inputText.Text = "Enter query here...";
             }
