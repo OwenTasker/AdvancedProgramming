@@ -61,7 +61,13 @@ let rec reduce tokens =
                 let operator = opStack.Pop()
                 numStack.Push(performOperation operator)
             opStack.Pop() |> ignore
-        | _ ->
+        | UnaryMinus
+        | UnaryPlus  
+        | Divide
+        | Times
+        | Minus
+        | Plus
+        | Exponent ->
             if opStack.Count = 0 then opStack.Push(head)
             else
                 let newOpAssoc = getAssociativity head
