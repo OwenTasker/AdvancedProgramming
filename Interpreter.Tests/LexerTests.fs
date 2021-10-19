@@ -40,6 +40,9 @@ let TokenizeTestData =
         TestCaseData([")"], [")"])
         TestCaseData(["="], ["="])
         
+        TestCaseData(["+";"+"], ["+";"+"])
+        TestCaseData(["*";"*"], ["*";"*"])
+              
         TestCaseData(["+";"*"], ["+";"*"])
         TestCaseData(["+";"*";"/"], ["+";"*";"/"])
         TestCaseData(["+";"*";"/";"-"], ["+";"*";"/";"-";])
@@ -70,16 +73,43 @@ let TokenizeTestData =
         TestCaseData([".";"2";"5";"+";"1";"2";"5"], [".25"; "+"; "125"])
         
     ]
-    
-
 [<TestCaseSource("TokenizeTestData")>]
 let GivenTokenize_WhenPassedInput_ReturnCorrectTokens(op1, res) =
     let result = tokenize op1
-    Assert.That(result, Is.EqualTo(res))    
+    Assert.That(result, Is.EqualTo(res))
+    
+let ScannerTestData =
+    [
+        TestCaseData(["+"],[Plus])
+        TestCaseData(["-"],[Minus])
+        TestCaseData(["^"],[Exponent])
+        TestCaseData(["*"],[Times])
+        TestCaseData(["("],[Lpar])
+        TestCaseData([")"],[Rpar])
+        TestCaseData(["/"],[Divide])
+        TestCaseData(["="],[Equals])
+        
+        TestCaseData(["+";"+"],[Plus;UnaryPlus])
+        TestCaseData(["-";"-"],[Minus;UnaryMinus])
+        
+        TestCaseData(["ceil"], [Function "ceil"])
+        TestCaseData(["floor"], [Function "floor"])
+        TestCaseData(["sqrt"], [Function "sqrt"])
+        TestCaseData(["round"], [Function "round"])
+        TestCaseData(["ceil"; "3.222"; "floor"; "3.222"],
+                     [Function "ceil"; Number 3.222; Function "floor"; Number 3.222])
+        
+    ]
+    
+[<TestCaseSource("ScannerTestData")>]
+let GivenScan_WhenPassedInput_ReturnCorrectTokens(op1, res) =
+    let result = scan op1 []
+    Assert.That(result, Is.EqualTo(res))
+    
+    
 
 type LexerTests ()=
     //Tokenizer Testing ---------------------------------------------------------
-
     [<Test>]
     member this.GivenTokenize_WhenPassedExpressionConsistingOfInvalidTokens_ThenFailWithTokenizeError() =
         Assert.Throws<TokenizeError>(fun () -> tokenize["?"] |> ignore) |> ignore
@@ -96,6 +126,15 @@ type LexerTests ()=
         Assert.Throws<TokenizeError>(fun () -> tokenize["%"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["\""] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["!"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize["'"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize["|"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize["\\"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize[":"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize[";"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize["#"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize["~"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize["¬"] |> ignore) |> ignore
+        Assert.Throws<TokenizeError>(fun () -> tokenize["`"] |> ignore) |> ignore
     
 
 //    
