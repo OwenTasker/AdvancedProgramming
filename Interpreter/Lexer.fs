@@ -3,12 +3,6 @@
 open System
 open Interpreter.Util
 
-let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
-let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
-                "n";"o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z";
-                "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
-                "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
-
 // Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
 // elements.
 // Build numbers/words by concatenating the individual chars into a single string and calling
