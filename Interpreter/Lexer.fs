@@ -1,7 +1,9 @@
 ﻿module Interpreter.Lexer
 
 open System
+open System.Text.RegularExpressions
 open Interpreter.Util
+
 
 // Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
 // elements.
@@ -50,8 +52,20 @@ let rec scan tokens output  =
     | [] | [""] -> List.rev output
     | tokenHead :: tokensTail ->
         match tokenHead with
-        | "+" -> scan tokensTail (Plus :: output)
-        | "-" -> scan tokensTail (Minus :: output)
+        | "+" ->
+            if output.Length > 0 then
+                match List.last output with
+                    | Rpar 
+                    | Number _ -> scan tokensTail (Plus :: output)
+                    | _ -> scan tokensTail (UnaryPlus :: output)
+            else Plus::output
+        | "-" ->
+            if output.Length > 0 then
+                match List.last output with 
+                    | Rpar 
+                    | Number _ -> scan tokensTail (Minus :: output)
+                    | _ -> scan tokensTail (UnaryMinus :: output)
+            else Minus :: output
         | "^" -> scan tokensTail (Exponent :: output)
         | "*" -> scan tokensTail (Times :: output)
         | "(" -> scan tokensTail (Lpar :: output)

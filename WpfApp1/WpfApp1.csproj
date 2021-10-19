@@ -18,4 +18,8 @@
     <Resource Include="mymathspal_logo.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="6.0.0" />
+  </ItemGroup>
+
 </Project>
