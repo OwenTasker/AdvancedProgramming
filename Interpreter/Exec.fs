@@ -34,7 +34,7 @@ let rec reduce tokens =
     match tokens with
     | head :: tail ->
         match head with
-        | Float f -> numStack.Push(f)
+        | Number f -> numStack.Push(f)
         | Lpar -> opStack.Push(head)
         | Rpar ->
             while (opStack.Peek()) <> Lpar do

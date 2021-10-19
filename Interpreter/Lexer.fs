@@ -59,7 +59,7 @@ let rec scan tokens output  =
         | "/" -> scan tokensTail (Divide :: output)
         | "=" -> scan tokensTail (Equals :: output)
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
-        | NumberMatchScan _ -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
+        | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
         
         | _ -> raise ScanError
