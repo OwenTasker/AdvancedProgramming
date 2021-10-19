@@ -1,11 +1,12 @@
 ﻿module Interpreter.Exec
 
+open System.Reflection.Emit
 open Interpreter.Util
 open System.Collections.Generic
 
 // http://mathcenter.oxford.emory.edu/site/cs171/shuntingYardAlgorithm/
 
-let calculate operator (op1: float) (op2: float) =
+let calculate operator op1 op2 =
     match operator with
     | terminal.Plus -> op1 + op2
     | terminal.Minus -> op1 - op2
@@ -13,12 +14,20 @@ let calculate operator (op1: float) (op2: float) =
     | terminal.Divide -> op1 / op2
     | terminal.Exponent -> op1 ** op2
     | _ -> failwith "invalid operator"
+    
+let unary operator operand : float =
+    match operator with
+    | UnaryMinus -> -operand
+    | UnaryPlus -> operand
+    | _ -> failwith "invalid operator"
             
 let numStack = Stack<float>()
 let opStack = Stack<terminal>()
 
 let precedenceAssociativity =
-    Map [(Exponent, (3, "r"))
+    Map [(UnaryMinus, (4, "r"))
+         (UnaryPlus, (4, "r"))
+         (Exponent, (3, "r"))
          (Times, (2, "l"))
          (Divide, (2, "l"))
          (Plus, (1, "l"))
@@ -39,10 +48,17 @@ let rec reduce tokens =
         | Rpar ->
             while (opStack.Peek()) <> Lpar do
                 let operator = opStack.Pop()
-                let op2 = numStack.Pop()
                 let op1 = numStack.Pop()
-                numStack.Push(calculate operator op1 op2)
-            opStack.Pop() |> ignore   
+                match operator with
+                | UnaryMinus
+                | UnaryPlus ->
+                    numStack.Push(unary operator op1)
+                | _ ->
+                    let op2 = numStack.Pop()
+                    numStack.Push(calculate operator op2 op1)
+            opStack.Pop() |> ignore
+        | UnaryMinus
+        | UnaryPlus  
         | Divide
         | Times
         | Minus
@@ -57,19 +73,30 @@ let rec reduce tokens =
                       (newOpPrec < getPrecedence (opStack.Peek())
                        || (newOpPrec = getPrecedence (opStack.Peek()) && newOpAssoc = "l")) do
                     let operator = opStack.Pop()
-                    let op2 = numStack.Pop()
                     let op1 = numStack.Pop()
-                    numStack.Push(calculate operator op1 op2)
+                    match operator with
+                    | UnaryMinus
+                    | UnaryPlus ->
+                        numStack.Push(unary operator op1)
+                    | _ ->
+                        let op2 = numStack.Pop()
+                        numStack.Push(calculate operator op2 op1)
                 
-                opStack.Push(head)
+                opStack.Push(head)           
         | _ -> failwith "invalid operator"
         reduce tail
     | [] ->
         while opStack.Count > 0 do
             let operator = opStack.Pop()
-            let op2 = numStack.Pop()
-            let op1 = numStack.Pop()
-            numStack.Push(calculate operator op1 op2)
+            match operator with
+            | UnaryMinus
+            | UnaryPlus ->
+                let operand = numStack.Pop()
+                numStack.Push(unary operator operand)
+            | _ ->
+                let op1 = numStack.Pop()
+                let op2 = numStack.Pop()
+                numStack.Push(calculate operator op2 op1)
         
         numStack.Pop()
         
