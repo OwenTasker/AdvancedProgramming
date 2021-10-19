@@ -25,14 +25,21 @@ and termP terminals =
     | Divide :: terminalsTail -> (exponent >> termP) terminalsTail
     | _ -> terminals
 
-// exponent ::= factor exponent'
-and exponent terminals = (factor >> exponentP) terminals
+// exponent ::= unary exponent'
+and exponent terminals = (unary >> exponentP) terminals
 
-// exponent' ::= ^ factor exponent' | empty
+// exponent' ::= ^ unary exponent' | empty
 and exponentP terminals =
     match terminals with
-    | Exponent :: terminalsTail -> (factor >> exponentP) terminalsTail
+    | Exponent :: terminalsTail -> (unary >> exponentP) terminalsTail
     | _ -> terminals
+    
+// unary ::= -unary | +unary | factor
+and unary terminals =
+    match terminals with
+    | UnaryMinus :: terminalsTail
+    | UnaryPlus :: terminalsTail -> unary terminalsTail
+    | _ -> factor terminals
 
 // factor ::= int | ( expression )
 // Here the and keyword has allowed us to define the function with mutual recursion - an expression contains a
@@ -43,6 +50,9 @@ and factor terminals =
         match terminalsTail with
         | Lpar :: tailTail -> raise ParseError
         | _ -> terminalsTail
+    | UnaryMinus :: terminalsTail
+    | UnaryPlus :: terminalsTail
+        -> factor terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
