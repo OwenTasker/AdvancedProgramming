@@ -7,10 +7,11 @@ type terminal =
     | Times
     | Divide
     | Minus
+    | UnaryPlus
+    | UnaryMinus
     | Exponent
     | Lpar
     | Rpar
-    | Decimal
     | Equals
     | Function of string
     | Word of string

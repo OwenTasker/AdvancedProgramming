@@ -63,28 +63,41 @@ let CalculateExponentData =
     ]
     
 [<TestCaseSource("CalculatePlusData")>]
-let GivenCalculate_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
+let GivenCalculate_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
     let result = calculate Plus op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateMinusData")>]
-let GivenCalculate_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
+let GivenCalculate_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
     let result = calculate Minus op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateTimesData")>]
-let GivenCalculate_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
+let GivenCalculate_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
     let result = calculate Times op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateDivideData")>]
-let GivenCalculate_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
+let GivenCalculate_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
     let result = calculate Divide op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateExponentData")>]
-let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float , res: float) =
+let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
     let result = calculate Exponent op1 op2
+    Assert.That(result, Is.EqualTo(res))
+    
+let UnaryData =
+    [
+        TestCaseData(UnaryMinus, 1, -1)
+        TestCaseData(UnaryMinus, -1, 1)
+        TestCaseData(UnaryPlus, 1, 1)
+        TestCaseData(UnaryPlus, -1, -1)
+    ]
+    
+[<TestCaseSource("UnaryData")>]
+let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2: float, res: float) =
+    let result = unary op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 let ReduceCases =
@@ -138,6 +151,16 @@ let ReduceCases =
         TestCaseData([Float -10.0; Exponent; Float 3.0], -1000.0)
         TestCaseData([Float 10.0; Exponent; Float -3.0], 0.001)
         TestCaseData([Float -10.0; Exponent; Float -3.0], -0.001)
+        //SIMPLE UNARY CASES
+        TestCaseData([UnaryMinus; Float 1.0], -1.0)
+        TestCaseData([UnaryMinus; Float -1.0], 1.0)
+        TestCaseData([UnaryPlus; Float 1.0], 1.0)
+        TestCaseData([UnaryPlus; Float -1.0], -1.0)
+        //CHAINED UNARY CASES
+        TestCaseData([UnaryMinus; UnaryMinus; Float 1.0], 1.0)
+        TestCaseData([UnaryMinus; UnaryMinus; Float -1.0], -1.0)
+        TestCaseData([UnaryPlus; UnaryPlus; Float 1.0], 1.0)
+        TestCaseData([UnaryPlus; UnaryPlus; Float -1.0], -1.0)
         //ORDER OF OPERATIONS CASES
         TestCaseData([Float 1.0; Plus; Float 8.0; Minus; Float 6.0], 3.0)
         TestCaseData([Float 1.0; Minus; Float 8.0; Plus; Float 6.0], -1.0)
@@ -179,6 +202,9 @@ let ReduceCases =
         TestCaseData([Lpar; Float 9.0; Exponent; Float 2.0; Rpar; Times; Float 6.0], 486.0)
         TestCaseData([Lpar; Float 64.0; Divide; Float 8.0; Rpar; Exponent; Float 2.0], 64.0)
         TestCaseData([Lpar; Float 6.0; Exponent; Float 3.0; Rpar; Divide; Float 2.0], 108.0)
+        TestCaseData([UnaryMinus; Lpar; UnaryPlus; Float 6.0; Exponent; UnaryMinus; Float 3.0; Rpar; Divide; Float 2.0], ((-1.0/6.0**3.0)/2.0))
+        TestCaseData([UnaryMinus; Lpar; UnaryPlus; Float 6.0; Divide; UnaryMinus; Float 3.0; Rpar; Exponent; Float 2.0], 4)
+        TestCaseData([UnaryMinus; Float 2.0; Exponent; Float 3.0], -8)
     ]
     
 [<TestCaseSource("ReduceCases")>]
