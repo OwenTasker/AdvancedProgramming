@@ -54,14 +54,14 @@ let rec scan tokens output  =
         match tokenHead with
         | "+" ->
             if output.Length > 0 then
-                match List.last output with
+                match output.[0] with
                     | Rpar 
                     | Number _ -> scan tokensTail (Plus :: output)
                     | _ -> scan tokensTail (UnaryPlus :: output)
             else Plus::output
         | "-" ->
             if output.Length > 0 then
-                match List.last output with 
+                match output.[0] with 
                     | Rpar 
                     | Number _ -> scan tokensTail (Minus :: output)
                     | _ -> scan tokensTail (UnaryMinus :: output)
