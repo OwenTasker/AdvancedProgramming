@@ -7,6 +7,8 @@ type terminal =
     | Times
     | Divide
     | Minus
+    | UnaryPlus
+    | UnaryMinus
     | Exponent
     | Lpar
     | Rpar
