@@ -81,4 +81,4 @@ let rec scan tokens output  =
 let lexer input =
     let tokenizedVal = tokenize input
     let scannedInput = scan tokenizedVal []
-    (tokenizedVal, scannedInput)
+    scannedInput
