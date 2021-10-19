@@ -20,6 +20,9 @@ type terminal =
 exception ParseError
 exception ScanError
 exception TokenizeError
+exception CalculateError
+exception UnaryError
+exception ExecError
 
 let functionRegexString =
     let functions = ["ceil";"floor";"sqrt";"round"]

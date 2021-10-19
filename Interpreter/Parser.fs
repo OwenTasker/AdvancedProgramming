@@ -4,7 +4,6 @@ open Interpreter.Util
     
 // https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf
     
-// BNF defined recursively
 // expression ::= term expression'
 let rec expression terminals = (term >> expressionP) terminals
 
@@ -42,22 +41,17 @@ and unary terminals =
     | _ -> factor terminals
 
 // factor ::= int | ( expression )
-// Here the and keyword has allowed us to define the function with mutual recursion - an expression contains a
-// factor and a factor contains an expression
 and factor terminals =
     match terminals with
     | Float _ :: terminalsTail ->
         match terminalsTail with
-        | Lpar :: tailTail -> raise ParseError
+        | Lpar :: _ -> raise ParseError
         | _ -> terminalsTail
-    | UnaryMinus :: terminalsTail
-    | UnaryPlus :: terminalsTail
-        -> factor terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
             match terminalsTail with
-            | Float _ :: tailTail -> raise ParseError
+            | Float _ :: _ -> raise ParseError
             | _ -> terminalsTail
         | _ -> raise ParseError
     | _ -> raise ParseError
