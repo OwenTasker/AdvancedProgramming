@@ -39,10 +39,10 @@ let functionRegexString =
     generateRegex.Remove(generateRegex.Length-1)
 let symbolRegexString =
     let symbols = ["+";"*";"-";"^";"/";"=";"(";")"]
-    let functionRegex = [
-        for i in symbols -> "[\\" + i + "]|"
+    let symbolRegex = [
+        for i in symbols -> "(^\\" + i + "$)|"
     ]
-    let generateRegex = (String.concat "" functionRegex)
+    let generateRegex = (String.concat "" symbolRegex)
     generateRegex.Remove(generateRegex.Length-1)
 
 //https://sodocumentation.net/fsharp/topic/962/active-patterns       

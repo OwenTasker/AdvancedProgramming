@@ -58,14 +58,14 @@ let rec scan tokens output  =
                     | Rpar 
                     | Number _ -> scan tokensTail (Plus :: output)
                     | _ -> scan tokensTail (UnaryPlus :: output)
-            else Plus::output
+            else scan tokensTail (UnaryPlus :: output)
         | "-" ->
             if output.Length > 0 then
                 match output.[0] with 
                     | Rpar 
                     | Number _ -> scan tokensTail (Minus :: output)
                     | _ -> scan tokensTail (UnaryMinus :: output)
-            else Minus :: output
+            else scan tokensTail (UnaryMinus :: output)
         | "^" -> scan tokensTail (Exponent :: output)
         | "*" -> scan tokensTail (Times :: output)
         | "(" -> scan tokensTail (Lpar :: output)
@@ -81,4 +81,4 @@ let rec scan tokens output  =
 let lexer input =
     let tokenizedVal = tokenize input
     let scannedInput = scan tokenizedVal []
-    (tokenizedVal, scannedInput)
+    scannedInput

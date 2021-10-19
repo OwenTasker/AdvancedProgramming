@@ -22,13 +22,8 @@ namespace ConsoleApplication
             var fSharpList = ListModule.OfSeq(inputList);
 
             var tokenizedInput = Lexer.lexer(fSharpList);
-            // var res = Exec.reduce(tokenizedInput.Item2);
-            // Console.WriteLine(res);
-
-            foreach (var VARIABLE in tokenizedInput.Item2)
-            {
-                Console.WriteLine(VARIABLE);
-            }
+            var res = Exec.reduce(tokenizedInput);
+            Console.WriteLine(res);
         }
     }
 }
