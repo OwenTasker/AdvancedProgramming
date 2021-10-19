@@ -13,13 +13,13 @@ let calculate operator op1 op2 =
     | terminal.Times -> op1 * op2
     | terminal.Divide -> op1 / op2
     | terminal.Exponent -> op1 ** op2
-    | _ -> failwith "invalid operator"
+    | _ -> raise CalculateError
     
 let unary operator operand : float =
     match operator with
     | UnaryMinus -> -operand
     | UnaryPlus -> operand
-    | _ -> failwith "invalid operator"
+    | _ -> raise UnaryError
             
 let numStack = Stack<float>()
 let opStack = Stack<terminal>()
@@ -83,7 +83,7 @@ let rec reduce tokens =
                         numStack.Push(calculate operator op2 op1)
                 
                 opStack.Push(head)           
-        | _ -> failwith "invalid operator"
+        | _ -> raise ExecError
         reduce tail
     | [] ->
         while opStack.Count > 0 do
