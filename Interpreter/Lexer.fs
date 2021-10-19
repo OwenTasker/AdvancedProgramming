@@ -58,14 +58,14 @@ let rec scan tokens output  =
                     | Rpar 
                     | Number _ -> scan tokensTail (Plus :: output)
                     | _ -> scan tokensTail (UnaryPlus :: output)
-            else scan tokensTail (Plus :: output)
+            else scan tokensTail (UnaryPlus :: output)
         | "-" ->
             if output.Length > 0 then
                 match output.[0] with 
                     | Rpar 
                     | Number _ -> scan tokensTail (Minus :: output)
                     | _ -> scan tokensTail (UnaryMinus :: output)
-            else scan tokensTail (Minus :: output)
+            else scan tokensTail (UnaryMinus :: output)
         | "^" -> scan tokensTail (Exponent :: output)
         | "*" -> scan tokensTail (Times :: output)
         | "(" -> scan tokensTail (Lpar :: output)

@@ -80,8 +80,11 @@ let GivenTokenize_WhenPassedInput_ReturnCorrectTokens(op1, res) =
     
 let ScannerTestData =
     [
-        TestCaseData(["+"],[Plus])
-        TestCaseData(["-"],[Minus])
+        //Symbol Testing
+        TestCaseData(["+"],[UnaryPlus])
+        TestCaseData(["-"],[UnaryMinus])
+        TestCaseData(["3";"+"],[Number 3.0;Plus])
+        TestCaseData(["3";"-"],[Number 3.0;Minus])
         TestCaseData(["^"],[Exponent])
         TestCaseData(["*"],[Times])
         TestCaseData(["("],[Lpar])
@@ -89,9 +92,13 @@ let ScannerTestData =
         TestCaseData(["/"],[Divide])
         TestCaseData(["="],[Equals])
         
-        TestCaseData(["+";"+"],[Plus;UnaryPlus])
-        TestCaseData(["-";"-"],[Minus;UnaryMinus])
+        //Unary Symbol Testing
+        TestCaseData(["+";"+";"+"], [UnaryPlus;UnaryPlus;UnaryPlus])
+        TestCaseData(["-";"-";"-"], [UnaryMinus;UnaryMinus;UnaryMinus])
+        TestCaseData(["-";"(";"3";"+";"4";")";"-";"3"],
+                     [UnaryMinus;Lpar;Number 3.0;Plus;Number 4.0;Rpar;Minus;Number 3.0])
         
+        //Function Testing
         TestCaseData(["ceil"], [Function "ceil"])
         TestCaseData(["floor"], [Function "floor"])
         TestCaseData(["sqrt"], [Function "sqrt"])
@@ -99,6 +106,34 @@ let ScannerTestData =
         TestCaseData(["ceil"; "3.222"; "floor"; "3.222"],
                      [Function "ceil"; Number 3.222; Function "floor"; Number 3.222])
         
+        //Word Testing
+        TestCaseData(["a"], [Word "a"])
+        TestCaseData(["b"], [Word "b"])
+        TestCaseData(["c"], [Word "c"])
+        TestCaseData(["d"], [Word "d"])
+        TestCaseData(["e"], [Word "e"])
+        TestCaseData(["A"], [Word "A"])
+        TestCaseData(["B"], [Word "B"])
+        TestCaseData(["C"], [Word "C"])
+        TestCaseData(["D"], [Word "D"])
+        TestCaseData(["E"], [Word "E"])
+        TestCaseData(["Word";"Word"], [Word "Word"; Word "Word"])
+        TestCaseData(["Word";"5";"Word"], [Word "Word"; Number 5.0; Word "Word"])
+        
+        //Number Testing
+        TestCaseData(["1"], [Number 1.0])
+        TestCaseData(["2"], [Number 2.0])
+        TestCaseData(["3"], [Number 3.0])
+        TestCaseData(["4"], [Number 4.0])
+        TestCaseData(["5"], [Number 5.0])
+        TestCaseData(["6"], [Number 6.0])
+        TestCaseData(["7"], [Number 7.0])
+        TestCaseData(["8"], [Number 8.0])
+        TestCaseData(["9"], [Number 9.0])
+        TestCaseData(["0"], [Number 0.0])
+        TestCaseData([".2"], [Number 0.2])
+        TestCaseData([".25"], [Number 0.25])
+        TestCaseData([".252"], [Number 0.252])
     ]
     
 [<TestCaseSource("ScannerTestData")>]
@@ -108,8 +143,8 @@ let GivenScan_WhenPassedInput_ReturnCorrectTokens(op1, res) =
     
     
 
-type LexerTests ()=
-    //Tokenizer Testing ---------------------------------------------------------
+type LexerErrorTests ()=
+    //Tokenizer Error Testing ---------------------------------------------------------
     [<Test>]
     member this.GivenTokenize_WhenPassedExpressionConsistingOfInvalidTokens_ThenFailWithTokenizeError() =
         Assert.Throws<TokenizeError>(fun () -> tokenize["?"] |> ignore) |> ignore
@@ -137,102 +172,37 @@ type LexerTests ()=
         Assert.Throws<TokenizeError>(fun () -> tokenize["`"] |> ignore) |> ignore
     
 
-//    
-//    //Scan function Testing -----------------------------------------------------
-//    [<Test>]
-//    member this.GivenScan_WhenPassedPlusSign_ThenRecordPlus() =
-//        let result = scan ["+";] []
-//        Assert.That(result, Is.EqualTo[terminal.Plus;])
-//
-//    [<Test>]
-//    member this.GivenScan_WhenPassedMinusSign_ThenRecordMinus() =
-//        let result = scan ["-";] []
-//        Assert.That(result, Is.EqualTo[terminal.Minus;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedExponentSign_ThenRecordExponent() =
-//        let result = scan ["^";] []
-//        Assert.That(result, Is.EqualTo[terminal.Exponent;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedTimesSign_ThenRecordTimes() =
-//        let result = scan ["*";] []
-//        Assert.That(result, Is.EqualTo[terminal.Times;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedLeftBracket_ThenRecordLpar() =
-//        let result = scan ["(";] []
-//        Assert.That(result, Is.EqualTo[terminal.Lpar;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedRightBracket_ThenRecordRpar() =
-//        let result = scan [")";] []
-//        Assert.That(result, Is.EqualTo[terminal.Rpar;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedDivideSign_ThenRecordDivide() =
-//        let result = scan ["/";] []
-//        Assert.That(result, Is.EqualTo[terminal.Divide;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedEqualsSign_ThenRecordEquals() =
-//        let result = scan ["=";] []
-//        Assert.That(result, Is.EqualTo[terminal.Equals;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedNumber_ThenRecordFloatNumber() =
-//        let result = scan ["123";] []
-//        Assert.That(result, Is.EqualTo[terminal.Number 123.0;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedTwoNumbersInARow_ThenRecordTwoFloats() =
-//        let result = scan ["123";"123";] []
-//        Assert.That(result, Is.EqualTo[terminal.Number 123.0; terminal.Number 123.0])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedTokensRepresentingValidExpression_ThenRecordEquivalentTerminalsInSameOrder() =
-//        let result = scan ["1"; "*"; "5"; "*"; "("; "5"; "+"; "6"; ")"] []
-//        Assert.That(result, Is.EqualTo[terminal.Number 1.0; terminal.Times; terminal.Number 5.0; terminal.Times; terminal.Lpar; terminal.Number 5.0; terminal.Plus; terminal.Number 6.0; terminal.Rpar;])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedTokensRepresentingInvalidExpression_ThenRecordEquivalentTerminalsInSameOrder() =
-//        let result = scan ["1"; ")"; "5"; "*"; "("; "*"; "+"; "6"; ")"] []
-//        Assert.That(result, Is.EqualTo[terminal.Number 1.0; terminal.Rpar; terminal.Number 5.0; terminal.Times; terminal.Lpar; terminal.Times; terminal.Plus; terminal.Number 6.0; terminal.Rpar;])
-//
-//    [<Test>]
-//    member this.GivenScan_WhenPassedSingleWord_ThenRecordSingleWord() =
-//        let result = scan ["abc";] []
-//        Assert.That(result, Is.EqualTo[terminal.Word "abc"])
-//        
-//    [<Test>]
-//    member this.GivenScan_WhenPassedTwoWordsInARow_ThenRecordTwoWords() =
-//        let result = scan ["abc";"abc";] []
-//        Assert.That(result, Is.EqualTo[terminal.Word "abc"; terminal.Word "abc"])
-//    
-//    [<Test>]
-//    member this.GivenScan_WhenPassedFunction_ThenRecordFunction() =
-//        let result = scan ["sqrt";] []
-//        Assert.That(result, Is.EqualTo[terminal.Function "sqrt";])
-//
-//    [<Test>]
-//    member this.GivenScan_WhenPassedMultipleFunctions_ThenRecordFunctionS() =
-//        let result = scan ["sqrt";"ceil";] []
-//        Assert.That(result, Is.EqualTo[terminal.Function "sqrt"; terminal.Function "ceil"])
-//    
-//    
-//    [<Test>]
-//    member this.GivenScan_WhenPassedInvalidNumber_ThenRaiseFormatException() =
-//        Assert.Throws<System.FormatException>(fun () -> scan ["1a23";] [] |> ignore) |> ignore
-//    
-//    [<Test>]
-//    member this.GivenScan_WhenPassedInvalidLetter_ThenRaiseFormatException() =
-//        Assert.Throws<System.FormatException>(fun () -> scan ["a1a23";] [] |> ignore) |> ignore
-//    
-//    [<Test>]
-//    member this.GivenScan_WhenPassedInvalidToken_ThenRaiseScanError() =
-//        Assert.Throws<ScanError>(fun () -> scan ["?";] [] |> ignore) |> ignore
-//
-//    
+    [<Test>]
+    member this.GivenScanner_WhenPassedExpressionConsistingOfInvalidTokens_ThenFailWithScanningError() =
+        Assert.Throws<ScanError>(fun () -> scan["?"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["_"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["["][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["]"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["{"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["}"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["£"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["$"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["@"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["<"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan[">"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["%"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["\""][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["!"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["'"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["|"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["\\"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan[":"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan[";"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["#"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["~"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["¬"][] |> ignore) |> ignore
+        Assert.Throws<ScanError>(fun () -> scan["`"][] |> ignore) |> ignore
+        
+    [<Test>]
+    member this.GivenScanner_WhenPassedExpressionConsistingOfInvalidWordsOrLetters_ThenFailWithFormatException() =
+        Assert.Throws<System.FormatException>(fun () -> scan["a2452Bb"][] |> ignore) |> ignore 
+        Assert.Throws<System.FormatException>(fun () -> scan["24tps"][] |> ignore) |> ignore 
+
 //    //Lexer Testing -----------------------------------------------------------
 //    [<Test>]
 //    member this.GivenLexer_WhenPassedEmptyExpression_ReturnTupleOfEmptyLists() =
