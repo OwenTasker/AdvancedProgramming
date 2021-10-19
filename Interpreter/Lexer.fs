@@ -1,13 +1,9 @@
 ﻿module Interpreter.Lexer
 
 open System
+open System.Text.RegularExpressions
 open Interpreter.Util
 
-let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
-let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
-                "n";"o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z";
-                "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
-                "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
 
 // Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
 // elements.
@@ -56,8 +52,20 @@ let rec scan tokens output  =
     | [] | [""] -> List.rev output
     | tokenHead :: tokensTail ->
         match tokenHead with
-        | "+" -> scan tokensTail (Plus :: output)
-        | "-" -> scan tokensTail (Minus :: output)
+        | "+" ->
+            if output.Length > 0 then
+                match List.last output with
+                    | Rpar 
+                    | Number _ -> scan tokensTail (Plus :: output)
+                    | _ -> scan tokensTail (UnaryPlus :: output)
+            else Plus::output
+        | "-" ->
+            if output.Length > 0 then
+                match List.last output with 
+                    | Rpar 
+                    | Number _ -> scan tokensTail (Minus :: output)
+                    | _ -> scan tokensTail (UnaryMinus :: output)
+            else Minus :: output
         | "^" -> scan tokensTail (Exponent :: output)
         | "*" -> scan tokensTail (Times :: output)
         | "(" -> scan tokensTail (Lpar :: output)
@@ -65,7 +73,7 @@ let rec scan tokens output  =
         | "/" -> scan tokensTail (Divide :: output)
         | "=" -> scan tokensTail (Equals :: output)
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
-        | NumberMatchScan _ -> scan tokensTail (Float(Double.Parse tokenHead) :: output)
+        | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
         
         | _ -> raise ScanError

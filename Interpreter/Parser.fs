@@ -43,7 +43,7 @@ and unary terminals =
 // factor ::= int | ( expression )
 and factor terminals =
     match terminals with
-    | Float _ :: terminalsTail ->
+    | Number _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: _ -> raise ParseError
         | _ -> terminalsTail
@@ -51,7 +51,7 @@ and factor terminals =
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
             match terminalsTail with
-            | Float _ :: _ -> raise ParseError
+            | Number _ :: _ -> raise ParseError
             | _ -> terminalsTail
         | _ -> raise ParseError
     | _ -> raise ParseError

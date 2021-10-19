@@ -159,22 +159,22 @@ type LexerTests ()=
     [<Test>]
     member this.GivenScan_WhenPassedNumber_ThenRecordFloatNumber() =
         let result = scan ["123";] []
-        Assert.That(result, Is.EqualTo[terminal.Float 123.0;])
+        Assert.That(result, Is.EqualTo[terminal.Number 123.0;])
         
     [<Test>]
     member this.GivenScan_WhenPassedTwoNumbersInARow_ThenRecordTwoFloats() =
         let result = scan ["123";"123";] []
-        Assert.That(result, Is.EqualTo[terminal.Float 123.0; terminal.Float 123.0])
+        Assert.That(result, Is.EqualTo[terminal.Number 123.0; terminal.Number 123.0])
         
     [<Test>]
     member this.GivenScan_WhenPassedTokensRepresentingValidExpression_ThenRecordEquivalentTerminalsInSameOrder() =
         let result = scan ["1"; "*"; "5"; "*"; "("; "5"; "+"; "6"; ")"] []
-        Assert.That(result, Is.EqualTo[terminal.Float 1.0; terminal.Times; terminal.Float 5.0; terminal.Times; terminal.Lpar; terminal.Float 5.0; terminal.Plus; terminal.Float 6.0; terminal.Rpar;])
+        Assert.That(result, Is.EqualTo[terminal.Number 1.0; terminal.Times; terminal.Number 5.0; terminal.Times; terminal.Lpar; terminal.Number 5.0; terminal.Plus; terminal.Number 6.0; terminal.Rpar;])
         
     [<Test>]
     member this.GivenScan_WhenPassedTokensRepresentingInvalidExpression_ThenRecordEquivalentTerminalsInSameOrder() =
         let result = scan ["1"; ")"; "5"; "*"; "("; "*"; "+"; "6"; ")"] []
-        Assert.That(result, Is.EqualTo[terminal.Float 1.0; terminal.Rpar; terminal.Float 5.0; terminal.Times; terminal.Lpar; terminal.Times; terminal.Plus; terminal.Float 6.0; terminal.Rpar;])
+        Assert.That(result, Is.EqualTo[terminal.Number 1.0; terminal.Rpar; terminal.Number 5.0; terminal.Times; terminal.Lpar; terminal.Times; terminal.Plus; terminal.Number 6.0; terminal.Rpar;])
 
     [<Test>]
     member this.GivenScan_WhenPassedSingleWord_ThenRecordSingleWord() =
@@ -219,7 +219,7 @@ type LexerTests ()=
     [<Test>]
     member this.GivenLexer_WhenPassedValidExpression_ReturnCorrectTuple() =
         let result = lexer ["1";"0";"+";"1"]
-        Assert.That(result, Is.EqualTo((["10";"+";"1"],[Float 10.0; Plus; Float 1.0])))
+        Assert.That(result, Is.EqualTo((["10";"+";"1"],[Number 10.0; Plus; Number 1.0])))
         
     [<Test>]
     member this.GivenLexer_WhenPassedInvalidExpression_ThrowTokenizeError() =

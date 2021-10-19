@@ -9,4 +9,8 @@
     <ProjectReference Include="..\Interpreter\Interpreter.fsproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="6.0.0" />
+  </ItemGroup>
+
 </Project>
