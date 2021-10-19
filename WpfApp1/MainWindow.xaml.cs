@@ -29,9 +29,28 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
+        public class Variable
+        {
+            public string Name { get; set; }
+            public float Value { get; set; }
+
+            public Variable(string n, float v)
+            {
+                Name = n;
+                Value = v;
+            }
+        }
         public MainWindow()
         {
             InitializeComponent();
+
+            // variable list to populate variables column in GUI
+            List<Variable> variablesList = new List<Variable>();
+            variablesList.Add(new Variable("x", (float)5.0));
+            variablesList.Add(new Variable("y", (float)2.0));
+            variablesList.Add(new Variable("z", (float)-4.0));
+
+            varDisplay.ItemsSource = variablesList;
         }
 
         private void EnterButtonPress(object sender, RoutedEventArgs e)
@@ -44,10 +63,12 @@ namespace WpfApp1
                 consoleText.AppendText(" " + input + "\n");
                 consoleText.ScrollToEnd();
                 inputText.Clear();
-                var lexerOutput = Lexer.lexer(inputfSharpList);
-                var execOutput = Exec.reduce(lexerOutput);
+
                 // 1. send query to lexer/parser/executor
-                // 2. put received answer on new line
+                // 2a. if valid, put received answer on new line
+                // 2b. if invalid, put out error
+                var lexerOutput = Lexer.lexer(inputfSharpList);
+                var execOutput = Exec.reduce(lexerOutput.Item2);
                 consoleText.AppendText(execOutput.ToString(CultureInfo.InvariantCulture) + "\n");
                 consoleText.AppendText(">>");
                 inputText.Text = "Enter query here...";
