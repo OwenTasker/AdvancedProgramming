@@ -66,7 +66,7 @@ let rec reduceRecursive tokens oplist numlist =
     match tokens with
     | tokenHead :: tokenTail ->
         match tokenHead with
-        | Float f ->
+        | Number f ->
             reduceRecursive tokenTail oplist (f :: numlist)
         | Lpar ->
             reduceRecursive tokenTail (tokenHead :: oplist) numlist
