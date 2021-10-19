@@ -45,7 +45,7 @@ namespace WpfApp1
                 consoleText.ScrollToEnd();
                 inputText.Clear();
                 var lexerOutput = Lexer.lexer(inputfSharpList);
-                var execOutput = Exec.reduce(lexerOutput.Item2);
+                var execOutput = Exec.reduce(lexerOutput);
                 // 1. send query to lexer/parser/executor
                 // 2. put received answer on new line
                 consoleText.AppendText(execOutput.ToString(CultureInfo.InvariantCulture) + "\n");
