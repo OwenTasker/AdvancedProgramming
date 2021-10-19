@@ -10,7 +10,6 @@ type terminal =
     | Exponent
     | Lpar
     | Rpar
-    | Decimal
     | Equals
     | Function of string
     | Word of string
