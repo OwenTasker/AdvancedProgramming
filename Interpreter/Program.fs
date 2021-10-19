@@ -20,4 +20,5 @@ module Program =
         Console.WriteLine $"%A{scannedVals}"
         Console.WriteLine $"%A{parsed}"
         Console.WriteLine (sprintf $"{reduce scannedVals}")
+        
         0

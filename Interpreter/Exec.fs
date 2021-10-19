@@ -1,8 +1,6 @@
 ﻿module Interpreter.Exec
 
-open System.Reflection.Emit
 open Interpreter.Util
-open System.Collections.Generic
 
 // http://mathcenter.oxford.emory.edu/site/cs171/shuntingYardAlgorithm/
 
@@ -20,20 +18,34 @@ let unary operator operand : float =
     | UnaryMinus -> -operand
     | UnaryPlus -> operand
     | _ -> raise UnaryError
-            
-let numStack = Stack<float>()
-let opStack = Stack<terminal>()
-
-let performOperation operator =
-    match operator with
-    | UnaryMinus
-    | UnaryPlus ->
-        let operand = numStack.Pop()
-        unary operator operand
+        
+let performOperation oplist (numlist : float list) =
+    match oplist with
+    | [] -> oplist, numlist
+    | Lpar :: _ -> oplist, numlist
+    | UnaryMinus :: tail
+    | UnaryPlus :: tail ->
+        let operator = oplist.[0]
+        let operand = numlist.[0]
+        if numlist.Length > 0 then
+            tail, ((unary operator operand) :: numlist.[1 .. ])
+        else tail, (unary operator operand) :: []
+    | head :: tail ->
+        let operand1 = numlist.[0]
+        let operand2 = numlist.[1]
+        if numlist.Length > 1 then
+            tail, ((calculate head operand2 operand1) :: numlist.[2 .. ])
+        else tail, ((calculate head operand2 operand1) :: [])
+        
+let rec evaluateBrackets oplist (numlist : float list) =
+    match oplist with
+    | [] -> oplist, numlist
+    | Lpar :: tail -> tail, numlist
     | _ ->
-        let op1 = numStack.Pop()
-        let op2 = numStack.Pop()
-        calculate operator op2 op1
+        let results = performOperation oplist numlist
+        match results with
+        | oplist, numlist ->
+            evaluateBrackets oplist numlist
 
 let precedenceAssociativity =
     Map [(UnaryMinus, (4, "r"))
@@ -50,17 +62,19 @@ let getPrecedence operator =
 let getAssociativity operator =
     (Map.find operator precedenceAssociativity) |> snd
 
-let rec reduce tokens =
+let rec reduceRecursive tokens oplist numlist =
     match tokens with
-    | head :: tail ->
-        match head with
-        | Float f -> numStack.Push(f)
-        | Lpar -> opStack.Push(head)
+    | tokenHead :: tokenTail ->
+        match tokenHead with
+        | Float f ->
+            reduceRecursive tokenTail oplist (f :: numlist)
+        | Lpar ->
+            reduceRecursive tokenTail (tokenHead :: oplist) numlist
         | Rpar ->
-            while (opStack.Peek()) <> Lpar do
-                let operator = opStack.Pop()
-                numStack.Push(performOperation operator)
-            opStack.Pop() |> ignore
+            let results = evaluateBrackets oplist numlist
+            match results with
+            oplist, numlist ->
+                reduceRecursive tokenTail oplist numlist
         | UnaryMinus
         | UnaryPlus  
         | Divide
@@ -68,23 +82,29 @@ let rec reduce tokens =
         | Minus
         | Plus
         | Exponent ->
-            if opStack.Count = 0 then opStack.Push(head)
-            else
-                let newOpAssoc = getAssociativity head
-                let newOpPrec = getPrecedence head
-                
-                while opStack.Count > 0 && opStack.Peek() <> Lpar &&
-                      (newOpPrec < getPrecedence (opStack.Peek())
-                       || (newOpPrec = getPrecedence (opStack.Peek()) && newOpAssoc = "l")) do
-                    let operator = opStack.Pop()
-                    numStack.Push(performOperation operator)
-                
-                opStack.Push(head)           
+            match oplist with
+            | [] ->
+                reduceRecursive tokenTail (tokenHead :: oplist) numlist
+            | opHead :: _ ->
+                match opHead with
+                | Lpar ->
+                    reduceRecursive tokenTail (tokenHead :: oplist) numlist
+                | _ ->
+                    if (getPrecedence tokenHead < getPrecedence opHead
+                        || getPrecedence tokenHead = getPrecedence opHead && getAssociativity tokenHead = "l") then
+                        let results = performOperation oplist numlist
+                        match results with
+                        oplist, numlist ->
+                            reduceRecursive tokens oplist numlist
+                    else reduceRecursive tokenTail (tokenHead :: oplist) numlist     
         | _ -> raise ExecError
-        reduce tail
     | [] ->
-        while opStack.Count > 0 do
-            let operator = opStack.Pop()
-            numStack.Push(performOperation operator)
-
-        numStack.Pop()
+        match oplist with
+        | [] -> numlist.[0]
+        | _ ->
+            let results = performOperation oplist numlist
+            match results with
+            | oplist, numlist -> reduceRecursive tokens oplist numlist
+            
+let reduce tokens =
+    reduceRecursive tokens [] []
