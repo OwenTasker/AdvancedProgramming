@@ -68,7 +68,7 @@ namespace WpfApp1
                 // 2a. if valid, put received answer on new line
                 // 2b. if invalid, put out error
                 var lexerOutput = Lexer.lexer(inputfSharpList);
-                var execOutput = Exec.reduce(lexerOutput.Item2);
+                var execOutput = Exec.reduce(lexerOutput);
                 consoleText.AppendText(execOutput.ToString(CultureInfo.InvariantCulture) + "\n");
                 consoleText.AppendText(">>");
                 inputText.Text = "Enter query here...";
