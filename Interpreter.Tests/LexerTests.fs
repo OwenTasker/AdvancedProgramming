@@ -203,18 +203,17 @@ type LexerErrorTests ()=
         Assert.Throws<System.FormatException>(fun () -> scan["a2452Bb"][] |> ignore) |> ignore 
         Assert.Throws<System.FormatException>(fun () -> scan["24tps"][] |> ignore) |> ignore 
 
-//    //Lexer Testing -----------------------------------------------------------
-//    [<Test>]
-//    member this.GivenLexer_WhenPassedEmptyExpression_ReturnTupleOfEmptyLists() =
-//        let result = lexer [""]
-//        Assert.That(result, Is.EqualTo(([],[])))
-//        
-//    [<Test>]
-//    member this.GivenLexer_WhenPassedValidExpression_ReturnCorrectTuple() =
-//        let result = lexer ["1";"0";"+";"1"]
-//        Assert.That(result, Is.EqualTo((["10";"+";"1"],[Number 10.0; Plus; Number 1.0])))
-//        
-//    [<Test>]
-//    member this.GivenLexer_WhenPassedInvalidExpression_ThrowTokenizeError() =
-//        Assert.Throws<TokenizeError>(fun _ -> lexer["?"] |> ignore) |> ignore
-//       
+    //Lexer Testing -----------------------------------------------------------
+    [<Test>]
+    member this.GivenLexer_WhenPassedEmptyExpression_ReturnTupleOfEmptyLists() =
+        let result = lexer [""]
+        Assert.That(result, Is.EqualTo([]))
+        
+    [<Test>]
+    member this.GivenLexer_WhenPassedValidExpression_ReturnCorrectTuple() =
+        let result = lexer ["1";"0";"+";"1"]
+        Assert.That(result, Is.EqualTo(([Number 10.0; Plus; Number 1.0])))
+        
+    [<Test>]
+    member this.GivenLexer_WhenPassedInvalidExpression_ThrowTokenizeError() =
+        Assert.Throws<TokenizeError>(fun _ -> lexer["?"] |> ignore) |> ignore
