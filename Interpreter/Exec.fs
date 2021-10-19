@@ -24,6 +24,17 @@ let unary operator operand : float =
 let numStack = Stack<float>()
 let opStack = Stack<terminal>()
 
+let performOperation operator =
+    match operator with
+    | UnaryMinus
+    | UnaryPlus ->
+        let operand = numStack.Pop()
+        unary operator operand
+    | _ ->
+        let op1 = numStack.Pop()
+        let op2 = numStack.Pop()
+        calculate operator op2 op1
+
 let precedenceAssociativity =
     Map [(UnaryMinus, (4, "r"))
          (UnaryPlus, (4, "r"))
@@ -48,22 +59,9 @@ let rec reduce tokens =
         | Rpar ->
             while (opStack.Peek()) <> Lpar do
                 let operator = opStack.Pop()
-                let op1 = numStack.Pop()
-                match operator with
-                | UnaryMinus
-                | UnaryPlus ->
-                    numStack.Push(unary operator op1)
-                | _ ->
-                    let op2 = numStack.Pop()
-                    numStack.Push(calculate operator op2 op1)
+                numStack.Push(performOperation operator)
             opStack.Pop() |> ignore
-        | UnaryMinus
-        | UnaryPlus  
-        | Divide
-        | Times
-        | Minus
-        | Plus
-        | Exponent ->
+        | _ ->
             if opStack.Count = 0 then opStack.Push(head)
             else
                 let newOpAssoc = getAssociativity head
@@ -73,14 +71,7 @@ let rec reduce tokens =
                       (newOpPrec < getPrecedence (opStack.Peek())
                        || (newOpPrec = getPrecedence (opStack.Peek()) && newOpAssoc = "l")) do
                     let operator = opStack.Pop()
-                    let op1 = numStack.Pop()
-                    match operator with
-                    | UnaryMinus
-                    | UnaryPlus ->
-                        numStack.Push(unary operator op1)
-                    | _ ->
-                        let op2 = numStack.Pop()
-                        numStack.Push(calculate operator op2 op1)
+                    numStack.Push(performOperation operator)
                 
                 opStack.Push(head)           
         | _ -> raise ExecError
@@ -88,15 +79,6 @@ let rec reduce tokens =
     | [] ->
         while opStack.Count > 0 do
             let operator = opStack.Pop()
-            match operator with
-            | UnaryMinus
-            | UnaryPlus ->
-                let operand = numStack.Pop()
-                numStack.Push(unary operator operand)
-            | _ ->
-                let op1 = numStack.Pop()
-                let op2 = numStack.Pop()
-                numStack.Push(calculate operator op2 op1)
-        
+            numStack.Push(performOperation operator)
+
         numStack.Pop()
-        
