@@ -21,26 +21,42 @@ let unary operator operand : float =
         
 let performOperation oplist (numlist : float list) =
     match oplist with
-    | [] -> oplist, numlist
-    | Lpar :: _ -> oplist, numlist
+    | []
+    | Rpar :: _ 
+    | Lpar :: _ -> raise ExecError
     | UnaryMinus :: tail
     | UnaryPlus :: tail ->
         let operator = oplist.[0]
-        let operand = numlist.[0]
-        if numlist.Length > 0 then
+        match numlist with
+        | [] -> raise ExecError
+        | [ _; ] ->
+            let operand = numlist.[0]
+            tail, (unary operator operand) :: []
+        | _ ->
+            let operand = numlist.[0]
             tail, ((unary operator operand) :: numlist.[1 .. ])
-        else tail, (unary operator operand) :: []
     | head :: tail ->
-        let operand1 = numlist.[0]
-        let operand2 = numlist.[1]
-        if numlist.Length > 1 then
+        match numlist with
+        | []
+        | [ _; ] -> raise ExecError
+        | [ _; _; ] ->
+            let operand1 = numlist.[0]
+            let operand2 = numlist.[1]
+            tail, ((calculate head operand2 operand1) :: [])
+        | _ ->
+            let operand1 = numlist.[0]
+            let operand2 = numlist.[1]
             tail, ((calculate head operand2 operand1) :: numlist.[2 .. ])
-        else tail, ((calculate head operand2 operand1) :: [])
+
         
 let rec evaluateBrackets oplist (numlist : float list) =
     match oplist with
-    | [] -> oplist, numlist
-    | Lpar :: tail -> tail, numlist
+    | []
+    | Rpar :: _ -> raise ExecError
+    | Lpar :: tail ->
+        match numlist with
+        | _ :: _ -> tail, numlist
+        | [] -> raise ExecError
     | _ ->
         let results = performOperation oplist numlist
         match results with
@@ -100,7 +116,11 @@ let rec reduceRecursive tokens oplist numlist =
         | _ -> raise ExecError
     | [] ->
         match oplist with
-        | [] -> numlist.[0]
+        | [] ->
+            match numlist with
+            | [ _ ] -> numlist.[0]
+            | _ -> raise ExecError
+        | Lpar :: _ -> raise ExecError
         | _ ->
             let results = performOperation oplist numlist
             match results with

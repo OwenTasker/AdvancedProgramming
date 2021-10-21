@@ -1,5 +1,6 @@
 ﻿module Interpreter.Tests.ExecTests
 
+open System.Collections.Generic
 open NUnit.Framework
 open Interpreter.Exec
 open Interpreter.Util
@@ -62,6 +63,14 @@ let CalculateExponentData =
         TestCaseData(-7, 2, 49.0)
     ]
     
+let InvalidCalculateData =
+    [
+        TestCaseData(Lpar)
+        TestCaseData(Rpar)
+        TestCaseData(UnaryPlus)
+        TestCaseData(UnaryMinus)
+    ]
+    
 [<TestCaseSource("CalculatePlusData")>]
 let GivenCalculate_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
     let result = calculate Plus op1 op2
@@ -87,7 +96,11 @@ let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2:
     let result = calculate Exponent op1 op2
     Assert.That(result, Is.EqualTo(res))
     
-let UnaryData =
+[<TestCaseSource("InvalidCalculateData")>]
+let GivenCalculate_WhenPassedInvalidOperator_RaiseCalculateError(operator: terminal) =
+    Assert.Throws<CalculateError>(fun () -> calculate operator 1.0 1.0 |> ignore) |> ignore
+    
+let ValidUnaryData =
     [
         TestCaseData(UnaryMinus, 1, -1)
         TestCaseData(UnaryMinus, -1, 1)
@@ -95,12 +108,27 @@ let UnaryData =
         TestCaseData(UnaryPlus, -1, -1)
     ]
     
-[<TestCaseSource("UnaryData")>]
+let InvalidUnaryData =
+    [
+        TestCaseData(Plus)
+        TestCaseData(Minus)
+        TestCaseData(Times)
+        TestCaseData(Divide)
+        TestCaseData(Exponent)
+        TestCaseData(Lpar)
+        TestCaseData(Rpar)
+    ]
+    
+[<TestCaseSource("ValidUnaryData")>]
 let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2: float, res: float) =
     let result = unary op1 op2
     Assert.That(result, Is.EqualTo(res))
     
-let ReduceCases =
+[<TestCaseSource("InvalidUnaryData")>]
+let GivenUnary_WhenPassedInvalidOperator_RaiseUnaryError(operator: terminal) =
+    Assert.Throws<UnaryError>(fun () -> unary operator 1.0 |> ignore) |> ignore
+    
+let ValidReduceCases =
     [
         //SIMPLE ADDITION CASES
         TestCaseData([Number 1.0; Plus; Number 1.0], 2.0)
@@ -207,8 +235,189 @@ let ReduceCases =
         TestCaseData([UnaryMinus; Number 2.0; Exponent; Number 3.0], -8)
     ]
     
-[<TestCaseSource("ReduceCases")>]
-let GivenReduce_WhenPassedTokens_ReturnCorrectAnswer(tokens: terminal list, expected: float) =
+[<TestCaseSource("ValidReduceCases")>]
+let GivenReduce_WhenPassedValidTokens_ReturnCorrectAnswer(tokens: terminal list, expected: float) =
     let result = reduce tokens
     Assert.That(result, Is.EqualTo(expected))
-        
+    
+[<TestCaseSource("ValidReduceCases")>]
+let GivenReduceRecursive_WhenPassedValidTokens_ReturnCorrectAnswer(tokens: terminal list, expected: float) =
+    let result = reduceRecursive tokens [] []
+    Assert.That(result, Is.EqualTo(expected))
+    
+let InvalidReduceCases =
+    [
+        TestCaseData([Plus;])
+        TestCaseData([Minus;])
+        TestCaseData([Times;])
+        TestCaseData([Divide;])
+        TestCaseData([Exponent;])
+        TestCaseData([Lpar])
+        TestCaseData([Rpar])
+        TestCaseData([UnaryPlus])
+        TestCaseData([UnaryMinus])
+        TestCaseData([Lpar; Rpar;])
+        TestCaseData([Lpar; Plus; Rpar])
+        TestCaseData([Plus; Number 5.0;])
+        TestCaseData([Number 1.0; Plus;])
+        TestCaseData([Minus; Number 5.0;])
+        TestCaseData([Number 1.0; Minus;])
+        TestCaseData([Times; Number 5.0;])
+        TestCaseData([Number 1.0; Times;])
+        TestCaseData([Divide; Number 5.0;])
+        TestCaseData([Number 1.0; Divide;])
+        TestCaseData([Lpar; Number 1.0; Plus; Number 1.0])
+        TestCaseData([Lpar; Number 1.0; Plus; Number 1.0])
+        TestCaseData([Number 5.0; Lpar; Number 5.0; Plus; Number 6.0; Rpar;])
+        TestCaseData([Lpar; Number 5.0; Plus; Number 6.0; Rpar; Number 5.0])
+        TestCaseData([Number 2.0; Exponent])
+        TestCaseData([Exponent; Number 5.0;])
+    ]
+    
+[<TestCaseSource("InvalidReduceCases")>]
+let GivenReduce_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
+    Assert.Throws<ExecError>(fun () -> reduce tokens |> ignore) |> ignore
+    
+[<TestCaseSource("InvalidReduceCases")>]
+let GivenReduceRecursive_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
+    Assert.Throws<ExecError>(fun () -> reduceRecursive tokens [] [] |> ignore) |> ignore
+
+let ValidPerformOperationCases =
+    [
+        TestCaseData([Plus;], [1.0; 2.0;], (([] : terminal list), [3.0;]))
+        TestCaseData([Minus;], [2.0; 4.0;], (([] : terminal list), [2.0;]))
+        TestCaseData([Times;], [2.0; 4.0;], (([] : terminal list), [8.0;]))
+        TestCaseData([Divide;], [2.0; 4.0;], (([] : terminal list), [2.0;]))
+        TestCaseData([Exponent;], [2.0; 4.0;], (([] : terminal list), [16.0;]))
+        TestCaseData([UnaryPlus;], [2.0;], (([] : terminal list), [2.0;]))
+        TestCaseData([UnaryMinus;], [3.0;], (([] : terminal list), [-3.0;]))
+        TestCaseData([Plus; Plus;], [1.0; 2.0;], ([Plus;], [3.0;]))
+        TestCaseData([Minus; Plus;], [2.0; 4.0;], ([Plus;], [2.0;]))
+        TestCaseData([Times; Plus;], [2.0; 4.0;], ([Plus;], [8.0;]))
+        TestCaseData([Divide; Plus;], [2.0; 4.0;], ([Plus;], [2.0;]))
+        TestCaseData([Exponent; Plus;], [2.0; 4.0;], ([Plus;], [16.0;]))
+        TestCaseData([UnaryPlus; Plus;], [2.0;], ([Plus;], [2.0;]))
+        TestCaseData([UnaryMinus; Plus;], [3.0;], ([Plus;], [-3.0;]))
+        TestCaseData([Plus;], [1.0; 2.0; 2.0;], (([] : terminal list), [3.0; 2.0;]))
+        TestCaseData([Minus;], [2.0; 4.0; 2.0;], (([] : terminal list), [2.0; 2.0;]))
+        TestCaseData([Times;], [2.0; 4.0; 2.0;], (([] : terminal list), [8.0; 2.0;]))
+        TestCaseData([Divide;], [2.0; 4.0; 2.0;], (([] : terminal list), [2.0; 2.0;]))
+        TestCaseData([Exponent;], [2.0; 4.0; 2.0;], (([] : terminal list), [16.0; 2.0;]))
+        TestCaseData([UnaryPlus;], [2.0; 2.0;], (([] : terminal list), [2.0; 2.0;]))
+        TestCaseData([UnaryMinus;], [3.0; 2.0;], (([] : terminal list), [-3.0; 2.0;]))
+    ]
+    
+[<TestCaseSource("ValidPerformOperationCases")>]
+let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(opList: terminal list, numList: float list, res: terminal list * float list) =
+    let result = performOperation opList numList
+    Assert.That(result, Is.EqualTo(res))
+    
+let InvalidPerformOperationsCases =
+    [
+        TestCaseData(([] : terminal list), ([] : float list))
+        TestCaseData(([] : terminal list), [1.0;])
+        TestCaseData(([] : terminal list), [1.0; 2.0;])
+        TestCaseData([Rpar;], ([] : float list))
+        TestCaseData([Rpar], [1.0;])
+        TestCaseData([Rpar], [1.0; 2.0;])
+        TestCaseData([Lpar;], ([] : float list))
+        TestCaseData([Lpar], [1.0;])
+        TestCaseData([Lpar], [1.0; 2.0;])
+        TestCaseData([Plus;], ([] : float list))
+        TestCaseData([Plus;], [1.0;])
+        TestCaseData([Minus;], ([] : float list))
+        TestCaseData([Minus], [1.0;])
+        TestCaseData([Times;], ([] : float list))
+        TestCaseData([Times;], [1.0;])
+        TestCaseData([Divide;], ([] : float list))
+        TestCaseData([Divide], [1.0;])
+        TestCaseData([Exponent;], ([] : float list))
+        TestCaseData([Exponent;], [1.0;])
+        TestCaseData([UnaryPlus;], ([] : float list))
+        TestCaseData([UnaryMinus], ([] : float list))
+    ]
+    
+[<TestCaseSource("InvalidPerformOperationsCases")>]
+let GivenPerformOperations_WhenPassedIncompleteArguments_RaiseExecError(opList: terminal list, numList: float list) =
+    Assert.Throws<ExecError>(fun () -> performOperation opList numList |> ignore) |> ignore
+    
+let ValidGetPrecedenceData =
+    [
+        TestCaseData(UnaryMinus, 4)
+        TestCaseData(UnaryPlus, 4)
+        TestCaseData(Exponent, 3)
+        TestCaseData(Times, 2)
+        TestCaseData(Divide, 2)
+        TestCaseData(Plus, 1)
+        TestCaseData(Minus, 1)
+    ]
+    
+let ValidGetAssociativityData =
+    [
+        TestCaseData(UnaryMinus, "r")
+        TestCaseData(UnaryPlus, "r")
+        TestCaseData(Exponent, "r")
+        TestCaseData(Times, "l")
+        TestCaseData(Divide, "l")
+        TestCaseData(Plus, "l")
+        TestCaseData(Minus, "l")
+    ]
+    
+[<TestCaseSource("ValidGetPrecedenceData")>]
+let GivenGetPrecedence_WhenPassedOperatorWithPrecedence_ReturnCorrectPrecedence(operator: terminal, precedence: int) =
+    let result = getPrecedence operator
+    Assert.That(result, Is.EqualTo(precedence))
+    
+[<TestCaseSource("ValidGetAssociativityData")>]
+let GivenGetAssociativity_WhenPassedOperatorWithAssociativity_ReturnCorrectAssociativity(operator: terminal, associativity: string) =
+    let result = getAssociativity operator
+    Assert.That(result, Is.EqualTo(associativity))
+    
+let InvalidGetPrecedenceAssociativityCases =
+    [
+        TestCaseData(Lpar)
+        TestCaseData(Rpar)
+        TestCaseData(Number 1.0)
+    ]
+
+[<TestCaseSource("InvalidGetPrecedenceAssociativityCases")>]
+let GivenGetPrecedence_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(operator: terminal) =
+    Assert.Throws<KeyNotFoundException>(fun () -> getPrecedence operator |> ignore) |> ignore
+    
+[<TestCaseSource("InvalidGetPrecedenceAssociativityCases")>]
+let GivenGetAssociativity_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(operator: terminal) =
+    Assert.Throws<KeyNotFoundException>(fun () -> getAssociativity operator |> ignore) |> ignore
+    
+let ValidEvaluateBracketsCases =
+    [
+        TestCaseData([Lpar;], [1.0; 2.0;], (([] : terminal list), [1.0; 2.0;]))
+        TestCaseData([Plus; Lpar;], [1.0; 2.0;], (([] : terminal list), [3.0;]))
+        TestCaseData([Divide; Times; Plus; Lpar;], [1.0; 2.0; 4.0; 4.0;], (([] : terminal list), [12.0;]))
+        TestCaseData([Lpar; Plus;], [1.0; 2.0;], ([Plus;], [1.0; 2.0;]))
+        TestCaseData([Plus; Lpar; Minus], [1.0; 2.0;], ([Minus;], [3.0;]))
+        TestCaseData([Divide; Times; Plus; Lpar; Plus; Times; Divide;], [1.0; 2.0; 4.0; 4.0;], ([Plus; Times; Divide;], [12.0;]))
+    ]
+    
+[<TestCaseSource("ValidEvaluateBracketsCases")>]
+let GivenEvaluateBrackets_WhenPassedValidBracketedExpression_ThenReturnCorrectTuple(opList: terminal list, numList: float list, outLists: terminal list * float list) =
+    let result = evaluateBrackets opList numList
+    Assert.That(result, Is.EqualTo(outLists))
+
+let InvalidEvaluateBracketsCases =
+    [
+        TestCaseData(([] : terminal list), ([] : float list))
+        TestCaseData(([] : terminal list), [1.0;])
+        TestCaseData(([] : terminal list), [1.0; 2.0;])
+        TestCaseData([Rpar;], ([] : float list))
+        TestCaseData([Rpar;], [1.0;])
+        TestCaseData([Rpar;], [1.0; 2.0;])
+        TestCaseData([UnaryMinus; Lpar;], ([] : float list))
+        TestCaseData([Plus; Lpar;], [1.0;])
+        TestCaseData([Plus; Times; Divide; Lpar;], [1.0; 2.0; 4.0;])
+        TestCaseData([Plus;], [1.0; 2.0;])
+        TestCaseData([Divide; Times; Plus;], [1.0; 2.0; 4.0; 4.0;])
+    ]
+    
+[<TestCaseSource("InvalidEvaluateBracketsCases")>]
+let GivenEvaluateBrackets_WhenPassedInvalidExpression_RaiseExecError(opList: terminal list, numList: float list) =
+    Assert.Throws<ExecError>(fun () -> evaluateBrackets opList numList |> ignore) |> ignore
