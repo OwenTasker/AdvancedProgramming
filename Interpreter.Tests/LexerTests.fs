@@ -137,63 +137,7 @@ let GivenScan_WhenPassedInput_ReturnCorrectTokens(op1, res) =
     let result = scan op1 []
     Assert.That(result, Is.EqualTo(res))
     
-let InvalidTokens =
-    [
-        TestCaseData("?")
-        TestCaseData("_")
-        TestCaseData("[")
-        TestCaseData("]")
-        TestCaseData("{")
-        TestCaseData("}")
-        TestCaseData("£")
-        TestCaseData("$")
-        TestCaseData("@")
-        TestCaseData("<")
-        TestCaseData("%")
-        TestCaseData("\"")
-        TestCaseData("!")
-        TestCaseData("'")
-        TestCaseData("|")
-        TestCaseData("\\")
-        TestCaseData(":")
-        TestCaseData(";")
-        TestCaseData("#")
-        TestCaseData("~")
-        TestCaseData("¬")
-        TestCaseData("`")
-    ]
-    
-[<TestCaseSource("InvalidTokens")>]
-let GivenTokenize_WhenPassedInvalidCharacter_ThenRaiseTokenizeError(token: string) =
-    Assert.Throws<TokenizeError>(fun () -> tokenize [token] |> ignore) |> ignore
-    
-[<TestCaseSource("InvalidTokens")>]
-let GivenScan_WhenPassedInvalidCharacter_ThenRaiseScanError(token: string) =
-    Assert.Throws<ScanError>(fun () -> scan [token] [] |> ignore) |> ignore
-    
-let FormatExceptionCases =
-    [
-        TestCaseData("a2452Bb")
-        TestCaseData("24tps")
-    ]
-
-[<TestCaseSource("FormatExceptionCases")>]
-let GivenScan_WhenPassedExpressionConsistingOfInvalidWordsOrLetters_ThenFailWithFormatException(token: string) =
-    Assert.Throws<System.FormatException>(fun () -> scan [token] [] |> ignore) |> ignore
-    
-let LexerCases =
-    [
-        TestCaseData(([]: string list), ([]: terminal list))
-        TestCaseData([""], ([]: terminal list))
-        TestCaseData(["1"; "0"; "+"; "1";], [Number 10.0; Plus; Number 1.0;])
-    ]
-    
-[<TestCaseSource("LexerCases")>]
-let GivenLexer_WhenPassedValidCharacterList_ReturnCorrectTerminals(characters: string list, terminals: terminal list) =
-    let result = lexer characters
-    Assert.That(result, Is.EqualTo(terminals))
-    
-let LexerErrorCases =
+let ErrorCases =
     [
         TestCaseData(["?"])
         TestCaseData(["_"])
@@ -217,8 +161,41 @@ let LexerErrorCases =
         TestCaseData(["~"])
         TestCaseData(["¬"])
         TestCaseData(["`"])
+        TestCaseData(["1"; "?"])
+        TestCaseData(["1"; "?"])
     ]
     
-[<TestCaseSource("LexerErrorCases")>]
+[<TestCaseSource("ErrorCases")>]
+let GivenTokenize_WhenPassedInvalidCharacter_ThenRaiseTokenizeError(characters: string list) =
+    Assert.Throws<TokenizeError>(fun () -> tokenize characters |> ignore) |> ignore
+    
+[<TestCaseSource("ErrorCases")>]
+let GivenScan_WhenPassedInvalidCharacter_ThenRaiseScanError(token: string list) =
+    Assert.Throws<ScanError>(fun () -> scan token [] |> ignore) |> ignore
+    
+let FormatExceptionCases =
+    [
+        TestCaseData("a2452Bb")
+        TestCaseData("24tps")
+    ]
+
+[<TestCaseSource("FormatExceptionCases")>]
+let GivenScan_WhenPassedExpressionConsistingOfInvalidWordsOrLetters_ThenFailWithFormatException(token: string) =
+    Assert.Throws<System.FormatException>(fun () -> scan [token] [] |> ignore) |> ignore
+    
+let LexerCases =
+    [
+        TestCaseData(([]: string list), ([]: terminal list))
+        TestCaseData([""], ([]: terminal list))
+        TestCaseData(["1"; "0"; "+"; "1";], [Number 10.0; Plus; Number 1.0;])
+    ]
+    
+[<TestCaseSource("LexerCases")>]
+let GivenLexer_WhenPassedValidCharacterList_ReturnCorrectTerminals(characters: string list, terminals: terminal list) =
+    let result = lexer characters
+    Assert.That(result, Is.EqualTo(terminals))
+    
+    
+[<TestCaseSource("ErrorCases")>]
 let GivenLexer_WhenPassedCharactersRepresentingInvalidExpression_RaiseTokenizeError(characters: string list) =
     Assert.Throws<TokenizeError>(fun () -> lexer characters |> ignore) |> ignore
