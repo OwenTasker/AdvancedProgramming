@@ -1,7 +1,6 @@
 ﻿module Interpreter.Lexer
 
 open System
-open System.Text.RegularExpressions
 open Interpreter.Util
 
 
