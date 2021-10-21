@@ -2,17 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Interpreter;
 using Microsoft.FSharp.Collections;
 
@@ -57,21 +48,34 @@ namespace WpfApp1
         {
             if (!(inputText.Text == "Enter query here..." || String.IsNullOrEmpty(inputText.Text) || String.IsNullOrWhiteSpace(inputText.Text)))
             {
-                var input = inputText.Text;
-                var inputList = input.Select(c => c.ToString()).ToList();
-                var inputfSharpList = ListModule.OfSeq(inputList);
-                consoleText.AppendText(" " + input + "\n");
-                consoleText.ScrollToEnd();
-                inputText.Clear();
-
                 // 1. send query to lexer/parser/executor
                 // 2a. if valid, put received answer on new line
                 // 2b. if invalid, put out error
-                var lexerOutput = Lexer.lexer(inputfSharpList);
-                var execOutput = Exec.reduce(lexerOutput);
-                consoleText.AppendText(execOutput.ToString(CultureInfo.InvariantCulture) + "\n");
-                consoleText.AppendText(">>");
-                inputText.Text = "Enter query here...";
+                var input = inputText.Text;
+
+                try
+                {
+                    var inputList = input.Select(c => c.ToString()).ToList();
+                    var inputfSharpList = ListModule.OfSeq(inputList);
+                    var lexerOutput = Lexer.lexer(inputfSharpList);
+                    Parser.expression(lexerOutput);
+                    consoleText.AppendText(" " + input + "\n");
+                    consoleText.ScrollToEnd();
+                    inputText.Clear();
+                    var execOutput = Exec.reduce(lexerOutput);
+                    consoleText.AppendText(execOutput.ToString(CultureInfo.InvariantCulture) + "\n>>");
+                    inputText.Text = "Enter query here...";
+                }
+                catch (Util.TokenizeError exception)
+                {
+                    consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                }
+                catch (Util.ScanError exception)
+                {
+                    consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                }
+
+                
             }
         }
 
