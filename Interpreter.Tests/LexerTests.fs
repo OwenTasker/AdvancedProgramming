@@ -29,7 +29,7 @@ let TokenizeTestData =
         TestCaseData([")"], [")"])
         TestCaseData(["="], ["="])
         TestCaseData([">"], [">"])
-        TestCaseData(["-";">"], ["-";">"])
+        TestCaseData(["-";">"], ["->"])
         TestCaseData(["+";"+"], ["+";"+"])
         TestCaseData(["*";"*"], ["*";"*"])
         TestCaseData(["+";"*"], ["+";"*"])
@@ -46,7 +46,7 @@ let TokenizeTestData =
         TestCaseData(["1";".";"2";"5";"+";"1"], ["1.25"; "+"; "1"])
         TestCaseData(["1";".";"2";"5";"+";"1";"2";"5"], ["1.25"; "+"; "125"])
         TestCaseData([".";"2";"5";"+";"1";"2";"5"], [".25"; "+"; "125"])
-        TestCaseData(["T";"h";"i";"s";" ";"-";">";"2";"x"],["This";"-";">";"2";"x"])
+        TestCaseData(["T";"h";"i";"s";" ";"-";">";"2";"x"],["This";"->";"2";"x"])
     ]
     
 [<TestCaseSource("TokenizeTestData")>]
@@ -66,7 +66,7 @@ let OperatorCases =
         TestCaseData([")"],[Rpar])
         TestCaseData(["/"],[Divide])
         TestCaseData(["="],[Equals])
-        TestCaseData(["-";">"],[Assign])
+        TestCaseData(["->"],[Assign])
     ]
     
 let UnaryCases =   
@@ -88,10 +88,10 @@ let FunctionCases =
     ]
 let AssignCases =
     [
-        TestCaseData(["Word";"-";">";"54"],[Word "Word"; Assign; Number 54.0])
-        TestCaseData(["-";">";"-";">";"-";">";],[Assign; Assign; Assign])
-        TestCaseData(["-";">";"-";"-";"-";">";],[Assign; UnaryMinus; UnaryMinus; Assign])
-        TestCaseData(["54";"-";">";"Word";],[Number 54.0; Assign; Word "Word"])
+        TestCaseData(["Word";"->";"54"],[Word "Word"; Assign; Number 54.0])
+        TestCaseData(["->";"->";"->";],[Assign; Assign; Assign])
+        TestCaseData(["->";"-";"-";"->";],[Assign; UnaryMinus; UnaryMinus; Assign])
+        TestCaseData(["54";"->";"Word";],[Number 54.0; Assign; Word "Word"])
     ]
     
 let WordCases =
