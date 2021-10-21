@@ -19,18 +19,7 @@ let TokenizeTestData =
         TestCaseData(["7"], ["7"])
         TestCaseData(["8"], ["8"])
         TestCaseData(["9"], ["9"])
-        TestCaseData(["0"], ["0"])
-        
-        TestCaseData(["1";"2"], ["12"])
-        TestCaseData(["1";"2";"3"], ["123"])
-        TestCaseData(["1";"2";"3";"4"], ["1234"])
-        TestCaseData(["1";"2";"3";"4";"5"], ["12345"])
-        TestCaseData(["1";"2";"3";"4";"5";"6"], ["123456"])
-        TestCaseData(["1";"2";"3";"4";"5";"6";"7"], ["1234567"])
-        TestCaseData(["1";"2";"3";"4";"5";"6";"7";"8"], ["12345678"])
-        TestCaseData(["1";"2";"3";"4";"5";"6";"7";"8";"9"], ["123456789"])
-        TestCaseData(["1";"2";"3";"4";"5";"6";"7";"8";"9";"0"], ["1234567890"])
-        
+        TestCaseData(["0"], ["0"])        
         TestCaseData(["+"], ["+"])
         TestCaseData(["*"], ["*"])
         TestCaseData(["/"], ["/"])
@@ -40,33 +29,16 @@ let TokenizeTestData =
         TestCaseData([")"], [")"])
         TestCaseData(["="], ["="])
         TestCaseData([">"], [">"])
-        
+        TestCaseData(["-";">"], ["->"])
         TestCaseData(["+";"+"], ["+";"+"])
         TestCaseData(["*";"*"], ["*";"*"])
-        TestCaseData(["-";">"], ["-";">"])
-        
         TestCaseData(["+";"*"], ["+";"*"])
         TestCaseData(["+";"*";"/"], ["+";"*";"/"])
-        TestCaseData(["+";"*";"/";"-"], ["+";"*";"/";"-";])
-        TestCaseData(["+";"*";"/";"-";"^"], ["+";"*";"/";"-";"^"])
-        TestCaseData(["+";"*";"/";"-";"^";"("], ["+";"*";"/";"-";"^";"("])
-        TestCaseData(["+";"*";"/";"-";"^";"(";")"], ["+";"*";"/";"-";"^";"(";")"])
-        TestCaseData(["+";"*";"/";"-";"^";"(";")";"="], ["+";"*";"/";"-";"^";"(";")";"="])
-        TestCaseData(["+";"*";"/";"-";"^";"(";")";"=";">"], ["+";"*";"/";"-";"^";"(";")";"=";">"])
-        
         TestCaseData(["a"], ["a"])
         TestCaseData(["A"], ["A"])
         TestCaseData(["a";"b"], ["ab"])
         TestCaseData(["A";"B"], ["AB"])
         TestCaseData(["a";"b";"c"], ["abc"])
-        TestCaseData(["A";"B";"C"], ["ABC"])
-        TestCaseData(["a";"b";"c";"d"], ["abcd"])
-        TestCaseData(["A";"B";"C";"D"], ["ABCD"])
-        TestCaseData(["a";"b";"c";"d";"e"], ["abcde"])
-        TestCaseData(["A";"B";"C";"D";"E"], ["ABCDE"])
-              
-        
-        TestCaseData(["1";"+";"1"], ["1";"+";"1"])
         TestCaseData(["1";"+";"1";"*";"1";"/";"1";"-";"1";"^";"1";"(";"1";")"],
                      ["1";"+";"1";"*";"1";"/";"1";"-";"1";"^";"1";"(";"1";")"])
         TestCaseData(["T";"h";"i";"s";" ";"i";"s";" ";"a";" ";"s";"e";"n";"t";"e";"n";"c";"e"],
@@ -74,17 +46,16 @@ let TokenizeTestData =
         TestCaseData(["1";".";"2";"5";"+";"1"], ["1.25"; "+"; "1"])
         TestCaseData(["1";".";"2";"5";"+";"1";"2";"5"], ["1.25"; "+"; "125"])
         TestCaseData([".";"2";"5";"+";"1";"2";"5"], [".25"; "+"; "125"])
-        TestCaseData(["T";"h";"i";"s";" ";"-";">";"2";"x"],["This";"-";">";"2";"x"])
-        
+        TestCaseData(["T";"h";"i";"s";" ";"-";">";"2";"x"],["This";"->";"2";"x"])
     ]
+    
 [<TestCaseSource("TokenizeTestData")>]
 let GivenTokenize_WhenPassedInput_ReturnCorrectTokens(op1, res) =
     let result = tokenize op1
     Assert.That(result, Is.EqualTo(res))
     
-let ScannerTestData =
+let OperatorCases =
     [
-        //Symbol Testing
         TestCaseData(["+"],[UnaryPlus])
         TestCaseData(["-"],[UnaryMinus])
         TestCaseData(["3";"+"],[Number 3.0;Plus])
@@ -95,29 +66,36 @@ let ScannerTestData =
         TestCaseData([")"],[Rpar])
         TestCaseData(["/"],[Divide])
         TestCaseData(["="],[Equals])
-        TestCaseData(["-";">"],[Assign])
-        
-        //Unary Symbol Testing
+        TestCaseData(["->"],[Assign])
+    ]
+    
+let UnaryCases =   
+    [
         TestCaseData(["+";"+";"+"], [UnaryPlus;UnaryPlus;UnaryPlus])
         TestCaseData(["-";"-";"-"], [UnaryMinus;UnaryMinus;UnaryMinus])
         TestCaseData(["-";"(";"3";"+";"4";")";"-";"3"],
                      [UnaryMinus;Lpar;Number 3.0;Plus;Number 4.0;Rpar;Minus;Number 3.0])
-        
-        //Function Testing
+    ]
+    
+let FunctionCases =
+    [
         TestCaseData(["ceil"], [Function "ceil"])
         TestCaseData(["floor"], [Function "floor"])
         TestCaseData(["sqrt"], [Function "sqrt"])
         TestCaseData(["round"], [Function "round"])
         TestCaseData(["ceil"; "3.222"; "floor"; "3.222"],
                      [Function "ceil"; Number 3.222; Function "floor"; Number 3.222])
-        
-        //Assign Testing
-        TestCaseData(["Word";"-";">";"54"],[Word "Word"; Assign; Number 54.0])
-        TestCaseData(["-";">";"-";">";"-";">";],[Assign; Assign; Assign])
-        TestCaseData(["-";">";"-";"-";"-";">";],[Assign; UnaryMinus; UnaryMinus; Assign])
-        TestCaseData(["54";"-";">";"Word";],[Number 54.0; Assign; Word "Word"])
-        
-        //Word Testing
+    ]
+let AssignCases =
+    [
+        TestCaseData(["Word";"->";"54"],[Word "Word"; Assign; Number 54.0])
+        TestCaseData(["->";"->";"->";],[Assign; Assign; Assign])
+        TestCaseData(["->";"-";"-";"->";],[Assign; UnaryMinus; UnaryMinus; Assign])
+        TestCaseData(["54";"->";"Word";],[Number 54.0; Assign; Word "Word"])
+    ]
+    
+let WordCases =
+    [
         TestCaseData(["a"], [Word "a"])
         TestCaseData(["b"], [Word "b"])
         TestCaseData(["c"], [Word "c"])
@@ -130,8 +108,10 @@ let ScannerTestData =
         TestCaseData(["E"], [Word "E"])
         TestCaseData(["Word";"Word"], [Word "Word"; Word "Word"])
         TestCaseData(["Word";"5";"Word"], [Word "Word"; Number 5.0; Word "Word"])
-        
-        //Number Testing
+    ]
+    
+let NumberCases =
+    [
         TestCaseData(["1"], [Number 1.0])
         TestCaseData(["2"], [Number 2.0])
         TestCaseData(["3"], [Number 3.0])
@@ -147,83 +127,75 @@ let ScannerTestData =
         TestCaseData([".252"], [Number 0.252])
     ]
     
-[<TestCaseSource("ScannerTestData")>]
+[<TestCaseSource("OperatorCases")>]
+[<TestCaseSource("UnaryCases")>]
+[<TestCaseSource("FunctionCases")>]
+[<TestCaseSource("AssignCases")>]
+[<TestCaseSource("WordCases")>]
+[<TestCaseSource("NumberCases")>]
 let GivenScan_WhenPassedInput_ReturnCorrectTokens(op1, res) =
     let result = scan op1 []
     Assert.That(result, Is.EqualTo(res))
     
+let ErrorCases =
+    [
+        TestCaseData(["?"])
+        TestCaseData(["_"])
+        TestCaseData(["["])
+        TestCaseData(["]"])
+        TestCaseData(["{"])
+        TestCaseData(["}"])
+        TestCaseData(["£"])
+        TestCaseData(["$"])
+        TestCaseData(["@"])
+        TestCaseData(["<"])
+        TestCaseData(["%"])
+        TestCaseData(["\""])
+        TestCaseData(["!"])
+        TestCaseData(["'"])
+        TestCaseData(["|"])
+        TestCaseData(["\\"])
+        TestCaseData([":"])
+        TestCaseData([";"])
+        TestCaseData(["#"])
+        TestCaseData(["~"])
+        TestCaseData(["¬"])
+        TestCaseData(["`"])
+        TestCaseData(["1"; "?"])
+        TestCaseData(["1"; "?"])
+    ]
     
-
-type LexerErrorTests ()=
-    //Tokenizer Error Testing ---------------------------------------------------------
-    [<Test>]
-    member this.GivenTokenize_WhenPassedExpressionConsistingOfInvalidTokens_ThenFailWithTokenizeError() =
-        Assert.Throws<TokenizeError>(fun () -> tokenize["?"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["_"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["["] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["]"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["{"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["}"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["£"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["$"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["@"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["<"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["%"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["\""] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["!"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["'"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["|"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["\\"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize[":"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize[";"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["#"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["~"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["¬"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize["`"] |> ignore) |> ignore
+[<TestCaseSource("ErrorCases")>]
+let GivenTokenize_WhenPassedInvalidCharacter_ThenRaiseTokenizeError(characters: string list) =
+    Assert.Throws<TokenizeError>(fun () -> tokenize characters |> ignore) |> ignore
     
+[<TestCaseSource("ErrorCases")>]
+let GivenScan_WhenPassedInvalidCharacter_ThenRaiseScanError(token: string list) =
+    Assert.Throws<ScanError>(fun () -> scan token [] |> ignore) |> ignore
+    
+let FormatExceptionCases =
+    [
+        TestCaseData("a2452Bb")
+        TestCaseData("24tps")
+    ]
 
-    [<Test>]
-    member this.GivenScanner_WhenPassedExpressionConsistingOfInvalidTokens_ThenFailWithScanningError() =
-        Assert.Throws<ScanError>(fun () -> scan["?"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["_"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["["][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["]"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["{"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["}"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["£"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["$"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["@"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["<"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan[">"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["%"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["\""][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["!"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["'"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["|"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["\\"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan[":"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan[";"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["#"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["~"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["¬"][] |> ignore) |> ignore
-        Assert.Throws<ScanError>(fun () -> scan["`"][] |> ignore) |> ignore
-        
-    [<Test>]
-    member this.GivenScanner_WhenPassedExpressionConsistingOfInvalidWordsOrLetters_ThenFailWithFormatException() =
-        Assert.Throws<System.FormatException>(fun () -> scan["a2452Bb"][] |> ignore) |> ignore 
-        Assert.Throws<System.FormatException>(fun () -> scan["24tps"][] |> ignore) |> ignore 
-
-    //Lexer Testing -----------------------------------------------------------
-    [<Test>]
-    member this.GivenLexer_WhenPassedEmptyExpression_ReturnTupleOfEmptyLists() =
-        let result = lexer [""]
-        Assert.That(result, Is.EqualTo([]))
-        
-    [<Test>]
-    member this.GivenLexer_WhenPassedValidExpression_ReturnCorrectTuple() =
-        let result = lexer ["1";"0";"+";"1"]
-        Assert.That(result, Is.EqualTo([Number 10.0; Plus; Number 1.0]))
-        
-    [<Test>]
-    member this.GivenLexer_WhenPassedInvalidExpression_ThrowTokenizeError() =
-        Assert.Throws<TokenizeError>(fun _ -> lexer["?"] |> ignore) |> ignore
+[<TestCaseSource("FormatExceptionCases")>]
+let GivenScan_WhenPassedExpressionConsistingOfInvalidWordsOrLetters_ThenFailWithFormatException(token: string) =
+    Assert.Throws<System.FormatException>(fun () -> scan [token] [] |> ignore) |> ignore
+    
+let LexerCases =
+    [
+        TestCaseData(([]: string list), ([]: terminal list))
+        TestCaseData([""], ([]: terminal list))
+        TestCaseData(["1"; "0"; "+"; "1";], [Number 10.0; Plus; Number 1.0;])
+    ]
+    
+[<TestCaseSource("LexerCases")>]
+let GivenLexer_WhenPassedValidCharacterList_ReturnCorrectTerminals(characters: string list, terminals: terminal list) =
+    let result = lexer characters
+    Assert.That(result, Is.EqualTo(terminals))
+    
+    
+[<TestCaseSource("ErrorCases")>]
+let GivenLexer_WhenPassedCharactersRepresentingInvalidExpression_RaiseTokenizeError(characters: string list) =
+    Assert.Throws<TokenizeError>(fun () -> lexer characters |> ignore) |> ignore

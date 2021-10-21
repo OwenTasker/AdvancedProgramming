@@ -15,6 +15,10 @@ let rec tokenize input =
         let h1 = head.[head.Length-1].ToString();
         match h1 with
         | " " -> tokenize tail
+        | "-" ->
+            match tail with
+            | ">" :: tailTail -> head + ">" :: tokenize tailTail
+            | _ -> head :: tokenize tail
         | SymbolMatch _ ->  head :: tokenize tail
         | NumberMatchLex _ ->
             if tail.Length > 0 then(
@@ -59,21 +63,11 @@ let rec scan tokens output  =
                     | _ -> scan tokensTail (UnaryPlus :: output)
             else scan tokensTail (UnaryPlus :: output)
         | "-" ->
-            if tokensTail.Length > 0 then
-                    match tokensTail.[0] with
-                    | ">" -> scan tokensTail.Tail (Assign :: output)
-                    | _ ->
-                        if output.Length > 0 then
-                           match output.[0] with
-                           | Rpar
-                           | Number _ -> scan tokensTail (Minus :: output)
-                           | _ -> scan tokensTail (UnaryMinus :: output)
-                        else scan tokensTail (UnaryMinus :: output)
-            elif output.Length > 0 then 
-                match output.[0] with 
-                | Rpar 
-                | Number _ -> scan tokensTail (Minus :: output)
-                | _ -> scan tokensTail (UnaryMinus :: output)
+            if output.Length > 0 then
+               match output.[0] with
+               | Rpar
+               | Number _ -> scan tokensTail (Minus :: output)
+               | _ -> scan tokensTail (UnaryMinus :: output)
             else scan tokensTail (UnaryMinus :: output)
         | "^" -> scan tokensTail (Exponent :: output)
         | "*" -> scan tokensTail (Times :: output)
@@ -81,10 +75,10 @@ let rec scan tokens output  =
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
         | "=" -> scan tokensTail (Equals :: output)
+        | "->" -> scan tokensTail (Assign :: output)
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
         | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
-        
         | _ -> raise (ScanError "We dont know how you did this so please let us know") 
         
 let lexer input =
