@@ -39,10 +39,12 @@ let TokenizeTestData =
         TestCaseData(["("], ["("])
         TestCaseData([")"], [")"])
         TestCaseData(["="], ["="])
+        TestCaseData([">"], [">"])
         
         TestCaseData(["+";"+"], ["+";"+"])
         TestCaseData(["*";"*"], ["*";"*"])
-              
+        TestCaseData(["-";">"], ["-";">"])
+        
         TestCaseData(["+";"*"], ["+";"*"])
         TestCaseData(["+";"*";"/"], ["+";"*";"/"])
         TestCaseData(["+";"*";"/";"-"], ["+";"*";"/";"-";])
@@ -50,6 +52,7 @@ let TokenizeTestData =
         TestCaseData(["+";"*";"/";"-";"^";"("], ["+";"*";"/";"-";"^";"("])
         TestCaseData(["+";"*";"/";"-";"^";"(";")"], ["+";"*";"/";"-";"^";"(";")"])
         TestCaseData(["+";"*";"/";"-";"^";"(";")";"="], ["+";"*";"/";"-";"^";"(";")";"="])
+        TestCaseData(["+";"*";"/";"-";"^";"(";")";"=";">"], ["+";"*";"/";"-";"^";"(";")";"=";">"])
         
         TestCaseData(["a"], ["a"])
         TestCaseData(["A"], ["A"])
@@ -71,6 +74,7 @@ let TokenizeTestData =
         TestCaseData(["1";".";"2";"5";"+";"1"], ["1.25"; "+"; "1"])
         TestCaseData(["1";".";"2";"5";"+";"1";"2";"5"], ["1.25"; "+"; "125"])
         TestCaseData([".";"2";"5";"+";"1";"2";"5"], [".25"; "+"; "125"])
+        TestCaseData(["T";"h";"i";"s";" ";"-";">";"2";"x"],["This";"-";">";"2";"x"])
         
     ]
 [<TestCaseSource("TokenizeTestData")>]
@@ -91,6 +95,7 @@ let ScannerTestData =
         TestCaseData([")"],[Rpar])
         TestCaseData(["/"],[Divide])
         TestCaseData(["="],[Equals])
+        TestCaseData(["-";">"],[Assign])
         
         //Unary Symbol Testing
         TestCaseData(["+";"+";"+"], [UnaryPlus;UnaryPlus;UnaryPlus])
@@ -105,6 +110,12 @@ let ScannerTestData =
         TestCaseData(["round"], [Function "round"])
         TestCaseData(["ceil"; "3.222"; "floor"; "3.222"],
                      [Function "ceil"; Number 3.222; Function "floor"; Number 3.222])
+        
+        //Assign Testing
+        TestCaseData(["Word";"-";">";"54"],[Word "Word"; Assign; Number 54.0])
+        TestCaseData(["-";">";"-";">";"-";">";],[Assign; Assign; Assign])
+        TestCaseData(["-";">";"-";"-";"-";">";],[Assign; UnaryMinus; UnaryMinus; Assign])
+        TestCaseData(["54";"-";">";"Word";],[Number 54.0; Assign; Word "Word"])
         
         //Word Testing
         TestCaseData(["a"], [Word "a"])
@@ -157,7 +168,6 @@ type LexerErrorTests ()=
         Assert.Throws<TokenizeError>(fun () -> tokenize["$"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["@"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["<"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize[">"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["%"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["\""] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["!"] |> ignore) |> ignore
@@ -212,7 +222,7 @@ type LexerErrorTests ()=
     [<Test>]
     member this.GivenLexer_WhenPassedValidExpression_ReturnCorrectTuple() =
         let result = lexer ["1";"0";"+";"1"]
-        Assert.That(result, Is.EqualTo(([Number 10.0; Plus; Number 1.0])))
+        Assert.That(result, Is.EqualTo([Number 10.0; Plus; Number 1.0]))
         
     [<Test>]
     member this.GivenLexer_WhenPassedInvalidExpression_ThrowTokenizeError() =

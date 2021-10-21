@@ -60,11 +60,21 @@ let rec scan tokens output  =
                     | _ -> scan tokensTail (UnaryPlus :: output)
             else scan tokensTail (UnaryPlus :: output)
         | "-" ->
-            if output.Length > 0 then
+            if tokensTail.Length > 0 then
+                    match tokensTail.[0] with
+                    | ">" -> scan tokensTail.Tail (Assign :: output)
+                    | _ ->
+                        if output.Length > 0 then
+                           match output.[0] with
+                           | Rpar
+                           | Number _ -> scan tokensTail (Minus :: output)
+                           | _ -> scan tokensTail (UnaryMinus :: output)
+                        else scan tokensTail (UnaryMinus :: output)
+            elif output.Length > 0 then 
                 match output.[0] with 
-                    | Rpar 
-                    | Number _ -> scan tokensTail (Minus :: output)
-                    | _ -> scan tokensTail (UnaryMinus :: output)
+                | Rpar 
+                | Number _ -> scan tokensTail (Minus :: output)
+                | _ -> scan tokensTail (UnaryMinus :: output)
             else scan tokensTail (UnaryMinus :: output)
         | "^" -> scan tokensTail (Exponent :: output)
         | "*" -> scan tokensTail (Times :: output)

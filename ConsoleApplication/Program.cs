@@ -13,6 +13,7 @@ namespace ConsoleApplication
         {
             Console.Write("Enter an arithmetic operation: \n >> ");
             var rawInput = Console.ReadLine();
+            // var rawInput = "This -> 42";
             Console.WriteLine("You Wrote: " + rawInput);
 
             //Take an input and implicitly turn it into a List of strings
@@ -21,9 +22,25 @@ namespace ConsoleApplication
             //Need to turn Generic System.List to fSharpList
             var fSharpList = ListModule.OfSeq(inputList);
 
-            var tokenizedInput = Lexer.lexer(fSharpList);
-            var res = Exec.reduce(tokenizedInput);
-            Console.WriteLine(res);
+            var tokenizedInput = Lexer.tokenize(fSharpList);
+            var scannedInput = Lexer.scan(tokenizedInput, FSharpList<Util.terminal>.Empty);
+
+            foreach (var VARIABLE in scannedInput)
+            {
+                Console.WriteLine(VARIABLE);
+            }
+            // try
+            // {
+            //     Parser.expression(tokenizedInput);
+            //     var res = Exec.reduce(tokenizedInput);
+            //     Console.WriteLine(res);
+            // }
+            // catch (Util.ParseError)
+            // {
+            //     Console.WriteLine("Error Caught");
+            //     throw;
+            // }
+            
         }
     }
 }
