@@ -84,7 +84,6 @@ let rec scan tokens output  =
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
         | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
-        
         | _ -> raise (ScanError "We dont know how you did this so please let us know") 
         
 let lexer input =
