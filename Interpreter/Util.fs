@@ -19,8 +19,8 @@ type terminal =
     | Number of float
 
 exception ParseError
-exception ScanError
-exception TokenizeError
+exception ScanError of string
+exception TokenizeError of string
 exception CalculateError
 exception UnaryError
 exception ExecError

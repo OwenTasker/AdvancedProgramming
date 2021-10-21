@@ -43,7 +43,7 @@ let rec tokenize input =
                     // Build single digit number, lex next element
                 else head :: tokenize tail
             )else [head]
-        | _ -> raise TokenizeError
+        | _ -> raise (TokenizeError "Invalid Token recognized: Please Try Again")
         
 // Scan each token by recursively scanning the list tail. Prepend elements to output and
 // reverse for efficiency.
@@ -86,7 +86,7 @@ let rec scan tokens output  =
         | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
         
-        | _ -> raise ScanError
+        | _ -> raise (ScanError "We dont know how you did this so please let us know") 
         
 let lexer input =
     let tokenizedVal = tokenize input
