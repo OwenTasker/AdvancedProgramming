@@ -157,7 +157,6 @@ type LexerErrorTests ()=
         Assert.Throws<TokenizeError>(fun () -> tokenize["$"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["@"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["<"] |> ignore) |> ignore
-        Assert.Throws<TokenizeError>(fun () -> tokenize[">"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["%"] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["\""] |> ignore) |> ignore
         Assert.Throws<TokenizeError>(fun () -> tokenize["!"] |> ignore) |> ignore

@@ -12,6 +12,7 @@ type terminal =
     | Exponent
     | Lpar
     | Rpar
+    | Assign
     | Equals
     | Function of string
     | Word of string
@@ -38,7 +39,7 @@ let functionRegexString =
     let generateRegex = (String.concat "" functionRegex)
     generateRegex.Remove(generateRegex.Length-1)
 let symbolRegexString =
-    let symbols = ["+";"*";"-";"^";"/";"=";"(";")"]
+    let symbols = ["+";"*";"-";"^";"/";"=";"(";")";">"]
     let symbolRegex = [
         for i in symbols -> "(^\\" + i + "$)|"
     ]
