@@ -57,3 +57,8 @@ and factor terminals =
     | _ -> raise ParseError
     
         
+let parse terminals =
+    try
+        if expression terminals = [] then true else false
+    with
+    | ParseError -> false
