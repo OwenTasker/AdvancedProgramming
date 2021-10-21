@@ -7,6 +7,19 @@ open Interpreter.Parser
 open Interpreter.Exec
 
 module Program =
+    
+    let interpret (input) =
+        let lexedVals = lexer input
+        
+        try
+            expression(lexedVals) |> ignore
+        with
+        | TokenizeError _ as e -> Console.WriteLine(e.Message)
+        | ScanError _ as e -> Console.WriteLine(e.Message)
+        | ParseError as e -> Console.WriteLine(e.Message)
+        
+        Console.WriteLine (reduce lexedVals)
+    
     [<EntryPoint>]
     let main args =
         
