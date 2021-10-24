@@ -136,6 +136,7 @@ let exec terminals (env: Map<string, string>) =
     match terminals with
     | Word x :: Assign :: tail ->
         let result = string tail
+        //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
         result, (env.Add(x, string tail) |> Map.toSeq |> dict)
     | _ ->
         let result = string (reduce terminals)
