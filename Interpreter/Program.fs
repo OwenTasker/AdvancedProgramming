@@ -16,7 +16,9 @@ let interpret (input) =
     | ScanError _ as e -> Console.WriteLine(e.Message)
     | ParseError as e -> Console.WriteLine(e.Message)
     
-    Console.WriteLine (exec lexedVals)
+    let a, _ = exec lexedVals
+    
+    Console.WriteLine a
 
 [<EntryPoint>]
 let main args =
