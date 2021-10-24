@@ -18,7 +18,7 @@ namespace ConsoleApplication
             //Take an input and implicitly turn it into a List of strings
             var inputList = ListModule.OfSeq(rawInput.Select(c => c.ToString()).ToList());
             
-            Interpreter.Program.Program.interpret(inputList);
+            Interpreter.Program.interpret(inputList);
             
         }
     }
