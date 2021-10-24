@@ -3,9 +3,18 @@
 open Interpreter.Util
     
 // https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf
+
+// statement ::= variable -> expression
+let rec statement terminals =
+    match terminals with
+    | Word _ :: tail ->
+        match tail with
+        | Assign :: tailtail -> expression tailtail
+        | _ -> expression tail
+    | _ -> expression terminals
     
 // expression ::= term expression'
-let rec expression terminals = (term >> expressionP) terminals
+and expression terminals = (term >> expressionP) terminals
 
 // expression' ::= + term expression' | empty
 and expressionP terminals =
@@ -43,7 +52,8 @@ and unary terminals =
 // factor ::= int | ( expression )
 and factor terminals =
     match terminals with
-    | Number _ :: terminalsTail ->
+    | Number _ :: terminalsTail
+    | Word _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: _ -> raise ParseError
         | _ -> terminalsTail
@@ -59,6 +69,6 @@ and factor terminals =
         
 let parse terminals =
     try
-        if expression terminals = [] then true else false
+        if statement terminals = [] then true else false
     with
     | ParseError -> false

@@ -62,10 +62,12 @@ let InvalidCases =
     ]
     
 [<TestCaseSource("InvalidCases")>]
-let GivenExpression_WhenPassedInvalidExpression_ThenRaiseParseError(terminals: terminal list) =
-    Assert.Throws<ParseError>(fun () -> expression terminals |> ignore) |> ignore
+let GivenStatement_WhenPassedInvalidExpression_ThenRaiseParseError(terminals: terminal list) =
+    Assert.Throws<ParseError>(fun () -> statement terminals |> ignore) |> ignore
 
 [<TestCaseSource("InvalidCases")>]
 let GivenParse_WhenPassedInvalidExpression_ReturnFalse(terminals: terminal list) =
      let result = parse terminals
      Assert.That(result, Is.EqualTo(false))
+
+
