@@ -131,3 +131,12 @@ let rec reduceRecursive tokens oplist numlist =
             
 let reduce tokens =
     reduceRecursive tokens [] []
+    
+let exec terminals (env: Map<string, string>) =
+    match terminals with
+    | Word x :: Assign :: tail ->
+        let result = string tail
+        result, (env.Add(x, string tail) |> Map.toSeq |> dict)
+    | _ ->
+        let result = string (reduce terminals)
+        result, (env |> Map.toSeq |> dict)
