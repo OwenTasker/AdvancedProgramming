@@ -16,7 +16,7 @@ let interpret (input) =
     | ScanError _ as e -> Console.WriteLine(e.Message)
     | ParseError as e -> Console.WriteLine(e.Message)
     
-    Console.WriteLine (reduce lexedVals)
+    Console.WriteLine (exec lexedVals)
 
 [<EntryPoint>]
 let main args =
@@ -32,4 +32,4 @@ let main args =
     Console.WriteLine $"%A{parsed}"
     Console.WriteLine (sprintf $"{reduce scannedVals}")
         
-        0
+    0
