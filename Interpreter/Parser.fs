@@ -10,7 +10,7 @@ let rec statement terminals =
     | Word _ :: tail ->
         match tail with
         | Assign :: tailtail -> expression tailtail
-        | _ -> expression tail
+        | _ -> expression terminals
     | _ -> expression terminals
     
 // expression ::= term expression'
@@ -55,13 +55,16 @@ and factor terminals =
     | Number _ :: terminalsTail
     | Word _ :: terminalsTail ->
         match terminalsTail with
-        | Lpar :: _ -> raise ParseError
+        | Lpar :: _
+        | Number _ :: _
+        | Word _ :: _ -> raise ParseError
         | _ -> terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
             match terminalsTail with
-            | Number _ :: _ -> raise ParseError
+            | Number _ :: _
+            | Word _ :: _ -> raise ParseError
             | _ -> terminalsTail
         | _ -> raise ParseError
     | _ -> raise ParseError

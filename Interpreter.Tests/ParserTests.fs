@@ -20,11 +20,30 @@ let ValidCases =
         TestCaseData([Number 2.0; Plus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryMinus; Number 2.0])
         TestCaseData([UnaryMinus; Number 2.0])
         TestCaseData([UnaryPlus; Number 2.0])
+        TestCaseData([Word "x";])
+        TestCaseData([Lpar; Word "x"; Rpar])
+        TestCaseData([Number 1.0; Plus; Word "x";])
+        TestCaseData([Word "x"; Minus; Number 5.0;])
+        TestCaseData([Number 1.0; Times; Number 5.0; Times; Lpar; Word "x"; Plus; Number 6.0; Rpar;])
+        TestCaseData([Word "x"; Exponent; Number 5.0; Times; Lpar; Number 5.0; Plus; Number 6.0; Exponent; Word "x"; Rpar; Exponent; Number 2.0; Exponent; Lpar; Number 1.0; Rpar;])
+        TestCaseData([Word "x"; Assign; Lpar; Number 10.0; Rpar])
+        TestCaseData([Word "x"; Assign; Number 1.0; Plus; Number 5.0;])
+        TestCaseData([Word "x"; Assign; Number 1.0; Minus; Number 5.0;])
+        TestCaseData([Word "x"; Assign; Number 1.0; Times; Number 5.0;])
+        TestCaseData([Word "x"; Assign; Number 1.0; Divide; Number 5.0;])
+        TestCaseData([Word "x"; Assign; Number 1.0; Times; Number 5.0; Times; Lpar; Number 5.0; Plus; Number 6.0; Rpar;])
+        TestCaseData([Word "x"; Assign; Number 2.0; Exponent; Number 3.0;])
+        TestCaseData([Word "x"; Assign; Number 1.0; Exponent; Number 5.0; Times; Lpar; Number 5.0; Plus; Number 6.0; Exponent; Number 2.0; Rpar; Exponent; Number 2.0; Exponent; Lpar; Number 1.0; Rpar;])
+        TestCaseData([Word "x"; Assign; Number 2.0; Plus; UnaryMinus; Number 2.0])
+        TestCaseData([Word "x"; Assign; Number 2.0; Plus; UnaryPlus; Number 2.0])
+        TestCaseData([Word "x"; Assign; Number 2.0; Plus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryMinus; Number 2.0])
+        TestCaseData([Word "x"; Assign; UnaryMinus; Number 2.0])
+        TestCaseData([Word "x"; Assign; UnaryPlus; Number 2.0])
     ]
     
 [<TestCaseSource("ValidCases")>]
-let GivenExpression_WhenPassedValidExpression_ReturnEmptyArray(terminals: terminal list) =
-    let result = expression terminals
+let GivenStatement_WhenPassedValidStatement_ReturnEmptyArray(terminals: terminal list) =
+    let result = statement terminals
     Assert.That(result, Is.EqualTo([]))
     
 [<TestCaseSource("ValidCases")>]
@@ -45,6 +64,11 @@ let InvalidCases =
         TestCaseData([UnaryMinus])
         TestCaseData([Lpar; Rpar;])
         TestCaseData([Lpar; Plus; Rpar])
+        TestCaseData([Word "x"; Assign;])
+        TestCaseData([Assign;])
+        TestCaseData([Word "x"; Assign; Assign; UnaryPlus; Number 2.0])
+        TestCaseData([Assign; UnaryPlus; Number 2.0])
+        TestCaseData([Assign; Word "x"; Assign; Lpar; Number 10.0; Rpar])
         TestCaseData([Plus; Number 5.0;])
         TestCaseData([Number 1.0; Plus;])
         TestCaseData([Minus; Number 5.0;])
@@ -54,11 +78,27 @@ let InvalidCases =
         TestCaseData([Divide; Number 5.0;])
         TestCaseData([Number 1.0; Divide;])
         TestCaseData([Lpar; Number 1.0; Plus; Number 1.0])
-        TestCaseData([Lpar; Number 1.0; Plus; Number 1.0])
         TestCaseData([Number 5.0; Lpar; Number 5.0; Plus; Number 6.0; Rpar;])
         TestCaseData([Lpar; Number 5.0; Plus; Number 6.0; Rpar; Number 5.0])
         TestCaseData([Number 2.0; Exponent])
         TestCaseData([Exponent; Number 5.0;])
+        TestCaseData([Number 5.0; Number 5.0;])
+        TestCaseData([Word "x"; Word "x";])
+        TestCaseData([Number 5.0; Word "x";])
+        TestCaseData([Word "x"; Number 5.0;])
+        TestCaseData([Plus; Word "x";])
+        TestCaseData([Word "x"; Plus;])
+        TestCaseData([Minus; Word "x";])
+        TestCaseData([Word "x"; Minus;])
+        TestCaseData([Times; Word "x";])
+        TestCaseData([Word "x"; Times;])
+        TestCaseData([Divide; Word "x";])
+        TestCaseData([Word "x"; Divide;])
+        TestCaseData([Lpar; Number 1.0; Plus; Word "x"])
+        TestCaseData([Word "x"; Lpar; Number 5.0; Plus; Number 6.0; Rpar;])
+        TestCaseData([Lpar; Number 5.0; Plus; Number 6.0; Rpar; Word "x"])
+        TestCaseData([Word "x"; Exponent])
+        TestCaseData([Exponent; Word "x";])
     ]
     
 [<TestCaseSource("InvalidCases")>]
