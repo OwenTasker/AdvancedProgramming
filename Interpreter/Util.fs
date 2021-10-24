@@ -81,3 +81,7 @@ let (|FunctionMatch|_|) (input:string) =
 // https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
 let strContainsOnlyNumber (s:string) = System.Double.TryParse s |> fst
 
+let inline toMap kvps =
+    kvps
+    |> Seq.map (|KeyValue|)
+    |> Map.ofSeq

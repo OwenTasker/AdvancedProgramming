@@ -14,9 +14,9 @@ let interpret (input) =
     with
     | TokenizeError _ as e -> Console.WriteLine(e.Message)
     | ScanError _ as e -> Console.WriteLine(e.Message)
-    | ParseError as e -> Console.WriteLine(e.Message)
+    | ParseError as e -> Console.WriteLine(e.Message) 
     
-    let a, _ = exec lexedVals
+    let a, _ = exec lexedVals (Map<string, string>[])
     
     Console.WriteLine a
 

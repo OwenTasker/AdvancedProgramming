@@ -20,33 +20,30 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
+        private IDictionary<string, string> _environment = new Dictionary<string, string>();
+
         public class Variable
         {
             public string Name { get; set; }
-            public float Value { get; set; }
-
-            public Variable(string n, float v)
-            {
-                Name = n;
-                Value = v;
-            }
+            public string Value { get; set; }
         }
+
         public MainWindow()
         {
             InitializeComponent();
+        }
 
-            // variable list to populate variables column in GUI
-            List<Variable> variablesList = new List<Variable>();
-            variablesList.Add(new Variable("x", (float)5.0));
-            variablesList.Add(new Variable("y", (float)2.0));
-            variablesList.Add(new Variable("z", (float)-4.0));
-
+        public void UpdateVariableWindow()
+        {
+            var keyValuePairs = _environment.ToList();
+            var variablesList = keyValuePairs.Select(pair => new Variable {Name = pair.Key, Value = pair.Value});
             varDisplay.ItemsSource = variablesList;
         }
 
         private void EnterButtonPress(object sender, RoutedEventArgs e)
         {
-            if (!(inputText.Text == "Enter query here..." || String.IsNullOrEmpty(inputText.Text) || String.IsNullOrWhiteSpace(inputText.Text)))
+            if (!(inputText.Text == "Enter query here..." || String.IsNullOrEmpty(inputText.Text) ||
+                  String.IsNullOrWhiteSpace(inputText.Text)))
             {
                 // 1. send query to lexer/parser/executor
                 // 2a. if valid, put received answer on new line
@@ -62,8 +59,10 @@ namespace WpfApp1
                     consoleText.AppendText(" " + input + "\n");
                     consoleText.ScrollToEnd();
                     inputText.Clear();
-                    var execOutput = Exec.reduce(lexerOutput);
-                    consoleText.AppendText(execOutput.ToString(CultureInfo.InvariantCulture) + "\n>>");
+                    var execOutput = Exec.exec(lexerOutput, Util.toMap(_environment));
+                    consoleText.AppendText(execOutput.Item1 + "\n>>");
+                    _environment = execOutput.Item2;
+                    UpdateVariableWindow();
                     inputText.Text = "Enter query here...";
                 }
                 catch (Util.TokenizeError exception)
@@ -74,8 +73,6 @@ namespace WpfApp1
                 {
                     consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
                 }
-
-                
             }
         }
 
