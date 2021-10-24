@@ -91,6 +91,7 @@ let GivenCalculate_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2:
     let result = calculate Divide op1 op2
     Assert.That(result, Is.EqualTo(res))
     
+    
 [<TestCaseSource("CalculateExponentData")>]
 let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
     let result = calculate Exponent op1 op2
@@ -99,6 +100,10 @@ let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2:
 [<TestCaseSource("InvalidCalculateData")>]
 let GivenCalculate_WhenPassedInvalidOperator_RaiseCalculateError(operator: terminal) =
     Assert.Throws<CalculateError>(fun () -> calculate operator 1.0 1.0 |> ignore) |> ignore
+    
+[<Test>]
+let GivenCalculate_WhenPassedDivideByZero_RaiseCalculateError() =
+    Assert.Throws<CalculateError>(fun () -> calculate Divide 1.0 0.0 |> ignore) |> ignore
     
 let ValidUnaryData =
     [

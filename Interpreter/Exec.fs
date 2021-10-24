@@ -9,7 +9,10 @@ let calculate operator op1 op2 =
     | terminal.Plus -> op1 + op2
     | terminal.Minus -> op1 - op2
     | terminal.Times -> op1 * op2
-    | terminal.Divide -> op1 / op2
+    | terminal.Divide ->
+        match op2 with
+        | 0.0 -> raise CalculateError
+        | _ -> op1 / op2
     | terminal.Exponent -> op1 ** op2
     | _ -> raise CalculateError
     
