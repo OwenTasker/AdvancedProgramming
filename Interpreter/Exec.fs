@@ -131,3 +131,15 @@ let rec reduceRecursive tokens oplist numlist =
             
 let reduce tokens =
     reduceRecursive tokens [] []
+    
+let variables = Map.empty<string, terminal list>
+    
+let exec terminals=
+    match terminals with
+    | Word x :: Assign :: tail ->
+        let map = variables.Add(x, tail)
+        let result = string tail
+        result, map
+    | _ ->
+        let result = string (reduce terminals)
+        result, variables
