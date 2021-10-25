@@ -86,3 +86,22 @@ let inline toMap kvps =
     kvps
     |> Seq.map (|KeyValue|)
     |> Map.ofSeq
+
+let rec terminalListToString str list =
+    match list with
+    | Plus :: tail -> terminalListToString (str + "+" ) tail
+    | Minus :: tail -> terminalListToString (str + "-" ) tail
+    | Times :: tail -> terminalListToString (str + "*" ) tail
+    | Divide :: tail -> terminalListToString (str + "/" ) tail
+    | Exponent :: tail -> terminalListToString (str + "^" ) tail
+    | Lpar :: tail -> terminalListToString (str + "(" ) tail
+    | Rpar :: tail -> terminalListToString (str + ")" ) tail
+    | UnaryPlus :: tail -> terminalListToString (str + "+" ) tail
+    | UnaryMinus :: tail -> terminalListToString (str + "-" ) tail
+    | Number x :: tail -> terminalListToString (str + string x ) tail
+    | Word x :: tail -> terminalListToString (str + x ) tail
+    | Assign :: tail -> terminalListToString (str + "->") tail
+    | Equals :: tail -> terminalListToString (str + " = ") tail
+    | [] -> str
+    | _ -> failwith "shouldn't happen don't want to think about proper error right now it's 8:35am but more importantly it's only October and I'm so bored"
+    

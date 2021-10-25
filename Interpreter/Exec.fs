@@ -135,9 +135,9 @@ let reduce tokens =
 let exec terminals (env: Map<string, string>) =
     match terminals with
     | Word x :: Assign :: tail ->
-        let result = string tail
+        let result = terminalListToString "" tail
         //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
-        result, (env.Add(x, string tail) |> Map.toSeq |> dict)
+        result, (env.Add(x, result) |> Map.toSeq |> dict)
     | _ ->
         let result = string (reduce terminals)
         result, (env |> Map.toSeq |> dict)
