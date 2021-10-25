@@ -148,15 +148,24 @@ namespace WpfApp1
                     //Read the contents of the file into a stream
                     var fileStream = fileDialog.OpenFile();
 
-                    // foreach (var VARABLE in File.ReadLines(filePath))
-                    // {
-                    //     if (VARABLE.StartsWith('['))
-                    //     {
-                    //         Dictionary.
-                    //     }
-                    // }
-                    //
-                    // consoleText.Text = fileContent + ">>";
+                    foreach (var VARIABLE in File.ReadLines(filePath))
+                    {
+                        if (VARIABLE.StartsWith('[') && VARIABLE[VARIABLE.Length-2].Equals(']'))
+                        {
+                            
+                            var line = VARIABLE.Substring(1);
+                            line = line.Substring(0, line.Length - 1);
+                            var dictArr = line.Split(",");
+                            _environment.Add(dictArr[0], dictArr[1]);
+                            UpdateVariableWindow();
+                        }
+                        else
+                        {
+                            consoleText.Text += VARIABLE + "\n";
+                        }
+                    }
+                    
+                    consoleText.Text += ">>";
                 }
                 
             }
