@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Windows;
 using System.Windows.Input;
 using Interpreter;
 using Microsoft.FSharp.Collections;
+using Microsoft.Win32;
 
 namespace WpfApp1
 {
@@ -102,7 +104,7 @@ namespace WpfApp1
             }
         }
 
-        private void SaveButton_OnClick(object sender, RoutedEventArgs e)
+        private void SaveButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             var variableArray = new string[_environment.Count + 1];
             var idx = 0;
@@ -111,13 +113,57 @@ namespace WpfApp1
                 var text = $"[{variable.Key}, {variable.Value}]";
                 variableArray[idx] = text;
                 idx += 1;
-
             }
 
-            variableArray[idx] = consoleText.Text;
+            var internalText = consoleText.Text.Substring(0, consoleText.Text.Length - 3);
+            variableArray[idx] = internalText;
             
             File.WriteAllLines("../../../hi.mmp", 
                 variableArray);
+        }
+
+        private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            var initialDir = "C:\\Users\\owent\\RiderProjects\\AdvancedProgramming\\WpfApp1";
+            string fileContent;
+            
+            if (Directory.Exists(initialDir))
+            {
+                OpenFileDialog fileDialog = new OpenFileDialog();
+                fileDialog.InitialDirectory = initialDir;
+                fileDialog.Filter = "MyMathsPal Files (*.mmp)|*.mmp;";
+                fileDialog.FilterIndex = 1;
+
+                fileDialog.Multiselect = false;
+                
+                if (fileDialog.ShowDialog() == true)
+                {
+                    consoleText.Clear();
+                    _environment.Clear();
+                    UpdateVariableWindow();
+                    
+                    //Get the path of specified file
+                    var filePath = fileDialog.FileName;
+
+                    //Read the contents of the file into a stream
+                    var fileStream = fileDialog.OpenFile();
+
+                    // foreach (var VARABLE in File.ReadLines(filePath))
+                    // {
+                    //     if (VARABLE.StartsWith('['))
+                    //     {
+                    //         Dictionary.
+                    //     }
+                    // }
+                    //
+                    // consoleText.Text = fileContent + ">>";
+                }
+                
+            }
+            else
+            {
+                MessageBox.Show(string.Format("{0} Directory does not exist!", initialDir));
+            }
         }
     }
 }
