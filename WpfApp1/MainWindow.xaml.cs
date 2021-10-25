@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -32,7 +33,7 @@ namespace WpfApp1
         {
             InitializeComponent();
         }
-
+        
         public void UpdateVariableWindow()
         {
             var keyValuePairs = _environment.ToList();
@@ -99,6 +100,24 @@ namespace WpfApp1
             {
                 inputText.Text = "Enter query here...";
             }
+        }
+
+        private void SaveButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var variableArray = new string[_environment.Count + 1];
+            var idx = 0;
+            foreach (var variable in _environment)
+            {
+                var text = $"[{variable.Key}, {variable.Value}]";
+                variableArray[idx] = text;
+                idx += 1;
+
+            }
+
+            variableArray[idx] = consoleText.Text;
+            
+            File.WriteAllLines("../../../hi.mmp", 
+                variableArray);
         }
     }
 }
