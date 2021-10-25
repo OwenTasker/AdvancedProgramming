@@ -58,7 +58,8 @@ let rec scan tokens output  =
         | "+" ->
             if output.Length > 0 then
                 match output.[0] with
-                    | Rpar 
+                    | Rpar
+                    | Word _
                     | Number _ -> scan tokensTail (Plus :: output)
                     | _ -> scan tokensTail (UnaryPlus :: output)
             else scan tokensTail (UnaryPlus :: output)
@@ -66,6 +67,7 @@ let rec scan tokens output  =
             if output.Length > 0 then
                match output.[0] with
                | Rpar
+               | Word _
                | Number _ -> scan tokensTail (Minus :: output)
                | _ -> scan tokensTail (UnaryMinus :: output)
             else scan tokensTail (UnaryMinus :: output)
