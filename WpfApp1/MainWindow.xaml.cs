@@ -146,7 +146,7 @@ namespace WpfApp1
         private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             
-            OpenFileDialog fileDialog = new OpenFileDialog
+            var fileDialog = new OpenFileDialog
             {
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 Filter = "MyMathsPal Files (*.mmp)|*.mmp;",
@@ -154,33 +154,33 @@ namespace WpfApp1
                 Multiselect = false
             };
 
-            if (fileDialog.ShowDialog() == true)
-            {
-                consoleText.Clear();
-                _environment.Clear();
-                UpdateVariableWindow();
+            //If no file is selected return, else load that file
+            if (fileDialog.ShowDialog() != true) return;
+            
+            consoleText.Clear();
+            _environment.Clear();
+            UpdateVariableWindow();
 
-                //Get the path of specified file
-                var filePath = fileDialog.FileName;
+            //Get the path of specified file
+            var filePath = fileDialog.FileName;
                 
-                foreach (var loadedLine in File.ReadLines(filePath))
+            foreach (var loadedLine in File.ReadLines(filePath))
+            {
+                //Make sure line is an assigned variable, not just the output from variable assignment
+                if (loadedLine.StartsWith('[') && loadedLine[^2].Equals(']'))
                 {
-                    //Make sure line is an assigned variable, not just the output from variable assignment
-                    if (loadedLine.StartsWith('[') && loadedLine[^2].Equals(']'))
-                    {
-                        var line = loadedLine[1..];
-                        line = line[..^1];
-                        var dictArr = line.Split(",");
-                        _environment.Add(dictArr[0], dictArr[1]);
-                        UpdateVariableWindow();
-                    }
-                    else
-                    {
-                        consoleText.Text += loadedLine + "\n";
-                    }
+                    var line = loadedLine[1..];
+                    line = line[..^1];
+                    var dictArr = line.Split(",");
+                    _environment.Add(dictArr[0], dictArr[1]);
                 }
-                consoleText.Text += ">>";
+                else
+                {
+                    consoleText.Text += loadedLine + "\n";
+                }
             }
+            UpdateVariableWindow();
+            consoleText.Text += ">>";
         }
     }
 }   
