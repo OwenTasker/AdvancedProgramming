@@ -38,6 +38,7 @@ let functionRegexString =
     ]
     let generateRegex = (String.concat "" functionRegex)
     generateRegex.Remove(generateRegex.Length-1)
+    
 let symbolRegexString =
     let symbols = ["+";"*";"-";"^";"/";"=";"(";")";">"]
     let symbolRegex = [

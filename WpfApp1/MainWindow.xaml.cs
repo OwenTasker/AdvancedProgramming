@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using Interpreter;
@@ -106,30 +107,51 @@ namespace WpfApp1
 
         private void SaveButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            var variableArray = new string[_environment.Count + 1];
+            var newText = consoleText.Text;
+            newText = newText.Replace("\n", "");
+            var isValidToSave = Regex.Match(newText, "(>>.*){2}");
+
+            //If not enough characters present to save, return, else continue
+            if (!isValidToSave.Success)
+            {
+                MessageBox.Show("Insufficient Console Text To Save. Please execute at least one line");
+                return;
+            } 
+            
+            var savableInfo = new string[_environment.Count + 1];
             var idx = 0;
+
+            //Collect each variable and add them to savableInfo
             foreach (var variable in _environment)
             {
                 var text = $"[{variable.Key}, {variable.Value}]";
-                variableArray[idx] = text;
+                savableInfo[idx] = text;
                 idx += 1;
             }
-            
-            var internalText = consoleText.Text.Substring(0, consoleText.Text.Length - 3);
-            variableArray[idx] = internalText;
-            
-            File.WriteAllLines("../NeedToAddSaveAsOption.mmp", variableArray);
+
+            //Add console text to savableInfo
+            savableInfo[idx] = consoleText.Text[..^3];
+
+            var dialog = new SaveFileDialog()
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                Filter = "MyMathsPal File (*.mmp)|*.mmp"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            File.WriteAllLines(dialog.FileName, savableInfo);
         }
 
         private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            var dir = Path.Combine(Directory.GetCurrentDirectory(), "..\\");
+            
             OpenFileDialog fileDialog = new OpenFileDialog
             {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 Filter = "MyMathsPal Files (*.mmp)|*.mmp;",
                 FilterIndex = 1,
-                Multiselect = false,
-                InitialDirectory = Path.GetFullPath(dir)
+                Multiselect = false
             };
 
             if (fileDialog.ShowDialog() == true)
@@ -140,21 +162,21 @@ namespace WpfApp1
 
                 //Get the path of specified file
                 var filePath = fileDialog.FileName;
-
-                foreach (var VARIABLE in File.ReadLines(filePath))
+                
+                foreach (var loadedLine in File.ReadLines(filePath))
                 {
-                    if (VARIABLE.StartsWith('[') && VARIABLE[VARIABLE.Length - 2].Equals(']'))
+                    //Make sure line is an assigned variable, not just the output from variable assignment
+                    if (loadedLine.StartsWith('[') && loadedLine[^2].Equals(']'))
                     {
-
-                        var line = VARIABLE.Substring(1);
-                        line = line.Substring(0, line.Length - 1);
+                        var line = loadedLine[1..];
+                        line = line[..^1];
                         var dictArr = line.Split(",");
                         _environment.Add(dictArr[0], dictArr[1]);
                         UpdateVariableWindow();
                     }
                     else
                     {
-                        consoleText.Text += VARIABLE + "\n";
+                        consoleText.Text += loadedLine + "\n";
                     }
                 }
                 consoleText.Text += ">>";
