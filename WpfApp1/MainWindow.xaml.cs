@@ -155,8 +155,12 @@ namespace WpfApp1
             };
 
             //If no file is selected return, else load that file
-            if (fileDialog.ShowDialog() != true) return;
-            
+            if (fileDialog.ShowDialog() != true)
+            {
+                MessageBox.Show("Load Cancelled/Not Successful");
+                return;
+            }
+
             consoleText.Clear();
             _environment.Clear();
             UpdateVariableWindow();
