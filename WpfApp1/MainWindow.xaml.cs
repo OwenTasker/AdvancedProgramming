@@ -132,7 +132,7 @@ namespace WpfApp1
             //Add console text to savableInfo
             savableInfo[idx] = consoleText.Text[..^3];
 
-            var dialog = new SaveFileDialog()
+            var dialog = new SaveFileDialog
             {
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 Filter = "MyMathsPal File (*.mmp)|*.mmp"
