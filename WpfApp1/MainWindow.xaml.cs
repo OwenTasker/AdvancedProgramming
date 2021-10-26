@@ -138,7 +138,11 @@ namespace WpfApp1
                 Filter = "MyMathsPal File (*.mmp)|*.mmp"
             };
 
-            if (dialog.ShowDialog() != true) return;
+            if (dialog.ShowDialog() != true)
+            {
+                MessageBox.Show("Cancelled Save Operation");
+                return;
+            }
 
             File.WriteAllLines(dialog.FileName, savableInfo);
         }
