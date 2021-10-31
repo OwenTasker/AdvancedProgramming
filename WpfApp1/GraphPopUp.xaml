@@ -1,0 +1,23 @@
+﻿<!-- `ResizeMode="CanMinimize"` is to make window non-resizeable -->
+<Window x:Class="WpfApp1.GraphPopUp"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:WpfApp1"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        Title="GraphPopUp"
+        Height="500"
+        Width="850"
+        Background="#B4C7E7"
+        Icon="mymathspal_logo.ico">
+    
+    <Grid>
+        
+        <Label Content="I'm a graph" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+        
+        <Image Name="ImageGraph" Source="Images/graph.png" Margin="25" VerticalAlignment="Center" HorizontalAlignment="Left" Height="400" Width="750"/>
+
+    </Grid>
+</Window>
