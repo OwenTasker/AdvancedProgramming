@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -28,10 +27,19 @@ namespace WpfApp1
             //Show window
             InitializeComponent();
 
-            //Set graph background to white and opacity o max
-            for (int i = 0; i < imageBuffer.Length; i++)
+            //Set graph background to white and opacity to max
+            //Add basic x and y axis
+            for (int i = 0; i < imageBuffer.Length; i+=4)
             {
-                imageBuffer[i] = 255;
+                if (i % (ImageWidth * BytesPerPixel) != 0 && i > (ImageWidth * BytesPerPixel))
+                {
+                    imageBuffer[i] = imageBuffer[i+1] = imageBuffer[i+2] = imageBuffer[i+3] = 255;
+                }
+                else
+                {
+                    imageBuffer[i + 3] = 255;
+                }
+                
             }
             
             //Create test data
@@ -51,7 +59,7 @@ namespace WpfApp1
             InitializeComponent();
         }
 
-        void invertGraph()
+        private void InvertGraph()
         {
             for (int i = 0; i < ImageHeight / 2; i++)
             {
@@ -62,7 +70,7 @@ namespace WpfApp1
             }
         }
         
-        void PlotPixel(int x, int y)
+        private void PlotPixel(int x, int y)
         {
             //Calculate starting byte of pixel
             int offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
@@ -71,7 +79,7 @@ namespace WpfApp1
             imageBuffer[offset] = imageBuffer[offset + 1] = imageBuffer[offset + 2] = 0;
         }
 
-        void GenerateGraph(double[] xArray, double[] yArray)
+        private void GenerateGraph(double[] xArray, double[] yArray)
         {
             //Scale y values to size of graph
             double yMin = yArray.Min();
@@ -97,7 +105,7 @@ namespace WpfApp1
             }
             
             //Invert graph due to coordinate system
-            invertGraph();
+            InvertGraph();
             
             //Convert to image
             unsafe
@@ -114,7 +122,7 @@ namespace WpfApp1
             
         }
 
-        double[] generateX()
+        private double[] generateX()
         {
             double[] xArray = new double[ImageWidth];
 
@@ -126,13 +134,13 @@ namespace WpfApp1
             return xArray;
         }
         
-        double[] generateY()
+        private double[] generateY()
         {
             double[] yArray = new double[ImageWidth];
 
             for (int i = 0; i < ImageWidth; i++)
             {
-                yArray[i] = i * 3;
+                yArray[i] = Math.Sin((double)i/100);
             }
 
             return yArray;
