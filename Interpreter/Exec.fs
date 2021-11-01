@@ -6,23 +6,23 @@ open Interpreter.Util
 
 let calculate operator op1 op2 =
     match operator with
-    | terminal.Plus -> op1 + op2
-    | terminal.Minus -> op1 - op2
-    | terminal.Times -> op1 * op2
+    | terminal.Plus -> Number (op1 + op2)
+    | terminal.Minus -> Number (op1 - op2)
+    | terminal.Times -> Number (op1 * op2)
     | terminal.Divide ->
         match op2 with
         | 0.0 -> raise CalculateError
-        | _ -> op1 / op2
-    | terminal.Exponent -> op1 ** op2
+        | _ -> Number (op1 / op2)
+    | terminal.Exponent -> Number (op1 ** op2)
     | _ -> raise CalculateError
     
-let unary operator operand : float =
+let unary operator operand =
     match operator with
-    | UnaryMinus -> -operand
-    | UnaryPlus -> operand
+    | UnaryMinus -> Number -operand
+    | UnaryPlus -> Number operand
     | _ -> raise UnaryError
         
-let performOperation oplist (numlist : float list) =
+let performOperation oplist numlist =
     match oplist with
     | []
     | Rpar :: _ 
@@ -32,27 +32,29 @@ let performOperation oplist (numlist : float list) =
         let operator = oplist.[0]
         match numlist with
         | [] -> raise ExecError
-        | [ _; ] ->
-            let operand = numlist.[0]
-            tail, (unary operator operand) :: []
+        | [ Number f; ] ->
+            tail, (unary operator f) :: []
         | _ ->
-            let operand = numlist.[0]
-            tail, ((unary operator operand) :: numlist.[1 .. ])
+            match numlist.[0] with
+            | Number f ->
+                tail, ((unary operator f) :: numlist.[1 .. ])
     | head :: tail ->
         match numlist with
-        | []
-        | [ _; ] -> raise ExecError
-        | [ _; _; ] ->
-            let operand1 = numlist.[0]
-            let operand2 = numlist.[1]
+        | [] -> raise ExecError
+        | [ Number _; ] -> raise ExecError
+        | [ Number f; Number g; ] ->
+            let operand1 = f
+            let operand2 = g
             tail, ((calculate head operand2 operand1) :: [])
         | _ ->
-            let operand1 = numlist.[0]
-            let operand2 = numlist.[1]
-            tail, ((calculate head operand2 operand1) :: numlist.[2 .. ])
+            match numlist.[0], numlist.[1] with
+            | Number f, Number g ->
+                let operand1 = f
+                let operand2 = g
+                tail, ((calculate head operand2 operand1) :: numlist.[2 .. ])
 
         
-let rec evaluateBrackets oplist (numlist : float list) =
+let rec evaluateBrackets oplist numlist =
     match oplist with
     | []
     | Rpar :: _ -> raise ExecError
@@ -85,8 +87,8 @@ let rec reduceRecursive tokens oplist numlist =
     match tokens with
     | tokenHead :: tokenTail ->
         match tokenHead with
-        | Number f ->
-            reduceRecursive tokenTail oplist (f :: numlist)
+        | Number _ ->
+            reduceRecursive tokenTail oplist (tokenHead :: numlist)
         | Lpar ->
             reduceRecursive tokenTail (tokenHead :: oplist) numlist
         | Rpar ->
@@ -135,7 +137,7 @@ let reduce tokens =
 let exec terminals (env: Map<string, string>) =
     match terminals with
     | Word x :: Assign :: tail ->
-        let result = terminalListToString "" tail
+        let result = terminalListToString "" [reduce tail]
         //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
         result, (env.Add(x, result) |> Map.toSeq |> dict)
     | _ ->
