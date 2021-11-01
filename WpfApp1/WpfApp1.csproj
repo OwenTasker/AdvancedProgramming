@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,11 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\graph.png" />
     <Resource Include="mymathspal_logo.ico" />
+    <None Remove="graph.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FSharp.Core" Version="6.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0-rc.2.21480.5" />
   </ItemGroup>
 
 </Project>

@@ -45,34 +45,52 @@ namespace WpfApp1
             if (!(inputText.Text == "Enter query here..." || String.IsNullOrEmpty(inputText.Text) ||
                   String.IsNullOrWhiteSpace(inputText.Text)))
             {
-                // 1. send query to lexer/parser/executor
-                // 2a. if valid, put received answer on new line
-                // 2b. if invalid, put out error
-                var input = inputText.Text;
+                if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
+                {
+                    try
+                    {
+                        GraphPopUp graphPopUp = new GraphPopUp(inputText.Text);
+                        graphPopUp.Show();
+                    }
+                    catch(Exception plottingException)
+                    {
+                        consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" + plottingException.StackTrace + "\n>>");
+                    }
+                    
+                    
+                }
+                else
+                {
+                    // 1. send query to lexer/parser/executor
+                    // 2a. if valid, put received answer on new line
+                    // 2b. if invalid, put out error
+                    var input = inputText.Text;
 
-                try
-                {
-                    var inputList = input.Select(c => c.ToString()).ToList();
-                    var inputfSharpList = ListModule.OfSeq(inputList);
-                    var lexerOutput = Lexer.lexer(inputfSharpList);
-                    Parser.expression(lexerOutput);
-                    consoleText.AppendText(" " + input + "\n");
-                    consoleText.ScrollToEnd();
-                    inputText.Clear();
-                    var execOutput = Exec.exec(lexerOutput, Util.toMap(_environment));
-                    consoleText.AppendText(execOutput.Item1 + "\n>>");
-                    _environment = execOutput.Item2;
-                    UpdateVariableWindow();
-                    inputText.Text = "Enter query here...";
+                    try
+                    {
+                        var inputList = input.Select(c => c.ToString()).ToList();
+                        var inputfSharpList = ListModule.OfSeq(inputList);
+                        var lexerOutput = Lexer.lexer(inputfSharpList);
+                        Parser.expression(lexerOutput);
+                        consoleText.AppendText(" " + input + "\n");
+                        consoleText.ScrollToEnd();
+                        inputText.Clear();
+                        var execOutput = Exec.exec(lexerOutput, Util.toMap(_environment));
+                        consoleText.AppendText(execOutput.Item1 + "\n>>");
+                        _environment = execOutput.Item2;
+                        UpdateVariableWindow();
+                        inputText.Text = "Enter query here...";
+                    }
+                    catch (Util.TokenizeError exception)
+                    {
+                        consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                    }
+                    catch (Util.ScanError exception)
+                    {
+                        consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                    }
                 }
-                catch (Util.TokenizeError exception)
-                {
-                    consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
-                }
-                catch (Util.ScanError exception)
-                {
-                    consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
-                }
+                
             }
         }
 
