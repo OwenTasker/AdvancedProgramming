@@ -38,6 +38,7 @@ let performOperation oplist numlist =
             match numlist.[0] with
             | Number f ->
                 tail, ((unary operator f) :: numlist.[1 .. ])
+            | _ -> raise ExecError
     | head :: tail ->
         match numlist with
         | [] -> raise ExecError
@@ -52,6 +53,7 @@ let performOperation oplist numlist =
                 let operand1 = f
                 let operand2 = g
                 tail, ((calculate head operand2 operand1) :: numlist.[2 .. ])
+            | _ -> raise ExecError
 
         
 let rec evaluateBrackets oplist numlist =
