@@ -8,14 +8,22 @@
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Title="GraphPopUp"
-        Height="450"
-        Width="800"
+        Height="500"
+        Width="825"
         Background="#B4C7E7"
         Icon="mymathspal_logo.ico">
     
     <Grid>
         
         <Image Name="ImageGraph" Source="Images/graph.png"  VerticalAlignment="Center" HorizontalAlignment="Center" Height="400" Width="750"/>
+        
+        <Label Content="y" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="25,5,0,0"></Label>
+        <Label Content="x" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="0,0,5,25"></Label>
+        
+        <Label Name="LabelYMax" Content="450" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="5,25,0,0"></Label>
+        <Label Name="LabelYMin" Content="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Padding="5,0,0,25"></Label>
+        <Label Name="LabelXMax" Content="700" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="0,0,25,5"></Label>
+        <Label Name="LabelXMin" Content="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Padding="25,0,0,5"></Label>
 
     </Grid>
 </Window>

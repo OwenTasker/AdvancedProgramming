@@ -81,15 +81,24 @@ namespace WpfApp1
 
         private void GenerateGraph(double[] xArray, double[] yArray)
         {
-            //Scale y values to size of graph
+            //Set axis labels
+            double yMax = yArray.Max();
             double yMin = yArray.Min();
+            double xMax = xArray.Max();
+            double xMin = xArray.Min();
+
+            LabelYMax.Content = Math.Round(yMax);
+            LabelYMin.Content = Math.Round(yMin);
+            LabelXMax.Content = Math.Round(xMax);
+            LabelXMin.Content = Math.Round(xMin);
             
+            //Scale y values to size of graph
             for (int i = 0; i < ImageWidth; i++)
             {
                 yArray[i] -= yMin;
             }
             
-            double yMax = yArray.Max();
+            yMax = yArray.Max();
 
             double scale = (ImageHeight - 1) / yMax;
 
