@@ -36,7 +36,7 @@ namespace WpfApp1
         public void UpdateVariableWindow()
         {
             var keyValuePairs = _environment.ToList();
-            var variablesList = keyValuePairs.Select(pair => new Variable {Name = pair.Key, Value = pair.Value.ToString()});
+            var variablesList = keyValuePairs.Select(pair => new Variable {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
             varDisplay.ItemsSource = variablesList;
         }
 
@@ -60,7 +60,7 @@ namespace WpfApp1
                     consoleText.ScrollToEnd();
                     inputText.Clear();
                     var execOutput = Exec.exec(lexerOutput, Util.toMap(_environment));
-                    consoleText.AppendText(execOutput.Item1 + "\n>>");
+                    consoleText.AppendText(Util.terminalListToString("", execOutput.Item1) + "\n>>");
                     _environment = execOutput.Item2;
                     UpdateVariableWindow();
                     inputText.Text = "Enter query here...";
@@ -75,7 +75,7 @@ namespace WpfApp1
                 }
                 catch (Util.ExecError)
                 {
-                    consoleText.AppendText("Expression cannot be executed");
+                    consoleText.AppendText("Expression cannot be executed\n");
                 }
             }
         }
