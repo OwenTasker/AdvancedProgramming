@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using Interpreter;
 using Microsoft.FSharp.Collections;
+using Microsoft.Win32;
 
 namespace WpfApp1
 {
@@ -32,7 +36,7 @@ namespace WpfApp1
         {
             InitializeComponent();
         }
-
+        
         public void UpdateVariableWindow()
         {
             var keyValuePairs = _environment.ToList();
@@ -118,5 +122,91 @@ namespace WpfApp1
                 inputText.Text = "Enter query here...";
             }
         }
+
+        private void SaveButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            var newText = consoleText.Text;
+            newText = newText.Replace("\n", "");
+            var isValidToSave = Regex.Match(newText, "(>>.*){2}");
+
+            //If not enough characters present to save, return, else continue
+            if (!isValidToSave.Success)
+            {
+                MessageBox.Show("Insufficient Console Text To Save. Please execute at least one line");
+                return;
+            } 
+            
+            var savableInfo = new string[_environment.Count + 1];
+            var idx = 0;
+
+            //Collect each variable and add them to savableInfo
+            foreach (var variable in _environment)
+            {
+                var text = $"[{variable.Key}, {variable.Value}]";
+                savableInfo[idx] = text;
+                idx += 1;
+            }
+
+            //Add console text to savableInfo
+            savableInfo[idx] = consoleText.Text[..^3];
+
+            var dialog = new SaveFileDialog
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                Filter = "MyMathsPal File (*.mmp)|*.mmp"
+            };
+
+            if (dialog.ShowDialog() != true)
+            {
+                MessageBox.Show("Cancelled Save Operation");
+                return;
+            }
+
+            File.WriteAllLines(dialog.FileName, savableInfo);
+        }
+
+        private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            
+            var fileDialog = new OpenFileDialog
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                Filter = "MyMathsPal Files (*.mmp)|*.mmp;",
+                FilterIndex = 1,
+                Multiselect = false
+            };
+
+            //If no file is selected return, else load that file
+            if (fileDialog.ShowDialog() != true)
+            {
+                MessageBox.Show("Load Cancelled/Not Successful");
+                return;
+            }
+
+            consoleText.Clear();
+            _environment.Clear();
+            UpdateVariableWindow();
+
+            //Get the path of specified file
+            var filePath = fileDialog.FileName;
+                
+            foreach (var loadedLine in File.ReadLines(filePath))
+            {
+                //Make sure line is an assigned variable, not just the output from variable assignment
+                if (loadedLine.StartsWith('[') && loadedLine[^2].Equals(']'))
+                {
+                    var line = loadedLine[1..];
+                    line = line[..^1];
+                    var dictArr = line.Split(",");
+                    _environment.Add(dictArr[0], dictArr[1]);
+                }
+                else
+                {
+                    consoleText.Text += loadedLine + "\n";
+                }
+            }
+            UpdateVariableWindow();
+            consoleText.Text += ">>";
+        }
     }
-}
+}   
