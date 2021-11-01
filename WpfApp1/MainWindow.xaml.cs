@@ -52,9 +52,9 @@ namespace WpfApp1
                         GraphPopUp graphPopUp = new GraphPopUp(inputText.Text);
                         graphPopUp.Show();
                     }
-                    catch(Exception its_fucked)
+                    catch(Exception plottingException)
                     {
-                        consoleText.AppendText(its_fucked.Message + "\n" + its_fucked.StackTrace + "\n>>");
+                        consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" + plottingException.StackTrace + "\n>>");
                     }
                     
                     
