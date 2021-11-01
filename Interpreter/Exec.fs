@@ -131,15 +131,14 @@ let rec reduceRecursive tokens oplist numlist =
             match results with
             | oplist, numlist -> reduceRecursive tokens oplist numlist
             
-let reduce tokens =
+let reduce tokens  =
     reduceRecursive tokens [] []
     
-let exec terminals (env: Map<string, string>) =
+let exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->
-        let result = terminalListToString "" [reduce tail]
+        let result = [reduce tail]
         //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
         result, (env.Add(x, result) |> Map.toSeq |> dict)
     | _ ->
-        let result = string (reduce terminals)
-        result, (env |> Map.toSeq |> dict)
+        [reduce terminals], (env |> Map.toSeq |> dict)
