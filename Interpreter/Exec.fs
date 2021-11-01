@@ -83,19 +83,22 @@ let getPrecedence operator =
 let getAssociativity operator =
     (Map.find operator precedenceAssociativity) |> snd
 
-let rec reduceRecursive tokens oplist numlist =
+let rec reduceRecursive tokens oplist numlist (env: Map<string, terminal list>) =
     match tokens with
     | tokenHead :: tokenTail ->
         match tokenHead with
         | Number _ ->
-            reduceRecursive tokenTail oplist (tokenHead :: numlist)
+            reduceRecursive tokenTail oplist (tokenHead :: numlist) env
+        | Word x ->
+            let value = env.[x].[0]
+            reduceRecursive tokenTail oplist (value :: numlist) env
         | Lpar ->
-            reduceRecursive tokenTail (tokenHead :: oplist) numlist
+            reduceRecursive tokenTail (tokenHead :: oplist) numlist env
         | Rpar ->
             let results = evaluateBrackets oplist numlist
             match results with
             oplist, numlist ->
-                reduceRecursive tokenTail oplist numlist
+                reduceRecursive tokenTail oplist numlist env
         | UnaryMinus
         | UnaryPlus  
         | Divide
@@ -105,19 +108,19 @@ let rec reduceRecursive tokens oplist numlist =
         | Exponent ->
             match oplist with
             | [] ->
-                reduceRecursive tokenTail (tokenHead :: oplist) numlist
+                reduceRecursive tokenTail (tokenHead :: oplist) numlist env
             | opHead :: _ ->
                 match opHead with
                 | Lpar ->
-                    reduceRecursive tokenTail (tokenHead :: oplist) numlist
+                    reduceRecursive tokenTail (tokenHead :: oplist) numlist env
                 | _ ->
                     if (getPrecedence tokenHead < getPrecedence opHead
                         || getPrecedence tokenHead = getPrecedence opHead && getAssociativity tokenHead = "l") then
                         let results = performOperation oplist numlist
                         match results with
                         oplist, numlist ->
-                            reduceRecursive tokens oplist numlist
-                    else reduceRecursive tokenTail (tokenHead :: oplist) numlist     
+                            reduceRecursive tokens oplist numlist env
+                    else reduceRecursive tokenTail (tokenHead :: oplist) numlist env
         | _ -> raise ExecError
     | [] ->
         match oplist with
@@ -129,16 +132,16 @@ let rec reduceRecursive tokens oplist numlist =
         | _ ->
             let results = performOperation oplist numlist
             match results with
-            | oplist, numlist -> reduceRecursive tokens oplist numlist
+            | oplist, numlist -> reduceRecursive tokens oplist numlist env
             
-let reduce tokens  =
-    reduceRecursive tokens [] []
+let reduce tokens (env: Map<string, terminal list>) =
+    reduceRecursive tokens [] [] env
     
 let exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->
-        let result = [reduce tail]
+        let result = [reduce tail env]
         //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
         result, (env.Add(x, result) |> Map.toSeq |> dict)
     | _ ->
-        [reduce terminals], (env |> Map.toSeq |> dict)
+        [reduce terminals env], (env |> Map.toSeq |> dict)
