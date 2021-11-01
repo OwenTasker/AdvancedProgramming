@@ -73,6 +73,10 @@ namespace WpfApp1
                 {
                     consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
                 }
+                catch (Util.ExecError)
+                {
+                    consoleText.AppendText("Expression cannot be executed");
+                }
             }
         }
 
