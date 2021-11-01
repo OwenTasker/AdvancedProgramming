@@ -6,14 +6,14 @@ open Interpreter.Util
 
 let calculate operator op1 op2 =
     match operator with
-    | terminal.Plus -> Number (op1 + op2)
-    | terminal.Minus -> Number (op1 - op2)
-    | terminal.Times -> Number (op1 * op2)
-    | terminal.Divide ->
+    | Plus -> Number (op1 + op2)
+    | Minus -> Number (op1 - op2)
+    | Times -> Number (op1 * op2)
+    | Divide ->
         match op2 with
         | 0.0 -> raise CalculateError
         | _ -> Number (op1 / op2)
-    | terminal.Exponent -> Number (op1 ** op2)
+    | Exponent -> Number (op1 ** op2)
     | _ -> raise CalculateError
     
 let unary operator operand =
