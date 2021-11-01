@@ -17,12 +17,25 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <ToolBarTray Height="30" VerticalAlignment="Center">
-            <ToolBarTray.Background>DarkGray</ToolBarTray.Background>
-            <ToolBar x:Name="MyToolbar" Height="30" Margin="0,0,82,0">
-                <Button Name="SaveButton" Click="SaveButton_OnClick">Save</Button>
-                <Separator />
-                <Button Name="LoadButton" Click="LoadButton_OnClick">Load</Button>
+        <ToolBarTray Height="30" VerticalAlignment="Center" Background="#8FAADC">
+            <ToolBar x:Name="MyToolbar" Height="30" Margin="0,0,82,0" Background="#8FAADC">
+                <Button Name="SaveButton" Click="SaveButton_OnClick" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" FontFamily="Courier New" FontWeight="Bold" FontSize="14" Padding="3">
+                    Save
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <Separator Background="#8FAADC"/>
+                <Button Name="LoadButton" Click="LoadButton_OnClick" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" FontFamily="Courier New" FontWeight="Bold" FontSize="14" Padding="3">
+                    Load
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
             </ToolBar>
         </ToolBarTray>
 
