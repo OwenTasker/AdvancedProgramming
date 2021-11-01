@@ -22,7 +22,7 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IDictionary<string, string> _environment = new Dictionary<string, string>();
+        private IDictionary<string, FSharpList<Util.terminal>> _environment = new Dictionary<string, FSharpList<Util.terminal>>();
 
         public class Variable
         {
@@ -38,7 +38,7 @@ namespace WpfApp1
         public void UpdateVariableWindow()
         {
             var keyValuePairs = _environment.ToList();
-            var variablesList = keyValuePairs.Select(pair => new Variable {Name = pair.Key, Value = pair.Value});
+            var variablesList = keyValuePairs.Select(pair => new Variable {Name = pair.Key, Value = pair.Value.ToString()});
             varDisplay.ItemsSource = variablesList;
         }
 
