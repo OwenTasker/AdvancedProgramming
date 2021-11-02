@@ -33,7 +33,7 @@ and expressionP terminals =
             let x = (term >> expressionP) terminalsTail
             match x with
             |Rpar :: terminalsTail -> terminalsTail
-            |_ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
+            | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
         | _ -> (term >> expressionP) terminalsTail
     | _ -> terminals
     

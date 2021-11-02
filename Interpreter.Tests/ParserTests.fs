@@ -39,6 +39,10 @@ let ValidCases =
         TestCaseData([Word "x"; Assign; Number 2.0; Plus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryPlus; UnaryMinus; UnaryMinus; Number 2.0])
         TestCaseData([Word "x"; Assign; UnaryMinus; Number 2.0])
         TestCaseData([Word "x"; Assign; UnaryPlus; Number 2.0])
+        TestCaseData([Function "floor"; Lpar; Number 2.0 ; Rpar])
+        TestCaseData([Number 2.0; Plus; Function "floor"; Lpar; Number 2.0 ; Rpar])
+        TestCaseData([Number 2.0; Plus; Function "floor"; Lpar; Number 2.0 ; Rpar; Divide; Number 2.0])
+        TestCaseData([Function "floor"; Lpar; Number 2.0; Rpar; Plus; Function "floor"; Lpar; Number 2.0; Rpar])
     ]
     
 [<TestCaseSource("ValidCases")>]

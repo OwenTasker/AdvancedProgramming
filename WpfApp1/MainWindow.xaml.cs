@@ -216,5 +216,11 @@ namespace WpfApp1
             UpdateVariableWindow();
             consoleText.Text += ">>";
         }
+
+        private void ClearButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            consoleText.Clear();
+            consoleText.Text += ">>";
+        }
     }
 }   

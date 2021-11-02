@@ -36,6 +36,15 @@
                         </Style>
                     </Button.Resources>
                 </Button>
+                <Separator Background="#8FAADC"/>
+                <Button Click="ClearButton_OnClick" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" FontFamily="Courier New" FontWeight="Bold" FontSize="14" Padding="3">
+                    Clear
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
             </WrapPanel>
         </WrapPanel>
 
