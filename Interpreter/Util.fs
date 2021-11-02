@@ -31,8 +31,10 @@ let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
                 "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
                 "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
 
+let functions = ["ceil";"floor";"sqrt";"round"]
+
+
 let functionRegexString =
-    let functions = ["ceil";"floor";"sqrt";"round"]
     let functionRegex = [
         for i in functions -> "(^" + i + "$)|"
     ]
