@@ -75,7 +75,7 @@ namespace WpfApp1
                         var inputList = input.Select(c => c.ToString()).ToList();
                         var inputfSharpList = ListModule.OfSeq(inputList);
                         var lexerOutput = Lexer.lexer(inputfSharpList);
-                        Parser.expression(lexerOutput);
+                        Parser.statement(lexerOutput);
                         consoleText.AppendText(" " + input + "\n");
                         consoleText.ScrollToEnd();
                         inputText.Clear();
@@ -85,14 +85,24 @@ namespace WpfApp1
                         UpdateVariableWindow();
                         inputText.Text = "Enter query here...";
                     }
-                    catch (Util.TokenizeError exception)
+                    catch (Util.TokenizeError ex1)
                     {
-                        consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                        consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
                     }
-                    catch (Util.ScanError exception)
+                    catch (Util.ScanError ex1)
                     {
-                        consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                        consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
                     }
+                    catch (Util.ParseError ex1)
+                    {
+                        consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+                    }
+                    catch (Exception)
+                    {
+                        consoleText.AppendText("Exec Error: " + input + "\n\"" + input + "\"\n>>");
+                    }
+                    
+                    
                 }
                 
             }

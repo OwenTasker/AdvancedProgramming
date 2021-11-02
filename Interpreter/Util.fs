@@ -18,7 +18,7 @@ type terminal =
     | Word of string
     | Number of float
 
-exception ParseError
+exception ParseError of string
 exception ScanError of string
 exception TokenizeError of string
 exception CalculateError

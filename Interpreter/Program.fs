@@ -10,15 +10,16 @@ let interpret (input) =
     let lexedVals = lexer input
     
     try
-        expression(lexedVals) |> ignore
+        statement lexedVals |> ignore
     with
     | TokenizeError _ as e -> Console.WriteLine(e.Message)
     | ScanError _ as e -> Console.WriteLine(e.Message)
-    | ParseError as e -> Console.WriteLine(e.Message) 
+    | ParseError _ as e -> Console.WriteLine(e.Message) 
     
     let a, _ = exec lexedVals (Map<string, string>[])
     
     Console.WriteLine a
+            
 
 [<EntryPoint>]
 let main args =
