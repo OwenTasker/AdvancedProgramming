@@ -192,8 +192,8 @@ namespace WpfApp1
                 
             foreach (var loadedLine in File.ReadLines(filePath))
             {
-                //Make sure line is an assigned variable, not just the output from variable assignment
-                if (loadedLine.StartsWith('[') && loadedLine[^2].Equals(']'))
+                //Make sure line is an assigned variable
+                if (loadedLine.Contains(','))
                 {
                     var line = loadedLine[1..];
                     line = line[..^1];
