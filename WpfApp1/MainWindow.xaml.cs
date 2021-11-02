@@ -51,7 +51,7 @@ namespace WpfApp1
             {
                 try
                 {
-                    GraphPopUp graphPopUp = new GraphPopUp(inputText.Text);
+                    var graphPopUp = new GraphPopUp(inputText.Text);
                     graphPopUp.Show();
                 }
                 catch(Exception plottingException)
