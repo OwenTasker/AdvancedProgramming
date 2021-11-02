@@ -19,6 +19,7 @@ let rec tokenize input =
             match tail with
             | ">" :: tailTail -> head + ">" :: tokenize tailTail
             | _ -> head :: tokenize tail
+        | "=" -> raise (TokenizeError "Invalid Operator. The Assignment Operator is \"->\"")
         | SymbolMatch _ ->  head :: tokenize tail
         | NumberMatchLex _ ->
             if tail.Length > 0 then(
@@ -76,7 +77,6 @@ let rec scan tokens output  =
         | "(" -> scan tokensTail (Lpar :: output)
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
-        | "=" -> scan tokensTail (Equals :: output)
         | "->" -> scan tokensTail (Assign :: output)
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
         | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)

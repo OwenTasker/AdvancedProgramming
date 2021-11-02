@@ -31,18 +31,25 @@ let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
                 "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
                 "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
 
-let functions = ["ceil";"floor";"sqrt";"round"]
+let functions = [
+                 ("ceil", "One Argument; A function to determine the ceiling of a decimal value, given a value of 2.1, will return 3")
+                 ("floor", "One Argument; A function to determine the floor of a decimal value, given a value of 2.1, will return 2")
+                 ("sqrt", "One Argument; A function to determine the square root of a value, given a value of 4, will return 2")
+                 ("cbrt", "One Argument; A function to determine the cube root of a value, given a value of 8, will return 2")
+                 ("round", "One Argument; A function to determine the rounded value of the provided argument, given a value of 2.5, will return 3")
+                 ("plot"), ""
+                 ]
 
 
 let functionRegexString =
     let functionRegex = [
-        for i in functions -> "(^" + i + "$)|"
+        for (x,_) in functions -> "(^" + x + "$)|"
     ]
     let generateRegex = (String.concat "" functionRegex)
     generateRegex.Remove(generateRegex.Length-1)
     
 let symbolRegexString =
-    let symbols = ["+";"*";"-";"^";"/";"=";"(";")";">"]
+    let symbols = ["+";"*";"-";"^";"/";"(";")";">"]
     let symbolRegex = [
         for i in symbols -> "(^\\" + i + "$)|"
     ]
