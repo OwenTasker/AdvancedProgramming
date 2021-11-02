@@ -23,7 +23,7 @@ and expression terminals =
         | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis") 
     | _ -> (term >> expressionP) terminals
 
-// expression' ::= + term expression' | function expression' |empty
+// expression' ::= + term expression' | function expression' | empty
 and expressionP terminals =
     match terminals with
     | Plus :: terminalsTail

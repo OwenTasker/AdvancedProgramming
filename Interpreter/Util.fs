@@ -13,7 +13,6 @@ type terminal =
     | Lpar
     | Rpar
     | Assign
-    | Equals
     | Function of string
     | Word of string
     | Number of float
@@ -37,9 +36,8 @@ let functions = [
                  ("sqrt", "One Argument; A function to determine the square root of a value, given a value of 4, will return 2")
                  ("cbrt", "One Argument; A function to determine the cube root of a value, given a value of 8, will return 2")
                  ("round", "One Argument; A function to determine the rounded value of the provided argument, given a value of 2.5, will return 3")
-                 ("plot"), ""
+                 ("plot", "")
                  ]
-
 
 let functionRegexString =
     let functionRegex = [
