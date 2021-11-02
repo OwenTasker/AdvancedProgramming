@@ -13,7 +13,7 @@ let rec statement terminals =
         | _ -> expression terminals
     | _ -> expression terminals
     
-// expression ::= term expression' | 
+// expression ::= term expression' | function expression
 and expression terminals =
     match terminals with
     | Function _ :: Lpar :: terminalsTail ->
@@ -23,7 +23,7 @@ and expression terminals =
         | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis") 
     | _ -> (term >> expressionP) terminals
 
-// expression' ::= + term expression' | empty
+// expression' ::= + term expression' | function expression' |empty
 and expressionP terminals =
     match terminals with
     | Plus :: terminalsTail

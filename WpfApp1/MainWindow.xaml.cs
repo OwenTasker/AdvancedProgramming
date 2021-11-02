@@ -101,8 +101,6 @@ namespace WpfApp1
                     {
                         consoleText.AppendText("Exec Error: " + input + "\n\"" + input + "\"\n>>");
                     }
-                    
-                    
                 }
                 
             }
