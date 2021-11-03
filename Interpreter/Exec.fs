@@ -93,7 +93,7 @@ let rec reduceRecursive tokens oplist numlist (env: Map<string, terminal list>) 
             reduceRecursive tokenTail oplist (tokenHead :: numlist) env
         | Word x ->
             if env.ContainsKey x then
-                let value = env.[x].[0]
+                let value = reduce env.[x] env
                 reduceRecursive tokenTail oplist (value :: numlist) env
             else raise ExecError
         | Lpar ->
@@ -138,7 +138,7 @@ let rec reduceRecursive tokens oplist numlist (env: Map<string, terminal list>) 
             match results with
             | oplist, numlist -> reduceRecursive tokens oplist numlist env
             
-let reduce tokens (env: Map<string, terminal list>) =
+and reduce tokens (env: Map<string, terminal list>) =
     reduceRecursive tokens [] [] env
    
 let rec closed terminals (env: Map<string, terminal list>) =
