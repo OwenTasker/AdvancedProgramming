@@ -250,6 +250,11 @@ let GivenReduceRecursive_WhenPassedValidTokens_ReturnCorrectAnswer(tokens: termi
     let result = reduceRecursive tokens [] [] Map.empty
     Assert.That(result, Is.EqualTo(expected))
     
+[<TestCaseSource("ValidReduceCases")>]
+let GivenExec_WhenPassedSimpleExpressionWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
+    let result = exec tokens Map.empty
+    Assert.That(result, Is.EqualTo([expected], Map.empty |> Map.toSeq |> dict))
+    
 let InvalidReduceCases =
     [
         TestCaseData([Plus;])
@@ -286,7 +291,11 @@ let GivenReduce_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenReduceRecursive_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
     Assert.Throws<ExecError>(fun () -> reduceRecursive tokens [] [] Map.empty |> ignore) |> ignore
-
+    
+[<TestCaseSource("InvalidReduceCases")>]
+let GivenExed_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
+    Assert.Throws<ExecError>(fun () -> exec tokens Map.empty |> ignore) |> ignore
+    
 let ValidPerformOperationCases =
     [
         TestCaseData([Plus;], [Number 1.0; Number 2.0;], (([] : terminal list), [Number 3.0;]))
@@ -426,3 +435,25 @@ let InvalidEvaluateBracketsCases =
 [<TestCaseSource("InvalidEvaluateBracketsCases")>]
 let GivenEvaluateBrackets_WhenPassedInvalidExpression_RaiseExecError(opList: terminal list, numList: terminal list) =
     Assert.Throws<ExecError>(fun () -> evaluateBrackets opList numList |> ignore) |> ignore
+
+let env = Map [("x", [Number 1.0])
+               ("y", [Number 1.0; Plus; Word "x"])
+               ("z", [Word "a"])
+               ("q", [Word "x"; Plus; Word "z"])]
+let ClosedCases =
+    [
+        TestCaseData(([] : terminal list), true)
+        TestCaseData([Number 1.0], true)
+        TestCaseData([Word "x"], true)
+        TestCaseData([Word "x"; Plus; Number 1.0], true)
+        TestCaseData([Word "x"; Plus; Word "y"], true)
+        TestCaseData([Word "z"], false)
+        TestCaseData([Word "q"], false)
+        TestCaseData([Word "x"; Plus; Word "z"], false)
+    ]
+    
+[<TestCaseSource("ClosedCases")>]
+let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean(terminals: terminal list, boolean: bool) =
+    let result = closed terminals env
+    Assert.That(result, Is.EqualTo(boolean))
+    
