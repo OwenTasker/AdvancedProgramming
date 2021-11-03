@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -46,55 +44,53 @@ namespace WpfApp1
 
         private void EnterButtonPress(object sender, RoutedEventArgs e)
         {
-            if (!(inputText.Text == "Enter query here..." || String.IsNullOrEmpty(inputText.Text) ||
-                  String.IsNullOrWhiteSpace(inputText.Text)))
+            if (inputText.Text == "Enter query here..." || string.IsNullOrEmpty(inputText.Text) ||
+                string.IsNullOrWhiteSpace(inputText.Text)) return;
+            
+            if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
             {
-                if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
+                try
                 {
-                    try
-                    {
-                        GraphPopUp graphPopUp = new GraphPopUp(inputText.Text);
-                        graphPopUp.Show();
-                    }
-                    catch(Exception plottingException)
-                    {
-                        consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" + plottingException.StackTrace + "\n>>");
-                    }
-                    
-                    
+                    var graphPopUp = new GraphPopUp(inputText.Text);
+                    graphPopUp.Show();
                 }
-                else
+                catch(Exception plottingException)
                 {
-                    // 1. send query to lexer/parser/executor
-                    // 2a. if valid, put received answer on new line
-                    // 2b. if invalid, put out error
-                    var input = inputText.Text;
+                    consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" + plottingException.StackTrace + "\n>>");
+                }
+                    
+                    
+            }
+            else
+            {
+                // 1. send query to lexer/parser/executor
+                // 2a. if valid, put received answer on new line
+                // 2b. if invalid, put out error
+                var input = inputText.Text;
 
-                    try
-                    {
-                        var inputList = input.Select(c => c.ToString()).ToList();
-                        var inputfSharpList = ListModule.OfSeq(inputList);
-                        var lexerOutput = Lexer.lexer(inputfSharpList);
-                        Parser.expression(lexerOutput);
-                        consoleText.AppendText(" " + input + "\n");
-                        consoleText.ScrollToEnd();
-                        inputText.Clear();
-                        var execOutput = Exec.exec(lexerOutput, Util.toMap(_environment));
-                        consoleText.AppendText(execOutput.Item1 + "\n>>");
-                        _environment = execOutput.Item2;
-                        UpdateVariableWindow();
-                        inputText.Text = "Enter query here...";
-                    }
-                    catch (Util.TokenizeError exception)
-                    {
-                        consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
-                    }
-                    catch (Util.ScanError exception)
-                    {
-                        consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
-                    }
+                try
+                {
+                    var inputList = input.Select(c => c.ToString()).ToList();
+                    var inputfSharpList = ListModule.OfSeq(inputList);
+                    var lexerOutput = Lexer.lexer(inputfSharpList);
+                    Parser.expression(lexerOutput);
+                    consoleText.AppendText(" " + input + "\n");
+                    consoleText.ScrollToEnd();
+                    inputText.Clear();
+                    var execOutput = Exec.exec(lexerOutput, Util.toMap(_environment));
+                    consoleText.AppendText(execOutput.Item1 + "\n>>");
+                    _environment = execOutput.Item2;
+                    UpdateVariableWindow();
+                    inputText.Text = "Enter query here...";
                 }
-                
+                catch (Util.TokenizeError exception)
+                {
+                    consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                }
+                catch (Util.ScanError exception)
+                {
+                    consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                }
             }
         }
 
@@ -140,9 +136,9 @@ namespace WpfApp1
             var idx = 0;
 
             //Collect each variable and add them to savableInfo
-            foreach (var variable in _environment)
+            foreach (var (key, value) in _environment)
             {
-                var text = $"[{variable.Key}, {variable.Value}]";
+                var text = $"[{key}, {value}]";
                 savableInfo[idx] = text;
                 idx += 1;
             }
@@ -192,8 +188,8 @@ namespace WpfApp1
                 
             foreach (var loadedLine in File.ReadLines(filePath))
             {
-                //Make sure line is an assigned variable, not just the output from variable assignment
-                if (loadedLine.StartsWith('[') && loadedLine[^2].Equals(']'))
+                //Make sure line is an assigned variable
+                if (loadedLine.Contains(','))
                 {
                     var line = loadedLine[1..];
                     line = line[..^1];
