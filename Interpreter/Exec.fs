@@ -22,25 +22,25 @@ let unary operator operand =
     | UnaryPlus -> Number operand
     | _ -> raise UnaryError
         
-let performOperation oplist numlist =
-    match oplist with
+let performOperation opList numList =
+    match opList with
     | []
     | Rpar :: _ 
     | Lpar :: _ -> raise ExecError
     | UnaryMinus :: tail
     | UnaryPlus :: tail ->
-        let operator = oplist.[0]
-        match numlist with
+        let operator = opList.[0]
+        match numList with
         | [] -> raise ExecError
         | [ Number f; ] ->
             tail, (unary operator f) :: []
         | _ ->
-            match numlist.[0] with
+            match numList.[0] with
             | Number f ->
-                tail, ((unary operator f) :: numlist.[1 .. ])
+                tail, ((unary operator f) :: numList.[1 .. ])
             | _ -> raise ExecError
     | head :: tail ->
-        match numlist with
+        match numList with
         | [] -> raise ExecError
         | [ Number _; ] -> raise ExecError
         | [ Number f; Number g; ] ->
@@ -48,27 +48,27 @@ let performOperation oplist numlist =
             let operand2 = g
             tail, ((calculate head operand2 operand1) :: [])
         | _ ->
-            match numlist.[0], numlist.[1] with
+            match numList.[0], numList.[1] with
             | Number f, Number g ->
                 let operand1 = f
                 let operand2 = g
-                tail, ((calculate head operand2 operand1) :: numlist.[2 .. ])
+                tail, ((calculate head operand2 operand1) :: numList.[2 .. ])
             | _ -> raise ExecError
 
         
-let rec evaluateBrackets oplist numlist =
-    match oplist with
+let rec evaluateBrackets opList numList =
+    match opList with
     | []
     | Rpar :: _ -> raise ExecError
     | Lpar :: tail ->
-        match numlist with
-        | _ :: _ -> tail, numlist
+        match numList with
+        | _ :: _ -> tail, numList
         | [] -> raise ExecError
     | _ ->
-        let results = performOperation oplist numlist
+        let results = performOperation opList numList
         match results with
-        | oplist, numlist ->
-            evaluateBrackets oplist numlist
+        | opList, numList ->
+            evaluateBrackets opList numList
 
 let precedenceAssociativity =
     Map [(UnaryMinus, (4, "r"))
@@ -85,24 +85,24 @@ let getPrecedence operator =
 let getAssociativity operator =
     (Map.find operator precedenceAssociativity) |> snd
 
-let rec reduceRecursive tokens oplist numlist (env: Map<string, terminal list>) =
+let rec reduceRecursive tokens opList numList (env: Map<string, terminal list>) =
     match tokens with
     | tokenHead :: tokenTail ->
         match tokenHead with
         | Number _ ->
-            reduceRecursive tokenTail oplist (tokenHead :: numlist) env
+            reduceRecursive tokenTail opList (tokenHead :: numList) env
         | Word x ->
             if env.ContainsKey x then
                 let value = reduce env.[x] env
-                reduceRecursive tokenTail oplist (value :: numlist) env
+                reduceRecursive tokenTail opList (value :: numList) env
             else raise ExecError
         | Lpar ->
-            reduceRecursive tokenTail (tokenHead :: oplist) numlist env
+            reduceRecursive tokenTail (tokenHead :: opList) numList env
         | Rpar ->
-            let results = evaluateBrackets oplist numlist
+            let results = evaluateBrackets opList numList
             match results with
-            oplist, numlist ->
-                reduceRecursive tokenTail oplist numlist env
+            opList, numList ->
+                reduceRecursive tokenTail opList numList env
         | UnaryMinus
         | UnaryPlus  
         | Divide
@@ -110,33 +110,33 @@ let rec reduceRecursive tokens oplist numlist (env: Map<string, terminal list>) 
         | Minus
         | Plus
         | Exponent ->
-            match oplist with
+            match opList with
             | [] ->
-                reduceRecursive tokenTail (tokenHead :: oplist) numlist env
+                reduceRecursive tokenTail (tokenHead :: opList) numList env
             | opHead :: _ ->
                 match opHead with
                 | Lpar ->
-                    reduceRecursive tokenTail (tokenHead :: oplist) numlist env
+                    reduceRecursive tokenTail (tokenHead :: opList) numList env
                 | _ ->
                     if (getPrecedence tokenHead < getPrecedence opHead
                         || getPrecedence tokenHead = getPrecedence opHead && getAssociativity tokenHead = "l") then
-                        let results = performOperation oplist numlist
+                        let results = performOperation opList numList
                         match results with
-                        oplist, numlist ->
-                            reduceRecursive tokens oplist numlist env
-                    else reduceRecursive tokenTail (tokenHead :: oplist) numlist env
+                        opList, numList ->
+                            reduceRecursive tokens opList numList env
+                    else reduceRecursive tokenTail (tokenHead :: opList) numList env
         | _ -> raise ExecError
     | [] ->
-        match oplist with
+        match opList with
         | [] ->
-            match numlist with
-            | [ _ ] -> numlist.[0]
+            match numList with
+            | [ _ ] -> numList.[0]
             | _ -> raise ExecError
         | Lpar :: _ -> raise ExecError
         | _ ->
-            let results = performOperation oplist numlist
+            let results = performOperation opList numList
             match results with
-            | oplist, numlist -> reduceRecursive tokens oplist numlist env
+            | opList, numList -> reduceRecursive tokens opList numList env
             
 and reduce tokens (env: Map<string, terminal list>) =
     reduceRecursive tokens [] [] env
