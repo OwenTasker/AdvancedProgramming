@@ -79,6 +79,8 @@ and arguments terminals =
     | Word _ :: Assign :: tail ->
         let result = expression tail
         arguments result
+    | Comma :: tail ->
+        arguments tail
     | Rpar :: tail -> tail
     | _ -> raise ParseError
     
