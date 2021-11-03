@@ -76,7 +76,9 @@ and factor terminals =
     
 and arguments terminals =
     match terminals with
-    | Number _ :: Comma :: tail -> arguments tail
+    | Word _ :: Assign :: tail ->
+        let result = expression tail
+        arguments result
     | Rpar :: tail -> tail
     | _ -> raise ParseError
     
