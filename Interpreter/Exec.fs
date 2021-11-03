@@ -140,12 +140,23 @@ let rec reduceRecursive tokens oplist numlist (env: Map<string, terminal list>) 
             
 let reduce tokens (env: Map<string, terminal list>) =
     reduceRecursive tokens [] [] env
+   
+let rec closed terminals (env: Map<string, terminal list>) =
+    match terminals with
+    | [] -> true
+    | Word x :: tail ->
+        if env.ContainsKey x && closed env.[x] env then closed tail env else false
+    | _ :: tail -> closed tail env
     
 let exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->
-        let result = [reduce tail env]
+        if closed tail env then 
+            let result = [reduce tail env]
         //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
-        result, (env.Add(x, result) |> Map.toSeq |> dict)
+            result, (env.Add(x, result) |> Map.toSeq |> dict)
+        else terminals, (env.Add(x, tail) |> Map.toSeq |> dict) 
     | _ ->
-        [reduce terminals env], (env |> Map.toSeq |> dict)
+        if closed terminals env then
+            [reduce terminals env], (env |> Map.toSeq |> dict)
+        else terminals, (env |> Map.toSeq |> dict)
