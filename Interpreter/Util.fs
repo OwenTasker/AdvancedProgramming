@@ -109,7 +109,6 @@ let rec terminalListToString str list =
     | Number x :: tail -> terminalListToString (str + string x ) tail
     | Word x :: tail -> terminalListToString (str + x ) tail
     | Assign :: tail -> terminalListToString (str + "->") tail
-    | Equals :: tail -> terminalListToString (str + " = ") tail
     | [] -> str
     | _ -> failwith "shouldn't happen don't want to think about proper error right now it's 8:35am but more importantly it's only October and I'm so bored"
     

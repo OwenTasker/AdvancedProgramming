@@ -41,8 +41,12 @@ let ValidCases =
         TestCaseData([Word "x"; Assign; UnaryPlus; Number 2.0])
         TestCaseData([Function "floor"; Lpar; Number 2.0 ; Rpar])
         TestCaseData([Number 2.0; Plus; Function "floor"; Lpar; Number 2.0 ; Rpar])
-        TestCaseData([Number 2.0; Plus; Function "floor"; Lpar; Number 2.0 ; Rpar; Divide; Number 2.0])
         TestCaseData([Function "floor"; Lpar; Number 2.0; Rpar; Plus; Function "floor"; Lpar; Number 2.0; Rpar])
+        TestCaseData([Number 2.0; Plus; Function "floor"; Lpar; Number 2.0 ; Rpar; Plus; Number 2.0])
+        TestCaseData([Number 2.0; Plus; Function "floor"; Lpar; Number 2.0 ; Rpar; Minus; Number 2.0])
+        TestCaseData([Number 2.0; Plus; Function "floor"; Lpar; Number 2.0 ; Rpar; Divide; Number 2.0])
+        TestCaseData([Number 2.0; Plus; Function "floor"; Lpar; Number 2.0 ; Rpar; Times; Number 2.0])
+        TestCaseData([Number 2.0; Minus; Lpar; Function "floor"; Lpar; Number 2.0 ; Rpar; Rpar])
     ]
     
 [<TestCaseSource("ValidCases")>]
