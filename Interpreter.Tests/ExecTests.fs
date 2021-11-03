@@ -133,7 +133,7 @@ let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2
 let GivenUnary_WhenPassedInvalidOperator_RaiseUnaryError(operator: terminal) =
     Assert.Throws<UnaryError>(fun () -> unary operator 1.0 |> ignore) |> ignore
     
-let ValidReduceCases =
+let ValidNoVariablesReduceCases =
     [
         //SIMPLE ADDITION CASES
         TestCaseData([Number 1.0; Plus; Number 1.0], Number 2.0)
@@ -240,17 +240,17 @@ let ValidReduceCases =
         TestCaseData([UnaryMinus; Number 2.0; Exponent; Number 3.0], Number -8.0)
     ]
     
-[<TestCaseSource("ValidReduceCases")>]
-let GivenReduce_WhenPassedValidTokens_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
+[<TestCaseSource("ValidNoVariablesReduceCases")>]
+let GivenReduce_WhenPassedValidTokensWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
     let result = reduce tokens Map.empty
     Assert.That(result, Is.EqualTo(expected))
     
-[<TestCaseSource("ValidReduceCases")>]
-let GivenReduceRecursive_WhenPassedValidTokens_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
+[<TestCaseSource("ValidNoVariablesReduceCases")>]
+let GivenReduceRecursive_WhenPassedValidTokensWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
     let result = reduceRecursive tokens [] [] Map.empty
     Assert.That(result, Is.EqualTo(expected))
     
-[<TestCaseSource("ValidReduceCases")>]
+[<TestCaseSource("ValidNoVariablesReduceCases")>]
 let GivenExec_WhenPassedSimpleExpressionWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
     let result = exec tokens Map.empty
     Assert.That(result, Is.EqualTo([expected], Map.empty |> Map.toSeq |> dict))
@@ -282,6 +282,8 @@ let InvalidReduceCases =
         TestCaseData([Lpar; Number 5.0; Plus; Number 6.0; Rpar; Number 5.0])
         TestCaseData([Number 2.0; Exponent])
         TestCaseData([Exponent; Number 5.0;])
+        TestCaseData([Assign;])
+        TestCaseData([Word "x"; Assign])
     ]
     
 [<TestCaseSource("InvalidReduceCases")>]
@@ -436,7 +438,7 @@ let InvalidEvaluateBracketsCases =
 let GivenEvaluateBrackets_WhenPassedInvalidExpression_RaiseExecError(opList: terminal list, numList: terminal list) =
     Assert.Throws<ExecError>(fun () -> evaluateBrackets opList numList |> ignore) |> ignore
 
-let env = Map [("x", [Number 1.0])
+let env = Map [("x", [Number 2.0])
                ("y", [Number 1.0; Plus; Word "x"])
                ("z", [Word "a"])
                ("q", [Word "x"; Plus; Word "z"])]
@@ -453,7 +455,59 @@ let ClosedCases =
     ]
     
 [<TestCaseSource("ClosedCases")>]
-let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean(terminals: terminal list, boolean: bool) =
+let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean(terminals: terminal list, expected: bool) =
     let result = closed terminals env
-    Assert.That(result, Is.EqualTo(boolean))
+    Assert.That(result, Is.EqualTo(expected))
     
+let ValidVariablesReduceCases =
+    [
+        TestCaseData([Word "x"], Number 2.0)
+        TestCaseData([Word "x"; Plus; Number 1.0], Number 3.0)
+        TestCaseData([Number 1.0; Plus; Word "x"], Number 3.0)
+        TestCaseData([Word "x"; Plus; Word "x"], Number 4.0)
+        TestCaseData([Word "y"], Number 3.0)
+        TestCaseData([Word "x"; Times; Word "y"], Number 6.0)
+        TestCaseData([Word "x"; Times; Word "y"; Times; Word "y"], Number 18.0)
+    ]
+    
+[<TestCaseSource("ValidVariablesReduceCases")>]
+let GivenReduce_WhenPassedValidExpressionWithVariables_ReturnCorrectResult(terminals: terminal list, expected: terminal) =
+    let result = reduce terminals env
+    Assert.That(result, Is.EqualTo(expected))
+    
+[<TestCaseSource("ValidVariablesReduceCases")>]
+let GivenReduceRecursive_WhenPassedValidExpressionWithVariables_ReturnCorrectResult(terminals: terminal list, expected: terminal) =
+    let result = reduceRecursive terminals [] [] env
+    Assert.That(result, Is.EqualTo(expected))
+    
+let InvalidVariablesReduceCases =
+    [
+        TestCaseData([Word "z"])
+        TestCaseData([Word "x"; Plus; Word "z"])
+        TestCaseData([Word "z"; Plus; Word "x"])
+        TestCaseData([Word "a"])
+        TestCaseData([Word "x"; Plus; Word "a"])
+    ]
+    
+[<TestCaseSource("InvalidReduceCases")>]
+let GivenReduce_WhenPassedInvalidTokensWithVariables_RaiseExecError(tokens: terminal list) =
+    Assert.Throws<ExecError>(fun () -> reduce tokens env |> ignore) |> ignore
+    
+[<TestCaseSource("InvalidReduceCases")>]
+let GivenReduceRecursive_WhenPassedInvalidTokensWithVariables_RaiseExecError(tokens: terminal list) =
+    Assert.Throws<ExecError>(fun () -> reduceRecursive tokens [] [] env |> ignore) |> ignore
+
+let ValidExecAssignCases =
+    [
+        TestCaseData([Word "x"; Assign; Number 2.0], [Number 2.0], ("x", [Number 2.0]))
+        TestCaseData([Word "x"; Assign; Word "x";], [Number 2.0], ("x", [Number 2.0]))
+        TestCaseData([Word "x"; Assign; Word "x"; Plus; Word "x"], [Number 4.0], ("x", [Number 4.0]))
+        TestCaseData([Word "y"; Assign; Word "z"], [Word "y"; Assign; Word "z"], ("y", [Word "z"]))
+        TestCaseData([Word "b"; Assign; Word "x"; Times; Word "y"], [Number 6.0], ("b", [Number 6.0]))
+        TestCaseData([Word "x"; Assign; Word "x"; Plus; Number 1.0], [Number 3.0], ("x", [Number 3.0]))
+    ]
+    
+[<TestCaseSource("ValidExecAssignCases")>]
+let GivenExec_WhenPassedValidAssign_ThenAddToEnvAndReturn(terminals: terminal list, reduction: terminal list, entry: string*terminal list) =
+    let result = exec terminals env
+    Assert.That(result, Is.EqualTo((reduction, (env.Add entry))))
