@@ -198,7 +198,10 @@ namespace WpfApp1
                     var line = loadedLine[1..];
                     line = line[..^1];
                     var dictArr = line.Split(",");
-                    _environment.Add(dictArr[0], dictArr[1]);
+                    var inputList = dictArr[1].Select(c => c.ToString()).ToList();
+                    var inputfSharpList = ListModule.OfSeq(inputList);
+                    var lexerOutput = Lexer.lexer(inputfSharpList);
+                    _environment.Add(dictArr[0], lexerOutput);
                 }
                 else
                 {
