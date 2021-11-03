@@ -74,8 +74,11 @@ namespace WpfApp1
                     {
                         var inputList = input.Select(c => c.ToString()).ToList();
                         var inputfSharpList = ListModule.OfSeq(inputList);
+                        
                         var lexerOutput = Lexer.lexer(inputfSharpList);
+                        
                         Parser.statement(lexerOutput);
+                        
                         consoleText.AppendText(" " + input + "\n");
                         consoleText.ScrollToEnd();
                         inputText.Clear();
