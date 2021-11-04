@@ -10,7 +10,8 @@ let interpret (input) =
     let lexedVals = lexer input
     
     try
-        statement lexedVals |> ignore
+        let x = statement lexedVals
+        Console.WriteLine x
     with
     | TokenizeError _ as e -> Console.WriteLine(e.Message)
     | ScanError _ as e -> Console.WriteLine(e.Message)

@@ -164,6 +164,7 @@ namespace WpfApp1
             var dialog = new SaveFileDialog
             {
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                
                 Filter = "MyMathsPal File (*.mmp)|*.mmp"
             };
 

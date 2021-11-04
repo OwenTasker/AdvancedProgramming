@@ -14,27 +14,13 @@ let rec statement terminals =
     | _ -> expression terminals
     
 // expression ::= term expression' | function expression
-and expression terminals =
-    match terminals with
-    | Function _ :: Lpar :: terminalsTail ->
-        let x = expression terminalsTail
-        match x with
-        | Rpar :: terminalsTail -> expressionP terminalsTail
-        | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis") 
-    | _ -> (term >> expressionP) terminals
+and expression terminals = (term >> expressionP) terminals
 
 // expression' ::= + term expression' | function expression' | empty
 and expressionP terminals =
     match terminals with
     | Plus :: terminalsTail
-    | Minus :: terminalsTail ->
-        match terminalsTail with
-        | Function _ :: Lpar :: terminalsTail ->
-            let x = (term >> expressionP) terminalsTail
-            match x with
-            |Rpar :: terminalsTail -> (termP >> expressionP) terminalsTail
-            | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
-        | _ -> (term >> expressionP) terminalsTail
+    | Minus :: terminalsTail -> (term >> expressionP) terminalsTail
     | _ -> terminals
     
 // term ::= exponent term'
@@ -62,7 +48,7 @@ and unary terminals =
     | UnaryMinus :: terminalsTail
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
-
+   
 // factor ::= int | ( expression )
 and factor terminals =
     match terminals with
@@ -73,6 +59,7 @@ and factor terminals =
         | Number _ :: _
         | Word _ :: _ ->  raise (ParseError "Parse Error: Missing Operator")
         | _ -> terminalsTail
+    | Function _ :: Lpar :: terminalsTail
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
