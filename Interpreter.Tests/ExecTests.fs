@@ -257,6 +257,7 @@ let GivenExec_WhenPassedSimpleExpressionWithoutVariables_ReturnCorrectAnswer(tok
     
 let InvalidReduceCases =
     [
+        TestCaseData([Comma;])
         TestCaseData([Plus;])
         TestCaseData([Minus;])
         TestCaseData([Times;])
@@ -537,3 +538,72 @@ let CreateTerminalListUpToCommaErrorCases =
 [<TestCaseSource("CreateTerminalListUpToCommaErrorCases")>]
 let GivenCreateTerminalListUpToComma_WhenPassedEmptyArray_RaiseExecError(terminalIn: terminal list) =
     Assert.Throws<ExecError>(fun () -> createTerminalListUpToComma terminalIn [] |> ignore) |> ignore
+
+//Setarguments
+
+let SetArgumentsCases =
+    [
+        TestCaseData([Rpar], Map [("x", [Number 2.0])], Map [("x", [Number 2.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Rpar], Map.empty<string, terminal list>, Map [("x", [Number 2.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Comma; Word "y"; Assign; Number 3.0; Rpar], Map.empty<string, terminal list>, Map [("x", [Number 2.0]); ("y", [Number 3.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Rpar], Map [("z", [Number 4.0])], Map [("x", [Number 2.0]); ("z", [Number 4.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Comma; Word "y"; Assign; Number 3.0; Rpar], Map [("z", [Number 4.0])], Map [("x", [Number 2.0]); ("y", [Number 3.0]); ("z", [Number 4.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Rpar], Map [("x", [Number 4.0])], Map [("x", [Number 2.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Comma; Word "y"; Assign; Number 3.0; Rpar], Map [("x", [Number 4.0])], Map [("x", [Number 2.0]); ("y", [Number 3.0])])
+    ]
+    
+[<TestCaseSource("SetArgumentsCases")>]
+let GivenSetArguments_WhenPassedValidAssignments_ReturnUpdatedMap(terminals: terminal list, inMap: Map<string, terminal list>, outMap: Map<string, terminal list>) =
+    let result = setArguments terminals inMap
+    Assert.That(result, Is.EqualTo(outMap))
+    
+let SetArgumentsErrorCases =
+    [
+        TestCaseData([] : terminal list)
+        TestCaseData([Comma;])
+        TestCaseData([Plus;])
+        TestCaseData([Minus;])
+        TestCaseData([Times;])
+        TestCaseData([Divide;])
+        TestCaseData([Exponent;])
+        TestCaseData([Lpar])
+        TestCaseData([UnaryPlus])
+        TestCaseData([UnaryMinus])
+        TestCaseData([Number 1.0])
+        TestCaseData([Word "x"])
+        TestCaseData([Assign;])
+        TestCaseData([Word "x"; Assign])
+    ]
+    
+[<TestCaseSource("SetArgumentsErrorCases")>]
+let GivenSetArguments_WhenInvalidAssignment_RaiseExecError(terminalIn: terminal list) =
+    Assert.Throws<ExecError>(fun () -> setArguments terminalIn Map.empty<string, terminal list> |> ignore) |> ignore
+    
+let UserFunctionCases =
+    [
+        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Number 2.0])], [Number 2.0])
+        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])], [Number 2.0])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 2.0; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])], [Number 2.0])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"])], [Number 4.0])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0])], [Number 16.0])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Comma; Word "z"; Assign; Number 3.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])], [Number 19.0])
+    ]
+    
+[<TestCaseSource("UserFunctionCases")>]
+let GivenExec_WhenPassedValidUserFunctionCall_ReturnCorrectResult(terminals: terminal list, env: Map<string, terminal list>, expected: terminal list) =
+    let result = exec terminals env
+    Assert.That(result, Is.EqualTo((expected, env |> Map.toSeq |> dict)))
+    
+let UserFunctionErrorCases =
+    [
+        TestCaseData([Word "y"; Lpar;], Map [("y", [Number 2.0])])
+        TestCaseData([Word "y"; Lpar; Comma; Rpar;], Map [("y", [Word "x"])])
+        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Word "x"]); ("x", [Word "z"])])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Word "z"; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Comma;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
+    ]
+    
+[<TestCaseSource("UserFunctionErrorCases")>]
+let GivenExec_WhenPassedInvalidUserFunctionCall_RaiseExecError(terminals: terminal list, env: Map<string, terminal list>) =
+    Assert.Throws<ExecError>(fun () -> exec terminals env |> ignore) |> ignore
