@@ -16,7 +16,7 @@ let interpret (input) =
     | ScanError _ as e -> Console.WriteLine(e.Message)
     | ParseError as e -> Console.WriteLine(e.Message) 
     
-    let a, _ = exec lexedVals (Map<string, string>[])
+    let a, _ = exec lexedVals (Map<string, terminal list>[])
     
     Console.WriteLine a
 

@@ -22,7 +22,7 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IDictionary<string, string> _environment = new Dictionary<string, string>();
+        private IDictionary<string, FSharpList<Util.terminal>> _environment = new Dictionary<string, FSharpList<Util.terminal>>();
 
         public class Variable
         {
@@ -38,7 +38,7 @@ namespace WpfApp1
         public void UpdateVariableWindow()
         {
             var keyValuePairs = _environment.ToList();
-            var variablesList = keyValuePairs.Select(pair => new Variable {Name = pair.Key, Value = pair.Value});
+            var variablesList = keyValuePairs.Select(pair => new Variable {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
             varDisplay.ItemsSource = variablesList;
         }
 
@@ -78,7 +78,7 @@ namespace WpfApp1
                     consoleText.ScrollToEnd();
                     inputText.Clear();
                     var execOutput = Exec.exec(lexerOutput, Util.toMap(_environment));
-                    consoleText.AppendText(execOutput.Item1 + "\n>>");
+                    consoleText.AppendText(Util.terminalListToString("", execOutput.Item1) + "\n>>");
                     _environment = execOutput.Item2;
                     UpdateVariableWindow();
                     inputText.Text = "Enter query here...";
@@ -90,6 +90,10 @@ namespace WpfApp1
                 catch (Util.ScanError exception)
                 {
                     consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                }
+                catch (Util.ExecError)
+                {
+                    consoleText.AppendText("Expression cannot be executed\n");
                 }
             }
         }
@@ -194,7 +198,10 @@ namespace WpfApp1
                     var line = loadedLine[1..];
                     line = line[..^1];
                     var dictArr = line.Split(",");
-                    _environment.Add(dictArr[0], dictArr[1]);
+                    var inputList = dictArr[1].Select(c => c.ToString()).ToList();
+                    var inputfSharpList = ListModule.OfSeq(inputList);
+                    var lexerOutput = Lexer.lexer(inputfSharpList);
+                    _environment.Add(dictArr[0], lexerOutput);
                 }
                 else
                 {
