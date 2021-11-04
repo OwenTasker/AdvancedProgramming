@@ -150,8 +150,8 @@ let rec closed terminals (env: Map<string, terminal list>) =
     
 let rec createTerminalListUpToComma inList outList =
     match inList with
-    | Rpar :: _ -> (inList, outList)
-    | Comma :: tail -> (tail, outList)
+    | Rpar :: _ -> (inList, List.rev outList)
+    | Comma :: tail -> (tail, List.rev outList)
     | any :: tail -> createTerminalListUpToComma tail (any :: outList)
     | [] -> raise ExecError
     
