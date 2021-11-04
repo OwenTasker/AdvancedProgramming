@@ -1,6 +1,5 @@
 ﻿module Interpreter.Exec
 
-open System.Globalization
 open Interpreter.Util
 
 // http://mathcenter.oxford.emory.edu/site/cs171/shuntingYardAlgorithm/
@@ -154,14 +153,16 @@ let rec createTerminalListUpToComma inList outList =
     | Rpar :: _ -> (inList, outList)
     | Comma :: tail -> (tail, outList)
     | any :: tail -> createTerminalListUpToComma tail (any :: outList)
+    | [] -> raise ExecError
     
 let rec setArguments terminals (env: Map<string, terminal list>) =
     match terminals with
-    | Rpar :: tail ->
+    | Rpar :: _ ->
         env
     | Word x :: Assign :: tail ->
         match createTerminalListUpToComma tail [] with
         | a, b -> setArguments a (env.Add(x, [reduce b env] ))
+    | _ -> raise ExecError
     
 let exec terminals (env: Map<string, terminal list>) =
     match terminals with
