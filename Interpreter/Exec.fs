@@ -148,6 +148,22 @@ let rec closed terminals (env: Map<string, terminal list>) =
         if env.ContainsKey x && closed env.[x] env then closed tail env else false
     | _ :: tail -> closed tail env
     
+let rec createTerminalListUpToComma inList outList =
+    match inList with
+    | Rpar :: _ -> (inList, List.rev outList)
+    | Comma :: tail -> (tail, List.rev outList)
+    | any :: tail -> createTerminalListUpToComma tail (any :: outList)
+    | [] -> raise ExecError
+    
+let rec setArguments terminals (env: Map<string, terminal list>) =
+    match terminals with
+    | Rpar :: _ ->
+        env
+    | Word x :: Assign :: tail ->
+        match createTerminalListUpToComma tail [] with
+        | a, b -> setArguments a (env.Add(x, [reduce b env] ))
+    | _ -> raise ExecError
+    
 let exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->
@@ -156,6 +172,13 @@ let exec terminals (env: Map<string, terminal list>) =
         //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
             result, (env.Add(x, result) |> Map.toSeq |> dict)
         else terminals, (env.Add(x, tail) |> Map.toSeq |> dict) 
+    | Word x :: Lpar :: tail ->
+        //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
+        let newEnv = setArguments tail Map.empty
+        let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
+        if closed [Word x] combinedEnv then 
+            [reduce [Word x] combinedEnv], (env |> Map.toSeq |> dict)
+        else raise ExecError
     | _ ->
         if closed terminals env then
             [reduce terminals env], (env |> Map.toSeq |> dict)

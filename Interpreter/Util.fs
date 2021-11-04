@@ -17,6 +17,7 @@ type terminal =
     | Function of string
     | Word of string
     | Number of float
+    | Comma
 
 exception ParseError
 exception ScanError of string
@@ -40,7 +41,7 @@ let functionRegexString =
     generateRegex.Remove(generateRegex.Length-1)
     
 let symbolRegexString =
-    let symbols = ["+";"*";"-";"^";"/";"=";"(";")";">"]
+    let symbols = ["+";"*";"-";"^";"/";"=";"(";")";">";","]
     let symbolRegex = [
         for i in symbols -> "(^\\" + i + "$)|"
     ]

@@ -49,13 +49,18 @@ and unary terminals =
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
 
-// factor ::= int | ( expression )
+// factor ::= int | ( expression ) 
 and factor terminals =
     match terminals with
-    | Number _ :: terminalsTail
-    | Word _ :: terminalsTail ->
+    | Number _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: _
+        | Number _ :: _
+        | Word _ :: _ -> raise ParseError
+        | _ -> terminalsTail
+    | Word _ :: terminalsTail ->
+        match terminalsTail with
+        | Lpar ::  tailTail -> arguments tailTail
         | Number _ :: _
         | Word _ :: _ -> raise ParseError
         | _ -> terminalsTail
@@ -67,6 +72,16 @@ and factor terminals =
             | Word _ :: _ -> raise ParseError
             | _ -> terminalsTail
         | _ -> raise ParseError
+    | _ -> raise ParseError
+    
+and arguments terminals =
+    match terminals with
+    | Word _ :: Assign :: tail ->
+        let result = expression tail
+        arguments result
+    | Comma :: tail ->
+        arguments tail
+    | Rpar :: tail -> tail
     | _ -> raise ParseError
     
         
