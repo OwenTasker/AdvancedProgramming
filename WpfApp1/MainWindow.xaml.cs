@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Input;
 using Interpreter;
 using Microsoft.FSharp.Collections;
@@ -22,7 +23,8 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IDictionary<string, FSharpList<Util.terminal>> _environment = new Dictionary<string, FSharpList<Util.terminal>>();
+        private IDictionary<string, FSharpList<Util.terminal>> _environment =
+            new Dictionary<string, FSharpList<Util.terminal>>();
 
         public class Variable
         {
@@ -34,11 +36,12 @@ namespace WpfApp1
         {
             InitializeComponent();
         }
-        
+
         public void UpdateVariableWindow()
         {
             var keyValuePairs = _environment.ToList();
-            var variablesList = keyValuePairs.Select(pair => new Variable {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
+            var variablesList = keyValuePairs.Select(pair => new Variable
+                {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
             varDisplay.ItemsSource = variablesList;
         }
 
@@ -46,20 +49,94 @@ namespace WpfApp1
         {
             if (inputText.Text == "Enter query here..." || string.IsNullOrEmpty(inputText.Text) ||
                 string.IsNullOrWhiteSpace(inputText.Text)) return;
-            
+
             if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
             {
                 try
                 {
-                    var graphPopUp = new GraphPopUp(inputText.Text);
+                    var args = inputText.Text[5..^1];
+                    var argsArray = args.Split(",");
+                    var trimmedArgsArray = argsArray.ToList().Select(x => x.Trim());
+
+                    var trimmedArgsArray1 = trimmedArgsArray.ToList();
+
+                    if (trimmedArgsArray1.Count != 3)
+                    {
+                        throw new Util.ExecError();
+                    }
+
+
+                    var array = trimmedArgsArray as string[] ?? trimmedArgsArray1.ToArray();
+                    var function = array.First();
+                    var str = Regex.Replace(function, "[^a-zA-Z0-9]", "|");
+                    var variables = str.Split("|");
+
+                    var openVars = new HashSet<string>();
+
+                    var min = double.Parse(array.ToList()[1]);
+                    var max = double.Parse(array.ToList()[2]);
+
+                    var range = max - min;
+                    var step = range / 750.0;
+
+                    var xArray = new double[750];
+
+                    for (var i = 0; i < 750; i++)
+                    {
+                        xArray[i] = (i + 1) * step;
+                    }
+
+                    foreach (var variable in variables)
+                    {
+                        var fSharpList = FSharpList<string>.Empty;
+                        var enumerable = fSharpList.Append(variable);
+                        var lexed = Lexer.lexer(ListModule.OfSeq(enumerable));
+
+                        if (!Exec.closed(lexed, Util.toMap(_environment)))
+                        {
+                            openVars.Add(variable);
+                        }
+                    }
+
+
+                    if (openVars.Count > 2)
+                    {
+                        throw new Util.ExecError();
+                    }
+
+
+                    var funcStrings = function.Select(s => s.ToString()).ToList();
+                    var funcAsFSharpList = ListModule.OfSeq(funcStrings);
+                    var lexerOutput = Lexer.lexer(funcAsFSharpList);
+                    Parser.expression(lexerOutput);
+                    var execOutput = Exec.exec(lexerOutput,
+                        Util.toMap(new Dictionary<string, FSharpList<Util.terminal>>()));
+                    var tempDict = execOutput.Item2;
+                    _environment.ToList().ForEach(x => tempDict.Add(x.Key, x.Value));
+
+                    var yArray = new double[750];
+
+                    for (int i = 0; i < 750; i++)
+                    {
+                        var query = "y(x->" + xArray[i] + ")";
+
+                        var queryList = query.Select(c => c.ToString()).ToList();
+                        var inputfSharpList = ListModule.OfSeq(queryList);
+                        var lexedQuery = Lexer.lexer(inputfSharpList);
+                        var execedQuery = Exec.exec(lexedQuery, Util.toMap(tempDict));
+
+                        yArray[i] = double.Parse(Util.terminalListToString("", execedQuery.Item1));
+                    }
+
+
+                    var graphPopUp = new GraphPopUp(xArray, yArray);
                     graphPopUp.Show();
                 }
-                catch(Exception plottingException)
+                catch (Exception plottingException)
                 {
-                    consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" + plottingException.StackTrace + "\n>>");
+                    consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" +
+                                           plottingException.StackTrace + "\n>>");
                 }
-                    
-                    
             }
             else
             {
@@ -134,8 +211,8 @@ namespace WpfApp1
             {
                 MessageBox.Show("Insufficient Console Text To Save. Please execute at least one line");
                 return;
-            } 
-            
+            }
+
             var savableInfo = new string[_environment.Count + 1];
             var idx = 0;
 
@@ -167,7 +244,6 @@ namespace WpfApp1
 
         private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            
             var fileDialog = new OpenFileDialog
             {
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -189,7 +265,7 @@ namespace WpfApp1
 
             //Get the path of specified file
             var filePath = fileDialog.FileName;
-                
+
             foreach (var loadedLine in File.ReadLines(filePath))
             {
                 //Make sure line is an assigned variable
@@ -208,8 +284,9 @@ namespace WpfApp1
                     consoleText.Text += loadedLine + "\n";
                 }
             }
+
             UpdateVariableWindow();
             consoleText.Text += ">>";
         }
     }
-}   
+}
