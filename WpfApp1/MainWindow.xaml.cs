@@ -55,7 +55,7 @@ namespace WpfApp1
                 try
                 {
                     var trimmedArgsArray = TrimmedArgsArray(inputText.Text);
-                    
+
                     var xArray = ComputeXArray(trimmedArgsArray);
                     var yArray = ComputeYArray(trimmedArgsArray, xArray);
                     
@@ -162,7 +162,14 @@ namespace WpfApp1
 
         private static double[] ComputeXArray(IReadOnlyList<string> trimmedArgsArray)
         {
-            var range = double.Parse(trimmedArgsArray[2]) - double.Parse(trimmedArgsArray[1]);
+            var min = double.Parse(trimmedArgsArray[1]);
+            var max = double.Parse(trimmedArgsArray[2]);
+                
+            if (min > max)
+            {
+                throw new Util.ExecError();
+            }
+            var range = max - min;
             var step = range / 750.0;
             
             var xArray = new double[750];
