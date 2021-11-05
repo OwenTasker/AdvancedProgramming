@@ -29,10 +29,11 @@ type terminal =
 let terminalsToString x =
     match x with
     | Times -> "*"
+    | Divide -> "/"
     | Plus 
     | UnaryPlus -> "+"
     | Minus 
-    | UnaryMinus -> ""
+    | UnaryMinus -> "-"
     | Exponent -> "^"
     | Lpar -> "("
     | Rpar -> ")"
@@ -41,7 +42,6 @@ let terminalsToString x =
     | Function func -> string func
     | Word word -> string word
     | Number num -> string num
-    | _ -> raise (TerminalError "Unrecognized Error")
 
 let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
 let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
