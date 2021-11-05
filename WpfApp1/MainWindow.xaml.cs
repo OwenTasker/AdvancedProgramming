@@ -175,16 +175,18 @@ namespace WpfApp1
             // Compile set of open variables
             var openVars = new string[2];
 
-            for (var i = 0; i < variables.Length; i++)
+            var index = 0;
+
+            foreach (var t in variables)
             {
                 var fSharpList = FSharpList<string>.Empty;
-                var enumerable = fSharpList.Append(variables[i]);
+                var enumerable = fSharpList.Append(t);
                 var lexed = Lexer.lexer(ListModule.OfSeq(enumerable));
 
-                if (Exec.closed(lexed, Util.toMap(_environment)) || openVars.Contains(variables[i])) 
+                if (Exec.closed(lexed, Util.toMap(_environment)) || openVars.Contains(t)) 
                     continue;
 
-                openVars[i] = variables[i];
+                openVars[index++] = t;
             }
 
             return openVars;
