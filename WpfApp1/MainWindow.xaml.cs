@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Input;
 using Interpreter;
 using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
+using JetBrains.Annotations;
 
 namespace WpfApp1
 {
@@ -21,15 +21,15 @@ namespace WpfApp1
     /// https://stackoverflow.com/questions/14598024/make-textbox-uneditable
     /// https://stackoverflow.com/questions/18260702/textbox-appendtext-not-autoscrolling
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private IDictionary<string, FSharpList<Util.terminal>> _environment =
             new Dictionary<string, FSharpList<Util.terminal>>();
 
         public class Variable
         {
-            public string Name { get; set; }
-            public string Value { get; set; }
+            public string Name { [UsedImplicitly] get; init; }
+            public string Value { [UsedImplicitly] get; init; }
         }
 
         public MainWindow()
@@ -37,7 +37,7 @@ namespace WpfApp1
             InitializeComponent();
         }
 
-        public void UpdateVariableWindow()
+        private void UpdateVariableWindow()
         {
             var keyValuePairs = _environment.ToList();
             var variablesList = keyValuePairs.Select(pair => new Variable
@@ -109,23 +109,22 @@ namespace WpfApp1
                     var funcAsFSharpList = ListModule.OfSeq(funcStrings);
                     var lexerOutput = Lexer.lexer(funcAsFSharpList);
                     Parser.expression(lexerOutput);
-                    var execOutput = Exec.exec(lexerOutput,
+                    var (_, tempDict) = Exec.exec(lexerOutput,
                         Util.toMap(new Dictionary<string, FSharpList<Util.terminal>>()));
-                    var tempDict = execOutput.Item2;
                     _environment.ToList().ForEach(x => tempDict.Add(x.Key, x.Value));
 
                     var yArray = new double[750];
 
-                    for (int i = 0; i < 750; i++)
+                    for (var i = 0; i < 750; i++)
                     {
                         var query = "y(x->" + xArray[i] + ")";
 
                         var queryList = query.Select(c => c.ToString()).ToList();
-                        var inputfSharpList = ListModule.OfSeq(queryList);
-                        var lexedQuery = Lexer.lexer(inputfSharpList);
-                        var execedQuery = Exec.exec(lexedQuery, Util.toMap(tempDict));
+                        var inputFSharpList = ListModule.OfSeq(queryList);
+                        var lexedQuery = Lexer.lexer(inputFSharpList);
+                        var (executedQuery, _) = Exec.exec(lexedQuery, Util.toMap(tempDict));
 
-                        yArray[i] = double.Parse(Util.terminalListToString("", execedQuery.Item1));
+                        yArray[i] = double.Parse(Util.terminalListToString("", executedQuery));
                     }
 
 
