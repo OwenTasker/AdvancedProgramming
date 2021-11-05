@@ -49,85 +49,16 @@ namespace WpfApp1
         {
             if (inputText.Text == "Enter query here..." || string.IsNullOrEmpty(inputText.Text) ||
                 string.IsNullOrWhiteSpace(inputText.Text)) return;
-
+            
             if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
             {
                 try
                 {
-                    var args = inputText.Text[5..^1];
-                    var argsArray = args.Split(",");
-                    var trimmedArgsArray = argsArray.ToList().Select(x => x.Trim());
-
-                    var trimmedArgsArray1 = trimmedArgsArray.ToList();
-
-                    if (trimmedArgsArray1.Count != 3)
-                    {
-                        throw new Util.ExecError();
-                    }
-
-
-                    var array = trimmedArgsArray as string[] ?? trimmedArgsArray1.ToArray();
-                    var function = array.First();
-                    var str = Regex.Replace(function, "[^a-zA-Z0-9]", "|");
-                    var variables = str.Split("|");
-
-                    var openVars = new HashSet<string>();
-
-                    var min = double.Parse(array.ToList()[1]);
-                    var max = double.Parse(array.ToList()[2]);
-
-                    var range = max - min;
-                    var step = range / 750.0;
-
-                    var xArray = new double[750];
-
-                    for (var i = 0; i < 750; i++)
-                    {
-                        xArray[i] = (i + 1) * step;
-                    }
-
-                    foreach (var variable in variables)
-                    {
-                        var fSharpList = FSharpList<string>.Empty;
-                        var enumerable = fSharpList.Append(variable);
-                        var lexed = Lexer.lexer(ListModule.OfSeq(enumerable));
-
-                        if (!Exec.closed(lexed, Util.toMap(_environment)))
-                        {
-                            openVars.Add(variable);
-                        }
-                    }
-
-
-                    if (openVars.Count > 2)
-                    {
-                        throw new Util.ExecError();
-                    }
-
-
-                    var funcStrings = function.Select(s => s.ToString()).ToList();
-                    var funcAsFSharpList = ListModule.OfSeq(funcStrings);
-                    var lexerOutput = Lexer.lexer(funcAsFSharpList);
-                    Parser.expression(lexerOutput);
-                    var (_, tempDict) = Exec.exec(lexerOutput,
-                        Util.toMap(new Dictionary<string, FSharpList<Util.terminal>>()));
-                    _environment.ToList().ForEach(x => tempDict.Add(x.Key, x.Value));
-
-                    var yArray = new double[750];
-
-                    for (var i = 0; i < 750; i++)
-                    {
-                        var query = "y(x->" + xArray[i] + ")";
-
-                        var queryList = query.Select(c => c.ToString()).ToList();
-                        var inputFSharpList = ListModule.OfSeq(queryList);
-                        var lexedQuery = Lexer.lexer(inputFSharpList);
-                        var (executedQuery, _) = Exec.exec(lexedQuery, Util.toMap(tempDict));
-
-                        yArray[i] = double.Parse(Util.terminalListToString("", executedQuery));
-                    }
-
-
+                    var trimmedArgsArray = TrimmedArgsArray(inputText.Text);
+                    
+                    var xArray = ComputeXArray(trimmedArgsArray);
+                    var yArray = ComputeYArray(trimmedArgsArray, xArray);
+                    
                     var graphPopUp = new GraphPopUp(xArray, yArray);
                     graphPopUp.Show();
                 }
@@ -147,15 +78,15 @@ namespace WpfApp1
                 try
                 {
                     var inputList = input.Select(c => c.ToString()).ToList();
-                    var inputfSharpList = ListModule.OfSeq(inputList);
-                    var lexerOutput = Lexer.lexer(inputfSharpList);
+                    var inputFSharpList = ListModule.OfSeq(inputList);
+                    var lexerOutput = Lexer.lexer(inputFSharpList);
                     Parser.expression(lexerOutput);
                     consoleText.AppendText(" " + input + "\n");
                     consoleText.ScrollToEnd();
                     inputText.Clear();
-                    var execOutput = Exec.exec(lexerOutput, Util.toMap(_environment));
-                    consoleText.AppendText(Util.terminalListToString("", execOutput.Item1) + "\n>>");
-                    _environment = execOutput.Item2;
+                    var (item1, item2) = Exec.exec(lexerOutput, Util.toMap(_environment));
+                    consoleText.AppendText(Util.terminalListToString("", item1) + "\n>>");
+                    _environment = item2;
                     UpdateVariableWindow();
                     inputText.Text = "Enter query here...";
                 }
@@ -174,13 +105,112 @@ namespace WpfApp1
             }
         }
 
+        private IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function)
+        {
+            var funcStrings = function.Select(s => s.ToString()).ToList();
+            
+            var funcAsFSharpList = ListModule.OfSeq(funcStrings);
+            var lexerOutput = Lexer.lexer(funcAsFSharpList);
+            
+            Parser.expression(lexerOutput);
+            
+            var (_, tempDict) = Exec.exec(lexerOutput,
+                Util.toMap(new Dictionary<string, FSharpList<Util.terminal>>()));
+            _environment.ToList().ForEach(x => tempDict.Add(x.Key, x.Value));
+            
+            return tempDict;
+        }
+
+        private double[] ComputeYArray(IReadOnlyList<string> trimmedArgsArray, IReadOnlyList<double> xArray)
+        {
+            var yArray = new double[750];
+
+            // Get variables from function
+            var openVars = GetOpenVariables(trimmedArgsArray[0]);
+            foreach (var variable in openVars)
+                consoleText.AppendText(variable + "\n");
+            
+            var environment = CreateExecutionEnvironment(trimmedArgsArray[0]);
+
+            for (var i = 0; i < 750; i++)
+            {
+                var query = openVars[0] + "(" + openVars[1] + "->" + xArray[i] + ")";
+
+                var queryList = query.Select(c => c.ToString()).ToList();
+                var inputFSharpList = ListModule.OfSeq(queryList);
+                var lexedQuery = Lexer.lexer(inputFSharpList);
+                consoleText.AppendText(Util.terminalListToString("", lexedQuery) + "\n");
+                var (executedQuery, _) = Exec.exec(lexedQuery, Util.toMap(environment));
+
+                yArray[i] = double.Parse(Util.terminalListToString("", executedQuery));
+            }
+
+            return yArray;
+        }
+
+        private static double[] ComputeXArray(IReadOnlyList<string> trimmedArgsArray)
+        {
+            var range = double.Parse(trimmedArgsArray[2]) - double.Parse(trimmedArgsArray[1]);
+            var step = range / 750.0;
+            
+            var xArray = new double[750];
+            for (var i = 0; i < 750; i++)
+            {
+                xArray[i] = (i + 1) * step;
+            }
+
+            return xArray;
+        }
+
+        private string[] GetOpenVariables(string function)
+        {
+            var variables = Regex.Replace(
+                function, "[^a-zA-Z]", "|").Split("|").Where(
+                s => s.Length > 0).ToArray();
+
+            // Compile set of open variables
+            var openVars = new string[2];
+
+            for (var i = 0; i < variables.Length; i++)
+            {
+                var fSharpList = FSharpList<string>.Empty;
+                var enumerable = fSharpList.Append(variables[i]);
+                var lexed = Lexer.lexer(ListModule.OfSeq(enumerable));
+
+                if (Exec.closed(lexed, Util.toMap(_environment)) || openVars.Contains(variables[i])) 
+                    continue;
+
+                openVars[i] = variables[i];
+            }
+
+            return openVars;
+        }
+
+        private static List<string> TrimmedArgsArray(string input)
+        {
+            // Get plot parameters as an array
+            var args = input[5..^1];
+            var argsArray = args.Split(",");
+            var trimmedArgsArray = argsArray.ToList().Select(x => x.Trim()).ToList();
+
+
+            // If 3 parameters not passed then throw error
+            if (trimmedArgsArray.Count != 3)
+            {
+                // Think about maybe just presenting a message instead
+                throw new Util.ExecError();
+            }
+
+            return trimmedArgsArray;
+        }
+
         private void EnterKeyClick(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
-            {
-                EnterButtonPress(this, new RoutedEventArgs());
-                inputText.Clear();
-            }
+            if (e.Key != Key.Enter) 
+                return;
+            
+            EnterButtonPress(this, new RoutedEventArgs());
+            inputText.Clear();
         }
 
         private void InputTextBoxRemovePrompt(object sender, RoutedEventArgs e)
@@ -193,7 +223,7 @@ namespace WpfApp1
 
         private void InputTextBoxAddPrompt(object sender, RoutedEventArgs e)
         {
-            if (String.IsNullOrEmpty(inputText.Text) || String.IsNullOrWhiteSpace(inputText.Text))
+            if (string.IsNullOrEmpty(inputText.Text) || string.IsNullOrWhiteSpace(inputText.Text))
             {
                 inputText.Text = "Enter query here...";
             }
@@ -274,8 +304,8 @@ namespace WpfApp1
                     line = line[..^1];
                     var dictArr = line.Split(",");
                     var inputList = dictArr[1].Select(c => c.ToString()).ToList();
-                    var inputfSharpList = ListModule.OfSeq(inputList);
-                    var lexerOutput = Lexer.lexer(inputfSharpList);
+                    var inputFSharpList = ListModule.OfSeq(inputList);
+                    var lexerOutput = Lexer.lexer(inputFSharpList);
                     _environment.Add(dictArr[0], lexerOutput);
                 }
                 else
