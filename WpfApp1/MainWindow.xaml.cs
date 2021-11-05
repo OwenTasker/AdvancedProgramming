@@ -127,9 +127,7 @@ namespace WpfApp1
 
             // Get variables from function
             var openVars = GetOpenVariables(trimmedArgsArray[0]);
-            foreach (var variable in openVars)
-                consoleText.AppendText(variable + "\n");
-            
+
             var environment = CreateExecutionEnvironment(trimmedArgsArray[0]);
 
             for (var i = 0; i < 750; i++)
@@ -139,7 +137,7 @@ namespace WpfApp1
                 var queryList = query.Select(c => c.ToString()).ToList();
                 var inputFSharpList = ListModule.OfSeq(queryList);
                 var lexedQuery = Lexer.lexer(inputFSharpList);
-                consoleText.AppendText(Util.terminalListToString("", lexedQuery) + "\n");
+
                 var (executedQuery, _) = Exec.exec(lexedQuery, Util.toMap(environment));
 
                 yArray[i] = double.Parse(Util.terminalListToString("", executedQuery));
@@ -192,7 +190,6 @@ namespace WpfApp1
             var args = input[5..^1];
             var argsArray = args.Split(",");
             var trimmedArgsArray = argsArray.ToList().Select(x => x.Trim()).ToList();
-
 
             // If 3 parameters not passed then throw error
             if (trimmedArgsArray.Count != 3)
