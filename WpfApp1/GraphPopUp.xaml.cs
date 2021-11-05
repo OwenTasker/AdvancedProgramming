@@ -20,7 +20,7 @@ namespace WpfApp1
         private const int BytesPerPixel = 4;
         private static int _imageId;
         
-        private byte[] imageBuffer = new byte[1200000];
+        private byte[] _imageBuffer = new byte[1200000];
         
         public GraphPopUp(string value)
         {
@@ -30,22 +30,22 @@ namespace WpfApp1
 
             //Set graph background to white and opacity to max
             //Add basic x and y axis
-            for (int i = 0; i < imageBuffer.Length; i+=4)
+            for (int i = 0; i < _imageBuffer.Length; i+=4)
             {
                 if (i % (ImageWidth * BytesPerPixel) != 0 && i > (ImageWidth * BytesPerPixel))
                 {
-                    imageBuffer[i] = imageBuffer[i+1] = imageBuffer[i+2] = imageBuffer[i+3] = 255;
+                    _imageBuffer[i] = _imageBuffer[i+1] = _imageBuffer[i+2] = _imageBuffer[i+3] = 255;
                 }
                 else
                 {
-                    imageBuffer[i + 3] = 255;
+                    _imageBuffer[i + 3] = 255;
                 }
                 
             }
             
             //Create test data
-            double[] xArray = generateX();
-            double[] yArray = generateY();
+            double[] xArray = GenerateX();
+            double[] yArray = GenerateY();
             
             //Generate image of graph
             GenerateGraph(xArray, yArray);
@@ -63,15 +63,15 @@ namespace WpfApp1
 
             //Set graph background to white and opacity to max
             //Add basic x and y axis
-            for (int i = 0; i < imageBuffer.Length; i+=4)
+            for (int i = 0; i < _imageBuffer.Length; i+=4)
             {
                 if (i % (ImageWidth * BytesPerPixel) != 0 && i > (ImageWidth * BytesPerPixel))
                 {
-                    imageBuffer[i] = imageBuffer[i+1] = imageBuffer[i+2] = imageBuffer[i+3] = 255;
+                    _imageBuffer[i] = _imageBuffer[i+1] = _imageBuffer[i+2] = _imageBuffer[i+3] = 255;
                 }
                 else
                 {
-                    imageBuffer[i + 3] = 255;
+                    _imageBuffer[i + 3] = 255;
                 }
                 
             }
@@ -89,9 +89,9 @@ namespace WpfApp1
             for (int i = 0; i < ImageHeight / 2; i++)
             {
                 byte[] temp = new byte[ImageWidth * BytesPerPixel];
-                Array.Copy(imageBuffer, i * ImageWidth * BytesPerPixel, temp, 0, ImageWidth * BytesPerPixel);
-                Array.Copy(imageBuffer, ImageHeight*ImageWidth*BytesPerPixel - i*ImageWidth*BytesPerPixel - ImageWidth*BytesPerPixel, imageBuffer, i * ImageWidth * BytesPerPixel, ImageWidth * BytesPerPixel);
-                Array.Copy(temp, 0, imageBuffer, ImageHeight*ImageWidth*BytesPerPixel - i*ImageWidth*BytesPerPixel - ImageWidth*BytesPerPixel, ImageWidth * BytesPerPixel);
+                Array.Copy(_imageBuffer, i * ImageWidth * BytesPerPixel, temp, 0, ImageWidth * BytesPerPixel);
+                Array.Copy(_imageBuffer, ImageHeight*ImageWidth*BytesPerPixel - i*ImageWidth*BytesPerPixel - ImageWidth*BytesPerPixel, _imageBuffer, i * ImageWidth * BytesPerPixel, ImageWidth * BytesPerPixel);
+                Array.Copy(temp, 0, _imageBuffer, ImageHeight*ImageWidth*BytesPerPixel - i*ImageWidth*BytesPerPixel - ImageWidth*BytesPerPixel, ImageWidth * BytesPerPixel);
             }
         }
         
@@ -101,7 +101,7 @@ namespace WpfApp1
             int offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
             Console.WriteLine(offset + "");
             //Set BGR to black
-            imageBuffer[offset] = imageBuffer[offset + 1] = imageBuffer[offset + 2] = 0;
+            _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
         }
 
         private void GenerateGraph(double[] xArray, double[] yArray)
@@ -144,7 +144,7 @@ namespace WpfApp1
             //Convert to image
             unsafe
             {
-                fixed (byte* ptr = imageBuffer)
+                fixed (byte* ptr = _imageBuffer)
                 {
                     using (Bitmap image = new Bitmap(ImageWidth, ImageHeight, ImageWidth*BytesPerPixel, PixelFormat.Format32bppRgb, new IntPtr(ptr)))
                     {
@@ -156,7 +156,7 @@ namespace WpfApp1
             
         }
 
-        private double[] generateX()
+        private double[] GenerateX()
         {
             double[] xArray = new double[ImageWidth];
 
@@ -168,7 +168,7 @@ namespace WpfApp1
             return xArray;
         }
         
-        private double[] generateY()
+        private double[] GenerateY()
         {
             double[] yArray = new double[ImageWidth];
 

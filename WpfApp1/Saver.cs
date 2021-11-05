@@ -9,7 +9,7 @@ namespace WpfApp1
 {
     public class Saver
     {
-        private string ConsoleContents{ get; set;}
+        private string ConsoleContents { get; set; }
         private IDictionary<string, FSharpList<Util.terminal>> VariableContents { get; set; }
 
         public Saver(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)

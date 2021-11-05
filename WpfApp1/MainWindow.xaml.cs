@@ -277,49 +277,19 @@ namespace WpfApp1
 
         private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            var fileDialog = new OpenFileDialog
+            try
             {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                Filter = "MyMathsPal Files (*.mmp)|*.mmp;",
-                FilterIndex = 1,
-                Multiselect = false
-            };
-
-            //If no file is selected return, else load that file
-            if (fileDialog.ShowDialog() != true)
-            {
-                MessageBox.Show("Load Cancelled/Not Successful");
-                return;
+                var loader = new Loader();
+                var loadedVals = loader.Load();
+                if (!loadedVals.Item1) return;
+                _environment = loadedVals.Item3;
+                consoleText.Text = loadedVals.Item2;
+                UpdateVariableWindow();
             }
-
-            consoleText.Clear();
-            _environment.Clear();
-            UpdateVariableWindow();
-
-            //Get the path of specified file
-            var filePath = fileDialog.FileName;
-
-            foreach (var loadedLine in File.ReadLines(filePath))
+            catch (LoadException e)
             {
-                //Make sure line is an assigned variable
-                if (loadedLine.Contains(','))
-                {
-                    var line = loadedLine[1..];
-                    line = line[..^1];
-                    var dictArr = line.Split(",");
-                    var inputList = dictArr[1].Select(c => c.ToString()).ToList();
-                    var inputFSharpList = ListModule.OfSeq(inputList);
-                    var lexerOutput = Lexer.lexer(inputFSharpList);
-                    _environment.Add(dictArr[0], lexerOutput);
-                }
-                else
-                {
-                    consoleText.Text += loadedLine + "\n";
-                }
+                MessageBox.Show(e.Message);
             }
-
-            UpdateVariableWindow();
-            consoleText.Text += ">>";
         }
 
         private void ClearButton_OnClick(object sender, RoutedEventArgs e)
