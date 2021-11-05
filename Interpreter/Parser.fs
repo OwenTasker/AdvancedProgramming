@@ -62,7 +62,7 @@ and factor terminals =
         match terminalsTail with
         | Lpar ::  tailTail -> arguments tailTail
         | Number _ :: _
-        | Word _ :: _ -> raise ParseError
+        | Word _ :: _ -> raise (ParseError "Parse Error: Word Then Word not allowed")
         | _ -> terminalsTail
     | Function _ :: Lpar :: terminalsTail
     | Lpar :: terminalsTail ->
@@ -83,7 +83,7 @@ and arguments terminals =
     | Comma :: tail ->
         arguments tail
     | Rpar :: tail -> tail
-    | _ -> raise ParseError
+    | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
     
         
 let parse terminals =
