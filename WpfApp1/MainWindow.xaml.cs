@@ -113,9 +113,15 @@ namespace WpfApp1
             var lexerOutput = Lexer.lexer(funcAsFSharpList);
             
             Parser.expression(lexerOutput);
+
             
-            var (_, tempDict) = Exec.exec(lexerOutput,
+            
+            var (_, item2) = Exec.exec(lexerOutput,
                 Util.toMap(new Dictionary<string, FSharpList<Util.terminal>>()));
+
+            var tempDict = item2.ToList().ToDictionary(
+                pair => pair.Key, pair => pair.Value);
+
             _environment.ToList().ForEach(x => tempDict.Add(x.Key, x.Value));
             
             return tempDict;
