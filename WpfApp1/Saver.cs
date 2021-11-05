@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Interpreter;
 using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
@@ -29,20 +30,6 @@ namespace WpfApp1
             {
                 throw new SaveException("Unable To Save: No Contents Or Variables");
             }
-
-            var savableInfo = new string[VariableContents.Count + 1];
-            var idx = 0;
-
-            foreach (var (key, value) in VariableContents)
-            {
-                var text = $"VARIABLE: [{key}, {value}]";
-                savableInfo[idx++] = text;
-            }
-
-            if (isValidToSaveConsoleContents)
-            {
-                savableInfo[idx] = ConsoleContents[..^3];
-            }
             
             var dialog = new SaveFileDialog
             {
@@ -54,6 +41,22 @@ namespace WpfApp1
             if (dialog.ShowDialog() != true)
             {
                 return;
+            }
+
+            var savableInfo = new string[VariableContents.Count + 1];
+            var idx = 0;
+
+            foreach (var (key, value) in VariableContents)
+            {
+                var values = value.Aggregate("[", (current, VARIABLE) => current + Util.individualTerminalToString(VARIABLE));
+                values += "]";
+                var text = $"VARIABLE: [{key}, {values}]";
+                savableInfo[idx++] = text;
+            }
+
+            if (isValidToSaveConsoleContents)
+            {
+                savableInfo[idx] = ConsoleContents[..^3];
             }
 
             File.WriteAllLines(dialog.FileName, savableInfo);

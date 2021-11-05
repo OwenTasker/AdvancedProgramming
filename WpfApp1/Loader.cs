@@ -29,49 +29,45 @@ namespace WpfApp1
             {
                 return (false, null, null);
             }
-            
-            //Get the path of specified file
-            var filePath = fileDialog.FileName;
-            
-            foreach (var loadedLine in File.ReadLines(filePath))
+
+            try
             {
-                //Make sure line is an assigned variable
-                if (loadedLine.StartsWith("VARIABLE"))
+                //Get the path of specified file
+                var filePath = fileDialog.FileName;
+                foreach (var loadedLine in File.ReadLines(filePath))
                 {
-                    var line = loadedLine[10..];
-                    line = line[..^1];
-                    var dictArr = line.Split(",");
-                    if (!dictArr[1].StartsWith(" [Number"))
+                    //Make sure line is an assigned variable
+                    if (loadedLine.StartsWith("VARIABLE"))
                     {
-                        var inputList = dictArr[1].Select(c => c.ToString()).ToList();
-                        var inputFSharpList = ListModule.OfSeq(inputList);
-                        var lexerOutput = Lexer.lexer(inputFSharpList);
-                        _variables.Add(dictArr[0], lexerOutput);
+                        var line = loadedLine[10..];
+                        line = line[..^1];
+                        var dictArr = line.Split(",");
+                        var lexableInput = dictArr[1];
+                        lexableInput = lexableInput.Substring(1).Replace("[", "").Replace("]", "");
+                        var inpList = lexableInput.Select(character => character.ToString()).ToList();
+
+                        var inpFList = ListModule.OfSeq(inpList);
+
+                        var lexedOutput = Lexer.lexer(inpFList);
+
+                        _variables.Add(dictArr[0], lexedOutput);
                     }
+                    //If Line wasnt a variable, print it to the console
                     else
                     {
-                        var dictArrCheckProcess = dictArr[1].Replace("]", "").Replace("[", "");
-                        var terminalDict = dictArrCheckProcess.Split(" ");
-                        if (terminalDict[1].Equals("Number"))
-                        {
-                            var inputList = terminalDict[2].Select(c => c.ToString()).ToList();
-                            var inputFSharpList = ListModule.OfSeq(inputList);
-                            var terminalVal = Lexer.lexer(inputFSharpList);
-                            _variables.Add(dictArr[0].Replace("[", ""), terminalVal);
-                        }
-                        else
-                        {
-                            throw new LoadException("Unexpected item in loading area");
-                        }
+                        ConsoleContent += loadedLine + "\n";
                     }
-            
-                }
-                else
-                {
-                    ConsoleContent += loadedLine + "\n";
                 }
             }
-            
+            catch (Util.TokenizeError)
+            {
+                throw new LoadException("Error In Variable Section of file " + fileDialog.FileName);
+            }
+            catch (Util.ScanError)
+            {
+                throw new LoadException("Error In Variable Section of file " + fileDialog.FileName);
+            }
+
             ConsoleContent += ">>";
             return (true, ConsoleContent, _variables);
         }
