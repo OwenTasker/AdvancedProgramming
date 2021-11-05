@@ -138,8 +138,16 @@ namespace WpfApp1
 
             for (var i = 0; i < 750; i++)
             {
-                var query = openVars[0] + "(" + openVars[1] + "->" + xArray[i] + ")";
-
+                string query;
+                if (openVars.Count == 1)
+                {
+                    query = openVars[0] + "()";
+                }
+                else
+                {
+                    query = openVars[0] + "(" + openVars[1] + "->" + xArray[i] + ")";
+                }
+                
                 var queryList = query.Select(c => c.ToString()).ToList();
                 var inputFSharpList = ListModule.OfSeq(queryList);
                 var lexedQuery = Lexer.lexer(inputFSharpList);
@@ -166,16 +174,16 @@ namespace WpfApp1
             return xArray;
         }
 
-        private string[] GetOpenVariables(string function)
+        private List<string> GetOpenVariables(string function)
         {
             var variables = Regex.Replace(
                 function, "[^a-zA-Z]", "|").Split("|").Where(
                 s => s.Length > 0).ToArray();
 
             // Compile set of open variables
-            var openVars = new string[2];
+            var openVars = new List<string>();
 
-            var index = 0;
+            var count = 0;
 
             foreach (var t in variables)
             {
@@ -183,10 +191,17 @@ namespace WpfApp1
                 var enumerable = fSharpList.Append(t);
                 var lexed = Lexer.lexer(ListModule.OfSeq(enumerable));
 
-                if (Exec.closed(lexed, Util.toMap(_environment)) || openVars.Contains(t)) 
-                    continue;
+                if (count > 0)
+                    if (Exec.closed(lexed, Util.toMap(_environment)) || openVars.Contains(t)) 
+                        continue;
 
-                openVars[index++] = t;
+                openVars.Add(t);
+                count++;
+            }
+
+            if (openVars.Count > 2)
+            {
+                throw new Util.ExecError();
             }
 
             return openVars;
