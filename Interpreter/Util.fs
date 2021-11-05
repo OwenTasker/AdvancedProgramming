@@ -2,6 +2,14 @@ module Interpreter.Util
 
 open System.Text.RegularExpressions
 
+exception ParseError of string
+exception ScanError of string
+exception TokenizeError of string
+exception TerminalError of string
+exception CalculateError
+exception UnaryError
+exception ExecError
+
 type terminal =
     | Plus
     | Times
@@ -18,12 +26,22 @@ type terminal =
     | Number of float
     | Comma
 
-exception ParseError of string
-exception ScanError of string
-exception TokenizeError of string
-exception CalculateError
-exception UnaryError
-exception ExecError
+let terminalsToString x =
+    match x with
+    | Times -> "*"
+    | Plus 
+    | UnaryPlus -> "+"
+    | Minus 
+    | UnaryMinus -> ""
+    | Exponent -> "^"
+    | Lpar -> "("
+    | Rpar -> ")"
+    | Assign -> "->"
+    | Comma -> ","
+    | Function func -> string func
+    | Word word -> string word
+    | Number num -> string num
+    | _ -> raise (TerminalError "Unrecognized Error")
 
 let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
 let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
@@ -42,7 +60,7 @@ let functions = [
 
 let functionRegexString =
     let functionRegex = [
-        for (x,_) in functions -> "(^" + x + "$)|"
+        for x,_ in functions -> "(^" + x + "$)|"
     ]
     let generateRegex = (String.concat "" functionRegex)
     generateRegex.Remove(generateRegex.Length-1)
