@@ -263,45 +263,16 @@ namespace WpfApp1
 
         private void SaveButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            var newText = consoleText.Text;
-            newText = newText.Replace("\n", "");
-            var isValidToSave = Regex.Match(newText, "(>>.*){2}");
-
-            //If not enough characters present to save, return, else continue
-            if (!isValidToSave.Success)
+            try
             {
-                MessageBox.Show("Insufficient Console Text To Save. Please execute at least one line");
-                return;
+                var saver = new Saver(consoleText.Text, _environment);
+                saver.SaveContents();
             }
-
-            var savableInfo = new string[_environment.Count + 1];
-            var idx = 0;
-
-            //Collect each variable and add them to savableInfo
-            foreach (var (key, value) in _environment)
+            catch (SaveException e)
             {
-                var text = $"[{key}, {value}]";
-                savableInfo[idx] = text;
-                idx += 1;
+                MessageBox.Show(e.Message);
             }
-
-            //Add console text to savableInfo
-            savableInfo[idx] = consoleText.Text[..^3];
-
-            var dialog = new SaveFileDialog
-            {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                
-                Filter = "MyMathsPal File (*.mmp)|*.mmp"
-            };
-
-            if (dialog.ShowDialog() != true)
-            {
-                MessageBox.Show("Cancelled Save Operation");
-                return;
-            }
-
-            File.WriteAllLines(dialog.FileName, savableInfo);
+            
         }
 
         private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
