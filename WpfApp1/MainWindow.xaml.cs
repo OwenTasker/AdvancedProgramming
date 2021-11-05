@@ -52,6 +52,7 @@ namespace WpfApp1
             
             if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
             {
+                consoleText.AppendText(inputText.Text+"\n" + ">>");
                 try
                 {
                     var trimmedArgsArray = TrimmedArgsArray(inputText.Text);
