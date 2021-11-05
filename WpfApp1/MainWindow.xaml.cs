@@ -294,8 +294,7 @@ namespace WpfApp1
 
         private void ClearButton_OnClick(object sender, RoutedEventArgs e)
         {
-            consoleText.Clear();
-            consoleText.Text += ">>";
+            consoleText.Text = ">>";
         }
     }
 }
