@@ -18,6 +18,7 @@ namespace WpfApp1
         private const int ImageWidth = 750;
         private const int ImageHeight = 400;
         private const int BytesPerPixel = 4;
+        private static int _imageId;
         
         private byte[] imageBuffer = new byte[1200000];
         
@@ -54,9 +55,33 @@ namespace WpfApp1
             ImageGraph.Source = new BitmapImage(new Uri(path + "graph.png"));
         }
         
-        public GraphPopUp(int[] x, int[] y)
+        public GraphPopUp(double[] x, double[] y)
         {
+            _imageId++;
+            //Show window
             InitializeComponent();
+
+            //Set graph background to white and opacity to max
+            //Add basic x and y axis
+            for (int i = 0; i < imageBuffer.Length; i+=4)
+            {
+                if (i % (ImageWidth * BytesPerPixel) != 0 && i > (ImageWidth * BytesPerPixel))
+                {
+                    imageBuffer[i] = imageBuffer[i+1] = imageBuffer[i+2] = imageBuffer[i+3] = 255;
+                }
+                else
+                {
+                    imageBuffer[i + 3] = 255;
+                }
+                
+            }
+
+            //Generate image of graph
+            GenerateGraph(x, y);
+        
+            //Display graph
+            string path = Path.GetTempPath();
+            ImageGraph.Source = new BitmapImage(new Uri(path + "graph" + _imageId + ".png" ));
         }
 
         private void InvertGraph()
@@ -124,7 +149,7 @@ namespace WpfApp1
                     using (Bitmap image = new Bitmap(ImageWidth, ImageHeight, ImageWidth*BytesPerPixel, PixelFormat.Format32bppRgb, new IntPtr(ptr)))
                     {
                         string path = Path.GetTempPath();
-                        image.Save(path + "graph.png");
+                        image.Save(path + "graph" + _imageId + ".png" );
                     }
                 }
             }

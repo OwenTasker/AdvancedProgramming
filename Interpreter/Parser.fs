@@ -1,4 +1,4 @@
-﻿module Interpreter.Parser
+module Interpreter.Parser
 
 open Interpreter.Util
     
@@ -48,16 +48,21 @@ and unary terminals =
     | UnaryMinus :: terminalsTail
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
-   
-// factor ::= int | ( expression )
+    
+// factor ::= int | ( expression ) 
 and factor terminals =
     match terminals with
-    | Number _ :: terminalsTail
-    | Word _ :: terminalsTail ->
+    | Number _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: _
         | Number _ :: _
         | Word _ :: _ ->  raise (ParseError "Parse Error: Missing Operator")
+        | _ -> terminalsTail
+    | Word _ :: terminalsTail ->
+        match terminalsTail with
+        | Lpar ::  tailTail -> arguments tailTail
+        | Number _ :: _
+        | Word _ :: _ -> raise ParseError
         | _ -> terminalsTail
     | Function _ :: Lpar :: terminalsTail
     | Lpar :: terminalsTail ->
@@ -69,6 +74,16 @@ and factor terminals =
             | _ -> terminalsTail
         | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
     | _ -> raise (ParseError "Parse Error: Malformed Expression")
+    
+and arguments terminals =
+    match terminals with
+    | Word _ :: Assign :: tail ->
+        let result = expression tail
+        arguments result
+    | Comma :: tail ->
+        arguments tail
+    | Rpar :: tail -> tail
+    | _ -> raise ParseError
     
         
 let parse terminals =

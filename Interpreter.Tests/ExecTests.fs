@@ -7,60 +7,60 @@ open Interpreter.Util
     
 let CalculatePlusData =
     [
-        TestCaseData(1, 6, 7.0)
-        TestCaseData(0, 5, 5.0)
-        TestCaseData(5, 0, 5.0)
-        TestCaseData(0, 0, 0.0)
-        TestCaseData(-10, -10, -20.0)
-        TestCaseData(7, -7, 0.0)
-        TestCaseData(-19, 19, 0.0)
+        TestCaseData(1, 6, Number 7.0)
+        TestCaseData(0, 5, Number 5.0)
+        TestCaseData(5, 0, Number 5.0)
+        TestCaseData(0, 0, Number 0.0)
+        TestCaseData(-10, -10, Number -20.0)
+        TestCaseData(7, -7, Number 0.0)
+        TestCaseData(-19, 19, Number 0.0)
     ]
     
 let CalculateMinusData =
     [
-        TestCaseData(1, 6, -5.0)
-        TestCaseData(0, 5, -5.0)
-        TestCaseData(5, 0, 5.0)
-        TestCaseData(0, 0, 0.0)
-        TestCaseData(8, 8, 0.0)
-        TestCaseData(-10, -10, 0.0)
-        TestCaseData(7, -7, 14.0)
-        TestCaseData(-19, 19, -38.0)
+        TestCaseData(1, 6, Number -5.0)
+        TestCaseData(0, 5, Number -5.0)
+        TestCaseData(5, 0, Number 5.0)
+        TestCaseData(0, 0, Number 0.0)
+        TestCaseData(8, 8, Number 0.0)
+        TestCaseData(-10, -10, Number 0.0)
+        TestCaseData(7, -7, Number 14.0)
+        TestCaseData(-19, 19, Number -38.0)
     ]
     
 let CalculateTimesData =
     [
-        TestCaseData(1, 6, 6.0)
-        TestCaseData(6, 1, 6.0)
-        TestCaseData(0, 5, 0.0)
-        TestCaseData(5, 0, 0.0)
-        TestCaseData(0, 0, 0.0)
-        TestCaseData(-10, -10, 100.0)
-        TestCaseData(10, 10, 100.0)
-        TestCaseData(10, -10, -100)
-        TestCaseData(-10, 10, -100)
+        TestCaseData(1, 6, Number 6.0)
+        TestCaseData(6, 1, Number 6.0)
+        TestCaseData(0, 5, Number 0.0)
+        TestCaseData(5, 0, Number 0.0)
+        TestCaseData(0, 0, Number 0.0)
+        TestCaseData(-10, -10, Number 100.0)
+        TestCaseData(10, 10, Number 100.0)
+        TestCaseData(10, -10, Number -100.0)
+        TestCaseData(-10, 10, Number -100.0)
     ]
     
 let CalculateDivideData =
     [
-        TestCaseData(1, 6, 1.0/6.0)
-        TestCaseData(0, 5, 0)
-        TestCaseData(5, 1, 5.0)
-        TestCaseData(-10, -10, 1.0)
-        TestCaseData(10, 10, 1.0)
-        TestCaseData(7, -7, -1.0)
-        TestCaseData(-19, 19, -1.0)
+        TestCaseData(1, 6, Number (1.0/6.0))
+        TestCaseData(0, 5, Number 0.0)
+        TestCaseData(5, 1, Number 5.0)
+        TestCaseData(-10, -10, Number 1.0)
+        TestCaseData(10, 10, Number 1.0)
+        TestCaseData(7, -7, Number -1.0)
+        TestCaseData(-19, 19, Number -1.0)
     ]
     
 let CalculateExponentData =
     [
-        TestCaseData(1, 6, 1)
-        TestCaseData(0, 5, 0)
-        TestCaseData(5, 0, 1)
-        TestCaseData(0, 0, 1)
-        TestCaseData(-10, -10, -10.0 ** -10.0)
-        TestCaseData(7, 2, 49.0)
-        TestCaseData(-7, 2, 49.0)
+        TestCaseData(1, 6, Number 1.0)
+        TestCaseData(0, 5, Number 0.0)
+        TestCaseData(5, 0, Number 1.0)
+        TestCaseData(0, 0, Number 1.0)
+        TestCaseData(-10, -10, Number (-10.0 ** -10.0))
+        TestCaseData(7, 2, Number 49.0)
+        TestCaseData(-7, 2, Number 49.0)
     ]
     
 let InvalidCalculateData =
@@ -72,28 +72,28 @@ let InvalidCalculateData =
     ]
     
 [<TestCaseSource("CalculatePlusData")>]
-let GivenCalculate_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
+let GivenCalculate_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
     let result = calculate Plus op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateMinusData")>]
-let GivenCalculate_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
+let GivenCalculate_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
     let result = calculate Minus op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateTimesData")>]
-let GivenCalculate_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
+let GivenCalculate_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
     let result = calculate Times op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateDivideData")>]
-let GivenCalculate_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
+let GivenCalculate_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
     let result = calculate Divide op1 op2
     Assert.That(result, Is.EqualTo(res))
     
     
 [<TestCaseSource("CalculateExponentData")>]
-let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float, res: float) =
+let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
     let result = calculate Exponent op1 op2
     Assert.That(result, Is.EqualTo(res))
     
@@ -107,10 +107,10 @@ let GivenCalculate_WhenPassedDivideByZero_RaiseCalculateError() =
     
 let ValidUnaryData =
     [
-        TestCaseData(UnaryMinus, 1, -1)
-        TestCaseData(UnaryMinus, -1, 1)
-        TestCaseData(UnaryPlus, 1, 1)
-        TestCaseData(UnaryPlus, -1, -1)
+        TestCaseData(UnaryMinus, 1, Number -1.0)
+        TestCaseData(UnaryMinus, -1, Number 1.0)
+        TestCaseData(UnaryPlus, 1, Number 1.0)
+        TestCaseData(UnaryPlus, -1, Number -1.0)
     ]
     
 let InvalidUnaryData =
@@ -125,7 +125,7 @@ let InvalidUnaryData =
     ]
     
 [<TestCaseSource("ValidUnaryData")>]
-let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2: float, res: float) =
+let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2: float, res: terminal) =
     let result = unary op1 op2
     Assert.That(result, Is.EqualTo(res))
     
@@ -133,125 +133,131 @@ let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2
 let GivenUnary_WhenPassedInvalidOperator_RaiseUnaryError(operator: terminal) =
     Assert.Throws<UnaryError>(fun () -> unary operator 1.0 |> ignore) |> ignore
     
-let ValidReduceCases =
+let ValidNoVariablesReduceCases =
     [
         //SIMPLE ADDITION CASES
-        TestCaseData([Number 1.0; Plus; Number 1.0], 2.0)
-        TestCaseData([Number 1.0; Plus; Number 0.0], 1.0)
-        TestCaseData([Number 0.0; Plus; Number 67.0], 67.0)
-        TestCaseData([Number 0.0; Plus; Number 0.0], 0.0)
-        TestCaseData([Number 5.0; Plus; Number -5.0], 0.0)
-        TestCaseData([Number -5.0; Plus; Number -5.0], -10.0)
-        TestCaseData([Number -5.0; Plus; Number 5.0], 0.0)
-        TestCaseData([Number 10.0; Plus; Number -100.0], -90.0)
+        TestCaseData([Number 1.0; Plus; Number 1.0], Number 2.0)
+        TestCaseData([Number 1.0; Plus; Number 0.0], Number 1.0)
+        TestCaseData([Number 0.0; Plus; Number 67.0], Number 67.0)
+        TestCaseData([Number 0.0; Plus; Number 0.0], Number 0.0)
+        TestCaseData([Number 5.0; Plus; Number -5.0], Number 0.0)
+        TestCaseData([Number -5.0; Plus; Number -5.0], Number -10.0)
+        TestCaseData([Number -5.0; Plus; Number 5.0], Number 0.0)
+        TestCaseData([Number 10.0; Plus; Number -100.0], Number -90.0)
         //SIMPLE SUBTRACTION CASES
-        TestCaseData([Number 1.0; Minus; Number 1.0], 0.0)
-        TestCaseData([Number 1.0; Minus; Number 0.0], 1.0)
-        TestCaseData([Number 0.0; Minus; Number 67.0], -67.0)
-        TestCaseData([Number 0.0; Minus; Number 0.0], 0.0)
-        TestCaseData([Number 5.0; Minus; Number -5.0], 10.0)
-        TestCaseData([Number -5.0; Minus; Number -5.0], 0.0)
-        TestCaseData([Number -5.0; Minus; Number 5.0], -10.0)
-        TestCaseData([Number 10.0; Minus; Number -100.0], 110.0)
+        TestCaseData([Number 1.0; Minus; Number 1.0], Number 0.0)
+        TestCaseData([Number 1.0; Minus; Number 0.0], Number 1.0)
+        TestCaseData([Number 0.0; Minus; Number 67.0], Number -67.0)
+        TestCaseData([Number 0.0; Minus; Number 0.0], Number 0.0)
+        TestCaseData([Number 5.0; Minus; Number -5.0], Number 10.0)
+        TestCaseData([Number -5.0; Minus; Number -5.0], Number 0.0)
+        TestCaseData([Number -5.0; Minus; Number 5.0], Number -10.0)
+        TestCaseData([Number 10.0; Minus; Number -100.0], Number 110.0)
         //SIMPLE MULTIPLY CASES
-        TestCaseData([Number 1.0; Times; Number 8.0], 8.0)
-        TestCaseData([Number 8.0; Times; Number 1.0], 8.0)
-        TestCaseData([Number 0.0; Times; Number 11.0], 0.0)
-        TestCaseData([Number 10.0; Times; Number 0.0], 0.0)
-        TestCaseData([Number 0.0; Times; Number 0.0], 0.0)
-        TestCaseData([Number -10.0; Times; Number -10.0], 100.0)
-        TestCaseData([Number 10.0; Times; Number 10.0], 100.0)
-        TestCaseData([Number -10.0; Times; Number 10.0], -100.0)
-        TestCaseData([Number 10.0; Times; Number -10.0], -100.0)
+        TestCaseData([Number 1.0; Times; Number 8.0], Number 8.0)
+        TestCaseData([Number 8.0; Times; Number 1.0], Number 8.0)
+        TestCaseData([Number 0.0; Times; Number 11.0], Number 0.0)
+        TestCaseData([Number 10.0; Times; Number 0.0], Number 0.0)
+        TestCaseData([Number 0.0; Times; Number 0.0], Number 0.0)
+        TestCaseData([Number -10.0; Times; Number -10.0], Number 100.0)
+        TestCaseData([Number 10.0; Times; Number 10.0], Number 100.0)
+        TestCaseData([Number -10.0; Times; Number 10.0], Number -100.0)
+        TestCaseData([Number 10.0; Times; Number -10.0], Number -100.0)
         //SIMPLE DIVIDE CASES
-        TestCaseData([Number 1.0; Divide; Number 8.0], 0.125)
-        TestCaseData([Number 8.0; Divide; Number 1.0], 8.0)
-        TestCaseData([Number 0.0; Divide; Number 11.0], 0.0)
-        TestCaseData([Number -10.0; Divide; Number -10.0], 1.0)
-        TestCaseData([Number 10.0; Divide; Number 10.0], 1.0)
-        TestCaseData([Number -10.0; Divide; Number 10.0], -1.0)
-        TestCaseData([Number 10.0; Divide; Number -10.0], -1.0)
+        TestCaseData([Number 1.0; Divide; Number 8.0], Number 0.125)
+        TestCaseData([Number 8.0; Divide; Number 1.0], Number 8.0)
+        TestCaseData([Number 0.0; Divide; Number 11.0], Number 0.0)
+        TestCaseData([Number -10.0; Divide; Number -10.0], Number 1.0)
+        TestCaseData([Number 10.0; Divide; Number 10.0], Number 1.0)
+        TestCaseData([Number -10.0; Divide; Number 10.0], Number -1.0)
+        TestCaseData([Number 10.0; Divide; Number -10.0], Number -1.0)
         //SIMPLE EXPONENT CASES
-        TestCaseData([Number 1.0; Exponent; Number 8.0], 1.0)
-        TestCaseData([Number 8.0; Exponent; Number 1.0], 8.0)
-        TestCaseData([Number 0.0; Exponent; Number 11.0], 0.0)
-        TestCaseData([Number 11.0; Exponent; Number 0.0], 1.0)
-        TestCaseData([Number 0.0; Exponent; Number 0.0], 1.0)
-        TestCaseData([Number -10.0; Exponent; Number -10.0], -10.0 ** -10.00)
-        TestCaseData([Number 10.0; Exponent; Number 2.0], 100.0)
-        TestCaseData([Number -10.0; Exponent; Number 2.0], 100.0)
-        TestCaseData([Number 10.0; Exponent; Number 3.0], 1000.0)
-        TestCaseData([Number -10.0; Exponent; Number 3.0], -1000.0)
-        TestCaseData([Number 10.0; Exponent; Number -3.0], 0.001)
-        TestCaseData([Number -10.0; Exponent; Number -3.0], -0.001)
+        TestCaseData([Number 1.0; Exponent; Number 8.0], Number 1.0)
+        TestCaseData([Number 8.0; Exponent; Number 1.0], Number 8.0)
+        TestCaseData([Number 0.0; Exponent; Number 11.0], Number 0.0)
+        TestCaseData([Number 11.0; Exponent; Number 0.0], Number 1.0)
+        TestCaseData([Number 0.0; Exponent; Number 0.0], Number 1.0)
+        TestCaseData([Number -10.0; Exponent; Number -10.0], Number (-10.0 ** -10.00))
+        TestCaseData([Number 10.0; Exponent; Number 2.0], Number 100.0)
+        TestCaseData([Number -10.0; Exponent; Number 2.0], Number 100.0)
+        TestCaseData([Number 10.0; Exponent; Number 3.0], Number 1000.0)
+        TestCaseData([Number -10.0; Exponent; Number 3.0], Number -1000.0)
+        TestCaseData([Number 10.0; Exponent; Number -3.0], Number 0.001)
+        TestCaseData([Number -10.0; Exponent; Number -3.0], Number -0.001)
         //SIMPLE UNARY CASES
-        TestCaseData([UnaryMinus; Number 1.0], -1.0)
-        TestCaseData([UnaryMinus; Number -1.0], 1.0)
-        TestCaseData([UnaryPlus; Number 1.0], 1.0)
-        TestCaseData([UnaryPlus; Number -1.0], -1.0)
+        TestCaseData([UnaryMinus; Number 1.0], Number -1.0)
+        TestCaseData([UnaryMinus; Number -1.0], Number 1.0)
+        TestCaseData([UnaryPlus; Number 1.0], Number 1.0)
+        TestCaseData([UnaryPlus; Number -1.0], Number -1.0)
         //CHAINED UNARY CASES
-        TestCaseData([UnaryMinus; UnaryMinus; Number 1.0], 1.0)
-        TestCaseData([UnaryMinus; UnaryMinus; Number -1.0], -1.0)
-        TestCaseData([UnaryPlus; UnaryPlus; Number 1.0], 1.0)
-        TestCaseData([UnaryPlus; UnaryPlus; Number -1.0], -1.0)
+        TestCaseData([UnaryMinus; UnaryMinus; Number 1.0], Number 1.0)
+        TestCaseData([UnaryMinus; UnaryMinus; Number -1.0], Number -1.0)
+        TestCaseData([UnaryPlus; UnaryPlus; Number 1.0], Number 1.0)
+        TestCaseData([UnaryPlus; UnaryPlus; Number -1.0], Number -1.0)
         //ORDER OF OPERATIONS CASES
-        TestCaseData([Number 1.0; Plus; Number 8.0; Minus; Number 6.0], 3.0)
-        TestCaseData([Number 1.0; Minus; Number 8.0; Plus; Number 6.0], -1.0)
-        TestCaseData([Number 64.0; Times; Number 8.0; Divide; Number 4.0], 128.0)
-        TestCaseData([Number 64.0; Divide; Number 4.0; Times; Number 8.0], 128.0)
-        TestCaseData([Number 7.0; Plus; Number 8.0; Times; Number 6.0], 55.0)
-        TestCaseData([Number 9.0; Times; Number 8.0; Plus; Number 6.0], 78.0)
-        TestCaseData([Number 6.0; Times; Number 8.0; Minus; Number 4.0], 44.0)
-        TestCaseData([Number 6.0; Minus; Number 4.0; Times; Number 8.0], -26.0)
-        TestCaseData([Number 1.0; Plus; Number 8.0; Divide; Number 4.0], 3.0)
-        TestCaseData([Number 1.0; Divide; Number 8.0; Plus; Number 6.0], 6.125)
-        TestCaseData([Number 64.0; Divide; Number 8.0; Minus; Number 4.0], 4.0)
-        TestCaseData([Number 64.0; Minus; Number 4.0; Divide; Number 8.0], 63.5)
-        TestCaseData([Number 1.0; Plus; Number 8.0; Exponent; Number 2.0], 65.0)
-        TestCaseData([Number 1.0; Exponent; Number 8.0; Plus; Number 6.0], 7.0)
-        TestCaseData([Number 2.0; Minus; Number 8.0; Exponent; Number 2.0], -62.0)
-        TestCaseData([Number 16.0; Exponent; Number 2.0; Minus; Number 8.0], 248.0)
-        TestCaseData([Number 7.0; Times; Number 5.0; Exponent; Number 3.0], 875.0)
-        TestCaseData([Number 9.0; Exponent; Number 2.0; Times; Number 6.0], 486.0)
-        TestCaseData([Number 64.0; Divide; Number 8.0; Exponent; Number 2.0], 1.0)
-        TestCaseData([Number 6.0; Exponent; Number 3.0; Divide; Number 2.0], 108.0)
-        TestCaseData([Lpar; Number 1.0; Plus; Number 8.0; Rpar; Minus; Number 6.0], 3.0)
-        TestCaseData([Lpar; Number 1.0; Minus; Number 8.0; Rpar; Plus; Number 6.0], -1.0)
-        TestCaseData([Lpar; Number 64.0; Times; Number 8.0; Rpar; Divide; Number 4.0], 128.0)
-        TestCaseData([Lpar; Number 64.0; Divide; Number 4.0; Rpar; Times; Number 8.0], 128.0)
-        TestCaseData([Lpar; Number 7.0; Plus; Number 8.0; Rpar; Times; Number 6.0], 90.0)
-        TestCaseData([Lpar; Number 9.0; Times; Number 8.0; Rpar; Plus; Number 6.0], 78.0)
-        TestCaseData([Lpar; Number 6.0; Times; Number 8.0; Rpar; Minus; Number 4.0], 44.0)
-        TestCaseData([Lpar; Number 6.0; Minus; Number 4.0; Rpar; Times; Number 8.0], 16.0)
-        TestCaseData([Lpar; Number 1.0; Plus; Number 8.0; Rpar; Divide; Number 4.0], 2.25)
-        TestCaseData([Lpar; Number 1.0; Divide; Number 8.0; Rpar; Plus; Number 6.0], 6.125)
-        TestCaseData([Lpar; Number 64.0; Divide; Number 8.0; Rpar; Minus; Number 4.0], 4.0)
-        TestCaseData([Lpar; Number 64.0; Minus; Number 4.0; Rpar; Divide; Number 8.0], 7.5)
-        TestCaseData([Lpar; Number 1.0; Plus; Number 8.0; Rpar; Exponent; Number 2.0], 81.0)
-        TestCaseData([Lpar; Number 1.0; Exponent; Number 8.0; Rpar; Plus; Number 6.0], 7.0)
-        TestCaseData([Lpar; Number 2.0; Minus; Number 8.0; Rpar; Exponent; Number 2.0], 36.0)
-        TestCaseData([Lpar; Number 16.0; Exponent; Number 2.0; Rpar; Minus; Number 8.0], 248.0)
-        TestCaseData([Lpar; Number 7.0; Times; Number 5.0; Rpar; Exponent; Number 3.0], 42875.0)
-        TestCaseData([Lpar; Number 9.0; Exponent; Number 2.0; Rpar; Times; Number 6.0], 486.0)
-        TestCaseData([Lpar; Number 64.0; Divide; Number 8.0; Rpar; Exponent; Number 2.0], 64.0)
-        TestCaseData([Lpar; Number 6.0; Exponent; Number 3.0; Rpar; Divide; Number 2.0], 108.0)
-        TestCaseData([UnaryMinus; Lpar; UnaryPlus; Number 6.0; Exponent; UnaryMinus; Number 3.0; Rpar; Divide; Number 2.0], ((-1.0/6.0**3.0)/2.0))
-        TestCaseData([UnaryMinus; Lpar; UnaryPlus; Number 6.0; Divide; UnaryMinus; Number 3.0; Rpar; Exponent; Number 2.0], 4)
-        TestCaseData([UnaryMinus; Number 2.0; Exponent; Number 3.0], -8)
+        TestCaseData([Number 1.0; Plus; Number 8.0; Minus; Number 6.0], Number 3.0)
+        TestCaseData([Number 1.0; Minus; Number 8.0; Plus; Number 6.0], Number -1.0)
+        TestCaseData([Number 64.0; Times; Number 8.0; Divide; Number 4.0], Number 128.0)
+        TestCaseData([Number 64.0; Divide; Number 4.0; Times; Number 8.0], Number 128.0)
+        TestCaseData([Number 7.0; Plus; Number 8.0; Times; Number 6.0], Number 55.0)
+        TestCaseData([Number 9.0; Times; Number 8.0; Plus; Number 6.0], Number 78.0)
+        TestCaseData([Number 6.0; Times; Number 8.0; Minus; Number 4.0], Number 44.0)
+        TestCaseData([Number 6.0; Minus; Number 4.0; Times; Number 8.0], Number -26.0)
+        TestCaseData([Number 1.0; Plus; Number 8.0; Divide; Number 4.0], Number 3.0)
+        TestCaseData([Number 1.0; Divide; Number 8.0; Plus; Number 6.0], Number 6.125)
+        TestCaseData([Number 64.0; Divide; Number 8.0; Minus; Number 4.0], Number 4.0)
+        TestCaseData([Number 64.0; Minus; Number 4.0; Divide; Number 8.0], Number 63.5)
+        TestCaseData([Number 1.0; Plus; Number 8.0; Exponent; Number 2.0], Number 65.0)
+        TestCaseData([Number 1.0; Exponent; Number 8.0; Plus; Number 6.0], Number 7.0)
+        TestCaseData([Number 2.0; Minus; Number 8.0; Exponent; Number 2.0], Number -62.0)
+        TestCaseData([Number 16.0; Exponent; Number 2.0; Minus; Number 8.0], Number 248.0)
+        TestCaseData([Number 7.0; Times; Number 5.0; Exponent; Number 3.0], Number 875.0)
+        TestCaseData([Number 9.0; Exponent; Number 2.0; Times; Number 6.0], Number 486.0)
+        TestCaseData([Number 64.0; Divide; Number 8.0; Exponent; Number 2.0], Number 1.0)
+        TestCaseData([Number 6.0; Exponent; Number 3.0; Divide; Number 2.0], Number 108.0)
+        TestCaseData([Lpar; Number 1.0; Plus; Number 8.0; Rpar; Minus; Number 6.0], Number 3.0)
+        TestCaseData([Lpar; Number 1.0; Minus; Number 8.0; Rpar; Plus; Number 6.0], Number -1.0)
+        TestCaseData([Lpar; Number 64.0; Times; Number 8.0; Rpar; Divide; Number 4.0], Number 128.0)
+        TestCaseData([Lpar; Number 64.0; Divide; Number 4.0; Rpar; Times; Number 8.0], Number 128.0)
+        TestCaseData([Lpar; Number 7.0; Plus; Number 8.0; Rpar; Times; Number 6.0], Number 90.0)
+        TestCaseData([Lpar; Number 9.0; Times; Number 8.0; Rpar; Plus; Number 6.0], Number 78.0)
+        TestCaseData([Lpar; Number 6.0; Times; Number 8.0; Rpar; Minus; Number 4.0], Number 44.0)
+        TestCaseData([Lpar; Number 6.0; Minus; Number 4.0; Rpar; Times; Number 8.0], Number 16.0)
+        TestCaseData([Lpar; Number 1.0; Plus; Number 8.0; Rpar; Divide; Number 4.0], Number 2.25)
+        TestCaseData([Lpar; Number 1.0; Divide; Number 8.0; Rpar; Plus; Number 6.0], Number 6.125)
+        TestCaseData([Lpar; Number 64.0; Divide; Number 8.0; Rpar; Minus; Number 4.0], Number 4.0)
+        TestCaseData([Lpar; Number 64.0; Minus; Number 4.0; Rpar; Divide; Number 8.0], Number 7.5)
+        TestCaseData([Lpar; Number 1.0; Plus; Number 8.0; Rpar; Exponent; Number 2.0], Number 81.0)
+        TestCaseData([Lpar; Number 1.0; Exponent; Number 8.0; Rpar; Plus; Number 6.0], Number 7.0)
+        TestCaseData([Lpar; Number 2.0; Minus; Number 8.0; Rpar; Exponent; Number 2.0], Number 36.0)
+        TestCaseData([Lpar; Number 16.0; Exponent; Number 2.0; Rpar; Minus; Number 8.0], Number 248.0)
+        TestCaseData([Lpar; Number 7.0; Times; Number 5.0; Rpar; Exponent; Number 3.0], Number 42875.0)
+        TestCaseData([Lpar; Number 9.0; Exponent; Number 2.0; Rpar; Times; Number 6.0], Number 486.0)
+        TestCaseData([Lpar; Number 64.0; Divide; Number 8.0; Rpar; Exponent; Number 2.0], Number 64.0)
+        TestCaseData([Lpar; Number 6.0; Exponent; Number 3.0; Rpar; Divide; Number 2.0], Number 108.0)
+        TestCaseData([UnaryMinus; Lpar; UnaryPlus; Number 6.0; Exponent; UnaryMinus; Number 3.0; Rpar; Divide; Number 2.0], Number ((-1.0/6.0**3.0)/2.0))
+        TestCaseData([UnaryMinus; Lpar; UnaryPlus; Number 6.0; Divide; UnaryMinus; Number 3.0; Rpar; Exponent; Number 2.0], Number 4.0)
+        TestCaseData([UnaryMinus; Number 2.0; Exponent; Number 3.0], Number -8.0)
     ]
     
-[<TestCaseSource("ValidReduceCases")>]
-let GivenReduce_WhenPassedValidTokens_ReturnCorrectAnswer(tokens: terminal list, expected: float) =
-    let result = reduce tokens
+[<TestCaseSource("ValidNoVariablesReduceCases")>]
+let GivenReduce_WhenPassedValidTokensWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
+    let result = reduce tokens Map.empty
     Assert.That(result, Is.EqualTo(expected))
     
-[<TestCaseSource("ValidReduceCases")>]
-let GivenReduceRecursive_WhenPassedValidTokens_ReturnCorrectAnswer(tokens: terminal list, expected: float) =
-    let result = reduceRecursive tokens [] []
+[<TestCaseSource("ValidNoVariablesReduceCases")>]
+let GivenReduceRecursive_WhenPassedValidTokensWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
+    let result = reduceRecursive tokens [] [] Map.empty
     Assert.That(result, Is.EqualTo(expected))
+    
+[<TestCaseSource("ValidNoVariablesReduceCases")>]
+let GivenExec_WhenPassedSimpleExpressionWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
+    let result = exec tokens Map.empty
+    Assert.That(result, Is.EqualTo([expected], Map.empty |> Map.toSeq |> dict))
     
 let InvalidReduceCases =
     [
+        TestCaseData([Comma;])
         TestCaseData([Plus;])
         TestCaseData([Minus;])
         TestCaseData([Times;])
@@ -277,73 +283,79 @@ let InvalidReduceCases =
         TestCaseData([Lpar; Number 5.0; Plus; Number 6.0; Rpar; Number 5.0])
         TestCaseData([Number 2.0; Exponent])
         TestCaseData([Exponent; Number 5.0;])
+        TestCaseData([Assign;])
+        TestCaseData([Word "x"; Assign])
     ]
     
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenReduce_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
-    Assert.Throws<ExecError>(fun () -> reduce tokens |> ignore) |> ignore
+    Assert.Throws<ExecError>(fun () -> reduce tokens Map.empty |> ignore) |> ignore
     
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenReduceRecursive_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
-    Assert.Throws<ExecError>(fun () -> reduceRecursive tokens [] [] |> ignore) |> ignore
-
+    Assert.Throws<ExecError>(fun () -> reduceRecursive tokens [] [] Map.empty |> ignore) |> ignore
+    
+[<TestCaseSource("InvalidReduceCases")>]
+let GivenExed_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
+    Assert.Throws<ExecError>(fun () -> exec tokens Map.empty |> ignore) |> ignore
+    
 let ValidPerformOperationCases =
     [
-        TestCaseData([Plus;], [1.0; 2.0;], (([] : terminal list), [3.0;]))
-        TestCaseData([Minus;], [2.0; 4.0;], (([] : terminal list), [2.0;]))
-        TestCaseData([Times;], [2.0; 4.0;], (([] : terminal list), [8.0;]))
-        TestCaseData([Divide;], [2.0; 4.0;], (([] : terminal list), [2.0;]))
-        TestCaseData([Exponent;], [2.0; 4.0;], (([] : terminal list), [16.0;]))
-        TestCaseData([UnaryPlus;], [2.0;], (([] : terminal list), [2.0;]))
-        TestCaseData([UnaryMinus;], [3.0;], (([] : terminal list), [-3.0;]))
-        TestCaseData([Plus; Plus;], [1.0; 2.0;], ([Plus;], [3.0;]))
-        TestCaseData([Minus; Plus;], [2.0; 4.0;], ([Plus;], [2.0;]))
-        TestCaseData([Times; Plus;], [2.0; 4.0;], ([Plus;], [8.0;]))
-        TestCaseData([Divide; Plus;], [2.0; 4.0;], ([Plus;], [2.0;]))
-        TestCaseData([Exponent; Plus;], [2.0; 4.0;], ([Plus;], [16.0;]))
-        TestCaseData([UnaryPlus; Plus;], [2.0;], ([Plus;], [2.0;]))
-        TestCaseData([UnaryMinus; Plus;], [3.0;], ([Plus;], [-3.0;]))
-        TestCaseData([Plus;], [1.0; 2.0; 2.0;], (([] : terminal list), [3.0; 2.0;]))
-        TestCaseData([Minus;], [2.0; 4.0; 2.0;], (([] : terminal list), [2.0; 2.0;]))
-        TestCaseData([Times;], [2.0; 4.0; 2.0;], (([] : terminal list), [8.0; 2.0;]))
-        TestCaseData([Divide;], [2.0; 4.0; 2.0;], (([] : terminal list), [2.0; 2.0;]))
-        TestCaseData([Exponent;], [2.0; 4.0; 2.0;], (([] : terminal list), [16.0; 2.0;]))
-        TestCaseData([UnaryPlus;], [2.0; 2.0;], (([] : terminal list), [2.0; 2.0;]))
-        TestCaseData([UnaryMinus;], [3.0; 2.0;], (([] : terminal list), [-3.0; 2.0;]))
+        TestCaseData([Plus;], [Number 1.0; Number 2.0;], (([] : terminal list), [Number 3.0;]))
+        TestCaseData([Minus;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 2.0;]))
+        TestCaseData([Times;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 8.0;]))
+        TestCaseData([Divide;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 2.0;]))
+        TestCaseData([Exponent;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 16.0;]))
+        TestCaseData([UnaryPlus;], [Number 2.0;], (([] : terminal list), [Number 2.0;]))
+        TestCaseData([UnaryMinus;], [Number 3.0;], (([] : terminal list), [Number -3.0;]))
+        TestCaseData([Plus; Plus;], [Number 1.0; Number 2.0;], ([Plus;], [Number 3.0;]))
+        TestCaseData([Minus; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 2.0;]))
+        TestCaseData([Times; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 8.0;]))
+        TestCaseData([Divide; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 2.0;]))
+        TestCaseData([Exponent; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 16.0;]))
+        TestCaseData([UnaryPlus; Plus;], [Number 2.0;], ([Plus;], [Number 2.0;]))
+        TestCaseData([UnaryMinus; Plus;], [Number 3.0;], ([Plus;], [Number -3.0;]))
+        TestCaseData([Plus;], [Number 1.0; Number 2.0; Number 2.0;], (([] : terminal list), [Number 3.0; Number 2.0;]))
+        TestCaseData([Minus;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
+        TestCaseData([Times;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 8.0; Number 2.0;]))
+        TestCaseData([Divide;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
+        TestCaseData([Exponent;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 16.0; Number 2.0;]))
+        TestCaseData([UnaryPlus;], [Number 2.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
+        TestCaseData([UnaryMinus;], [Number 3.0; Number 2.0;], (([] : terminal list), [Number -3.0; Number 2.0;]))
     ]
     
 [<TestCaseSource("ValidPerformOperationCases")>]
-let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(opList: terminal list, numList: float list, res: terminal list * float list) =
+let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(opList: terminal list, numList: terminal list, res: terminal list * terminal list) =
     let result = performOperation opList numList
     Assert.That(result, Is.EqualTo(res))
     
 let InvalidPerformOperationsCases =
     [
-        TestCaseData(([] : terminal list), ([] : float list))
-        TestCaseData(([] : terminal list), [1.0;])
-        TestCaseData(([] : terminal list), [1.0; 2.0;])
-        TestCaseData([Rpar;], ([] : float list))
-        TestCaseData([Rpar], [1.0;])
-        TestCaseData([Rpar], [1.0; 2.0;])
-        TestCaseData([Lpar;], ([] : float list))
-        TestCaseData([Lpar], [1.0;])
-        TestCaseData([Lpar], [1.0; 2.0;])
-        TestCaseData([Plus;], ([] : float list))
-        TestCaseData([Plus;], [1.0;])
-        TestCaseData([Minus;], ([] : float list))
-        TestCaseData([Minus], [1.0;])
-        TestCaseData([Times;], ([] : float list))
-        TestCaseData([Times;], [1.0;])
-        TestCaseData([Divide;], ([] : float list))
-        TestCaseData([Divide], [1.0;])
-        TestCaseData([Exponent;], ([] : float list))
-        TestCaseData([Exponent;], [1.0;])
-        TestCaseData([UnaryPlus;], ([] : float list))
-        TestCaseData([UnaryMinus], ([] : float list))
+        TestCaseData(([] : terminal list), ([] : terminal list))
+        TestCaseData(([] : terminal list), [Number 1.0;])
+        TestCaseData(([] : terminal list), [Number 1.0; Number 2.0;])
+        TestCaseData([Rpar;], ([] : terminal list))
+        TestCaseData([Rpar], [Number 1.0;])
+        TestCaseData([Rpar], [Number 1.0; Number 2.0;])
+        TestCaseData([Lpar;], ([] : terminal list))
+        TestCaseData([Lpar], [Number 1.0;])
+        TestCaseData([Lpar], [Number 1.0; Number 2.0;])
+        TestCaseData([Plus;], ([] : terminal list))
+        TestCaseData([Plus;], [Number 1.0;])
+        TestCaseData([Minus;], ([] : terminal list))
+        TestCaseData([Minus], [Number 1.0;])
+        TestCaseData([Times;], ([] : terminal list))
+        TestCaseData([Times;], [Number 1.0;])
+        TestCaseData([Divide;], ([] : terminal list))
+        TestCaseData([Divide], [Number 1.0;])
+        TestCaseData([Exponent;], ([] : terminal list))
+        TestCaseData([Exponent;], [Number 1.0;])
+        TestCaseData([UnaryPlus;], ([] : terminal list))
+        TestCaseData([UnaryMinus], ([] : terminal list))
     ]
     
 [<TestCaseSource("InvalidPerformOperationsCases")>]
-let GivenPerformOperations_WhenPassedIncompleteArguments_RaiseExecError(opList: terminal list, numList: float list) =
+let GivenPerformOperations_WhenPassedIncompleteArguments_RaiseExecError(opList: terminal list, numList: terminal list) =
     Assert.Throws<ExecError>(fun () -> performOperation opList numList |> ignore) |> ignore
     
 let ValidGetPrecedenceData =
@@ -395,34 +407,203 @@ let GivenGetAssociativity_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(o
     
 let ValidEvaluateBracketsCases =
     [
-        TestCaseData([Lpar;], [1.0; 2.0;], (([] : terminal list), [1.0; 2.0;]))
-        TestCaseData([Plus; Lpar;], [1.0; 2.0;], (([] : terminal list), [3.0;]))
-        TestCaseData([Divide; Times; Plus; Lpar;], [1.0; 2.0; 4.0; 4.0;], (([] : terminal list), [12.0;]))
-        TestCaseData([Lpar; Plus;], [1.0; 2.0;], ([Plus;], [1.0; 2.0;]))
-        TestCaseData([Plus; Lpar; Minus], [1.0; 2.0;], ([Minus;], [3.0;]))
-        TestCaseData([Divide; Times; Plus; Lpar; Plus; Times; Divide;], [1.0; 2.0; 4.0; 4.0;], ([Plus; Times; Divide;], [12.0;]))
+        TestCaseData([Lpar;], [Number 1.0; Number 2.0;], (([] : terminal list), [Number 1.0; Number 2.0;]))
+        TestCaseData([Plus; Lpar;], [Number 1.0; Number 2.0;], (([] : terminal list), [Number 3.0;]))
+        TestCaseData([Divide; Times; Plus; Lpar;], [Number 1.0; Number 2.0; Number 4.0; Number 4.0;], (([] : terminal list), [Number 12.0;]))
+        TestCaseData([Lpar; Plus;], [Number 1.0; Number 2.0;], ([Plus;], [Number 1.0; Number 2.0;]))
+        TestCaseData([Plus; Lpar; Minus], [Number 1.0; Number 2.0;], ([Minus;], [Number 3.0;]))
+        TestCaseData([Divide; Times; Plus; Lpar; Plus; Times; Divide;], [Number 1.0; Number 2.0; Number 4.0; Number 4.0;], ([Plus; Times; Divide;], [Number 12.0;]))
     ]
     
 [<TestCaseSource("ValidEvaluateBracketsCases")>]
-let GivenEvaluateBrackets_WhenPassedValidBracketedExpression_ThenReturnCorrectTuple(opList: terminal list, numList: float list, outLists: terminal list * float list) =
+let GivenEvaluateBrackets_WhenPassedValidBracketedExpression_ThenReturnCorrectTuple(opList: terminal list, numList: terminal list, outLists: terminal list * terminal list) =
     let result = evaluateBrackets opList numList
     Assert.That(result, Is.EqualTo(outLists))
 
 let InvalidEvaluateBracketsCases =
     [
-        TestCaseData(([] : terminal list), ([] : float list))
-        TestCaseData(([] : terminal list), [1.0;])
-        TestCaseData(([] : terminal list), [1.0; 2.0;])
-        TestCaseData([Rpar;], ([] : float list))
-        TestCaseData([Rpar;], [1.0;])
-        TestCaseData([Rpar;], [1.0; 2.0;])
-        TestCaseData([UnaryMinus; Lpar;], ([] : float list))
-        TestCaseData([Plus; Lpar;], [1.0;])
-        TestCaseData([Plus; Times; Divide; Lpar;], [1.0; 2.0; 4.0;])
-        TestCaseData([Plus;], [1.0; 2.0;])
-        TestCaseData([Divide; Times; Plus;], [1.0; 2.0; 4.0; 4.0;])
+        TestCaseData(([] : terminal list), ([] : terminal list))
+        TestCaseData(([] : terminal list), [Number 1.0;])
+        TestCaseData(([] : terminal list), [Number 1.0; Number 2.0;])
+        TestCaseData([Rpar;], ([] : terminal list))
+        TestCaseData([Rpar;], [Number 1.0;])
+        TestCaseData([Rpar;], [Number 1.0; Number 2.0;])
+        TestCaseData([UnaryMinus; Lpar;], ([] : terminal list))
+        TestCaseData([Plus; Lpar;], [Number 1.0;])
+        TestCaseData([Plus; Times; Divide; Lpar;], [Number 1.0; Number 2.0; Number 4.0;])
+        TestCaseData([Plus;], [Number 1.0; Number 2.0;])
+        TestCaseData([Divide; Times; Plus;], [Number 1.0; Number 2.0; Number 4.0; Number 4.0;])
     ]
     
 [<TestCaseSource("InvalidEvaluateBracketsCases")>]
-let GivenEvaluateBrackets_WhenPassedInvalidExpression_RaiseExecError(opList: terminal list, numList: float list) =
+let GivenEvaluateBrackets_WhenPassedInvalidExpression_RaiseExecError(opList: terminal list, numList: terminal list) =
     Assert.Throws<ExecError>(fun () -> evaluateBrackets opList numList |> ignore) |> ignore
+
+let env = Map [("x", [Number 2.0])
+               ("y", [Number 1.0; Plus; Word "x"])
+               ("z", [Word "a"])
+               ("q", [Word "x"; Plus; Word "z"])]
+let ClosedCases =
+    [
+        TestCaseData(([] : terminal list), true)
+        TestCaseData([Number 1.0], true)
+        TestCaseData([Word "x"], true)
+        TestCaseData([Word "x"; Plus; Number 1.0], true)
+        TestCaseData([Word "x"; Plus; Word "y"], true)
+        TestCaseData([Word "z"], false)
+        TestCaseData([Word "q"], false)
+        TestCaseData([Word "x"; Plus; Word "z"], false)
+    ]
+    
+[<TestCaseSource("ClosedCases")>]
+let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean(terminals: terminal list, expected: bool) =
+    let result = closed terminals env
+    Assert.That(result, Is.EqualTo(expected))
+    
+let ValidVariablesReduceCases =
+    [
+        TestCaseData([Word "x"], Number 2.0)
+        TestCaseData([Word "x"; Plus; Number 1.0], Number 3.0)
+        TestCaseData([Number 1.0; Plus; Word "x"], Number 3.0)
+        TestCaseData([Word "x"; Plus; Word "x"], Number 4.0)
+        TestCaseData([Word "y"], Number 3.0)
+        TestCaseData([Word "x"; Times; Word "y"], Number 6.0)
+        TestCaseData([Word "x"; Times; Word "y"; Times; Word "y"], Number 18.0)
+    ]
+    
+[<TestCaseSource("ValidVariablesReduceCases")>]
+let GivenReduce_WhenPassedValidExpressionWithVariables_ReturnCorrectResult(terminals: terminal list, expected: terminal) =
+    let result = reduce terminals env
+    Assert.That(result, Is.EqualTo(expected))
+    
+[<TestCaseSource("ValidVariablesReduceCases")>]
+let GivenReduceRecursive_WhenPassedValidExpressionWithVariables_ReturnCorrectResult(terminals: terminal list, expected: terminal) =
+    let result = reduceRecursive terminals [] [] env
+    Assert.That(result, Is.EqualTo(expected))
+    
+let InvalidVariablesReduceCases =
+    [
+        TestCaseData([Word "z"])
+        TestCaseData([Word "x"; Plus; Word "z"])
+        TestCaseData([Word "z"; Plus; Word "x"])
+        TestCaseData([Word "a"])
+        TestCaseData([Word "x"; Plus; Word "a"])
+    ]
+    
+[<TestCaseSource("InvalidReduceCases")>]
+let GivenReduce_WhenPassedInvalidTokensWithVariables_RaiseExecError(tokens: terminal list) =
+    Assert.Throws<ExecError>(fun () -> reduce tokens env |> ignore) |> ignore
+    
+[<TestCaseSource("InvalidReduceCases")>]
+let GivenReduceRecursive_WhenPassedInvalidTokensWithVariables_RaiseExecError(tokens: terminal list) =
+    Assert.Throws<ExecError>(fun () -> reduceRecursive tokens [] [] env |> ignore) |> ignore
+
+let ValidExecAssignCases =
+    [
+        TestCaseData([Word "x"; Assign; Number 2.0], [Number 2.0], ("x", [Number 2.0]))
+        TestCaseData([Word "x"; Assign; Word "x";], [Number 2.0], ("x", [Number 2.0]))
+        TestCaseData([Word "x"; Assign; Word "x"; Plus; Word "x"], [Number 4.0], ("x", [Number 4.0]))
+        TestCaseData([Word "y"; Assign; Word "z"], [Word "y"; Assign; Word "z"], ("y", [Word "z"]))
+        TestCaseData([Word "b"; Assign; Word "x"; Times; Word "y"], [Number 6.0], ("b", [Number 6.0]))
+        TestCaseData([Word "x"; Assign; Word "x"; Plus; Number 1.0], [Number 3.0], ("x", [Number 3.0]))
+    ]
+    
+[<TestCaseSource("ValidExecAssignCases")>]
+let GivenExec_WhenPassedValidAssign_ThenAddToEnvAndReturn(terminals: terminal list, reduction: terminal list, entry: string*terminal list) =
+    let result = exec terminals env
+    Assert.That(result, Is.EqualTo((reduction, (env.Add entry))))
+
+let CreateTerminalListUpToCommaCases =
+    [
+        TestCaseData([Rpar], ([] : terminal list), ([Rpar], ([] : terminal list)))
+        TestCaseData([Rpar], [Number 2.0; Assign; Word "x"], ([Rpar], [Word "x"; Assign; Number 2.0]))
+        TestCaseData([Word "x"; Assign; Number 2.0; Rpar], ([] : terminal list), ([Rpar], [Word "x"; Assign; Number 2.0]))
+        TestCaseData([Comma], ([] : terminal list), (([] : terminal list), ([] : terminal list)))
+        TestCaseData([Comma], [Number 2.0; Assign; Word "x"], (([] : terminal list), [Word "x"; Assign; Number 2.0]))
+        TestCaseData([Word "x"; Assign; Number 2.0; Comma], ([] : terminal list), (([] : terminal list), [Word "x"; Assign; Number 2.0]))
+        TestCaseData([Comma; Word "y"; Assign; Number 3.0], ([] : terminal list), ([Word "y"; Assign; Number 3.0], ([] : terminal list)))
+        TestCaseData([Comma; Word "y"; Assign; Number 3.0], [Number 2.0; Assign; Word "x"], ([Word "y"; Assign; Number 3.0], [Word "x"; Assign; Number 2.0]))
+    ]
+    
+[<TestCaseSource("CreateTerminalListUpToCommaCases")>]
+let GivenCreateTerminalListUpToComma_WhenPassedTokens_ReadUpToCommaOrRparCorrectly(terminalIn: terminal list, terminalsOut: terminal list, expected: terminal list * terminal list) =
+    let result = createTerminalListUpToComma terminalIn terminalsOut
+    Assert.That(result, Is.EqualTo(expected))
+    
+let CreateTerminalListUpToCommaErrorCases =
+    [
+        TestCaseData([] : terminal list)
+    ]
+    
+[<TestCaseSource("CreateTerminalListUpToCommaErrorCases")>]
+let GivenCreateTerminalListUpToComma_WhenPassedEmptyArray_RaiseExecError(terminalIn: terminal list) =
+    Assert.Throws<ExecError>(fun () -> createTerminalListUpToComma terminalIn [] |> ignore) |> ignore
+
+//Setarguments
+
+let SetArgumentsCases =
+    [
+        TestCaseData([Rpar], Map [("x", [Number 2.0])], Map [("x", [Number 2.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Rpar], Map.empty<string, terminal list>, Map [("x", [Number 2.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Comma; Word "y"; Assign; Number 3.0; Rpar], Map.empty<string, terminal list>, Map [("x", [Number 2.0]); ("y", [Number 3.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Rpar], Map [("z", [Number 4.0])], Map [("x", [Number 2.0]); ("z", [Number 4.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Comma; Word "y"; Assign; Number 3.0; Rpar], Map [("z", [Number 4.0])], Map [("x", [Number 2.0]); ("y", [Number 3.0]); ("z", [Number 4.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Rpar], Map [("x", [Number 4.0])], Map [("x", [Number 2.0])])
+        TestCaseData([Word "x"; Assign; Number 2.0; Comma; Word "y"; Assign; Number 3.0; Rpar], Map [("x", [Number 4.0])], Map [("x", [Number 2.0]); ("y", [Number 3.0])])
+    ]
+    
+[<TestCaseSource("SetArgumentsCases")>]
+let GivenSetArguments_WhenPassedValidAssignments_ReturnUpdatedMap(terminals: terminal list, inMap: Map<string, terminal list>, outMap: Map<string, terminal list>) =
+    let result = setArguments terminals inMap
+    Assert.That(result, Is.EqualTo(outMap))
+    
+let SetArgumentsErrorCases =
+    [
+        TestCaseData([] : terminal list)
+        TestCaseData([Comma;])
+        TestCaseData([Plus;])
+        TestCaseData([Minus;])
+        TestCaseData([Times;])
+        TestCaseData([Divide;])
+        TestCaseData([Exponent;])
+        TestCaseData([Lpar])
+        TestCaseData([UnaryPlus])
+        TestCaseData([UnaryMinus])
+        TestCaseData([Number 1.0])
+        TestCaseData([Word "x"])
+        TestCaseData([Assign;])
+        TestCaseData([Word "x"; Assign])
+    ]
+    
+[<TestCaseSource("SetArgumentsErrorCases")>]
+let GivenSetArguments_WhenInvalidAssignment_RaiseExecError(terminalIn: terminal list) =
+    Assert.Throws<ExecError>(fun () -> setArguments terminalIn Map.empty<string, terminal list> |> ignore) |> ignore
+    
+let UserFunctionCases =
+    [
+        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Number 2.0])], [Number 2.0])
+        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])], [Number 2.0])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 2.0; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])], [Number 2.0])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"])], [Number 4.0])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0])], [Number 16.0])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Comma; Word "z"; Assign; Number 3.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])], [Number 19.0])
+    ]
+    
+[<TestCaseSource("UserFunctionCases")>]
+let GivenExec_WhenPassedValidUserFunctionCall_ReturnCorrectResult(terminals: terminal list, env: Map<string, terminal list>, expected: terminal list) =
+    let result = exec terminals env
+    Assert.That(result, Is.EqualTo((expected, env |> Map.toSeq |> dict)))
+    
+let UserFunctionErrorCases =
+    [
+        TestCaseData([Word "y"; Lpar;], Map [("y", [Number 2.0])])
+        TestCaseData([Word "y"; Lpar; Comma; Rpar;], Map [("y", [Word "x"])])
+        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Word "x"]); ("x", [Word "z"])])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Word "z"; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
+        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Comma;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
+    ]
+    
+[<TestCaseSource("UserFunctionErrorCases")>]
+let GivenExec_WhenPassedInvalidUserFunctionCall_RaiseExecError(terminals: terminal list, env: Map<string, terminal list>) =
+    Assert.Throws<ExecError>(fun () -> exec terminals env |> ignore) |> ignore

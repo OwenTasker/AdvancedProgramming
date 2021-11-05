@@ -78,6 +78,7 @@ let rec scan tokens output  =
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
         | "->" -> scan tokensTail (Assign :: output)
+        | "," -> scan tokensTail (Comma :: output)
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
         | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
