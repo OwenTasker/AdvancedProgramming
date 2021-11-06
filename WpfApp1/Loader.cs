@@ -9,7 +9,7 @@ using Microsoft.Win32;
 
 namespace WpfApp1
 {
-    public class Loader : MainWindow
+    public class Loader
     {
         private readonly Dictionary<string, FSharpList<Util.terminal>> _variables = new();
         private string ConsoleContent { get; set; }
