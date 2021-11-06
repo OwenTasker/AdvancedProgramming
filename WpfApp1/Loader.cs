@@ -42,6 +42,7 @@ namespace WpfApp1
                         var line = loadedLine[10..];
                         line = line[..^1];
                         var dictArr = line.Split(",");
+                        var variableName = dictArr[0][1..];
                         var lexableInput = dictArr[1];
                         lexableInput = lexableInput.Replace("[", "").Replace("]", "");
                         var inpList = lexableInput.Select(character => character.ToString()).ToList();
@@ -50,7 +51,7 @@ namespace WpfApp1
 
                         var lexedOutput = Lexer.lexer(inpFList);
 
-                        _variables.Add(dictArr[0], lexedOutput);
+                        _variables.Add(variableName, lexedOutput);
                     }
                     //If Line wasnt a variable, print it to the console
                     else

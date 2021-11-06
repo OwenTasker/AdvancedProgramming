@@ -1,0 +1,7 @@
+﻿VARIABLE: [a, [3]]
+VARIABLE: [b, [3+3]]
+VARIABLE: [c, [3*testA]]
+VARIABLE: [d, [3*testB-45]]
+VARIABLE: [e, [3*testC-45*345]]
+VARIABLE: [f, [3*testD-45*345+testE^5]]
+VARIABLE: [g, [3*testF-45*345+testG^5-(testH/43)]]
