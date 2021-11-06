@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -91,15 +91,19 @@ namespace WpfApp1
                     UpdateVariableWindow();
                     inputText.Text = "Enter query here...";
                 }
-                catch (Util.TokenizeError exception)
+                catch (Util.TokenizeError ex1)
                 {
-                    consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                    consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
                 }
-                catch (Util.ScanError exception)
+                catch (Util.ScanError ex1)
                 {
-                    consoleText.AppendText(input + "\n" + exception.Data0 + "\n>>");
+                    consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
                 }
-                catch (Util.ExecError)
+                catch (Util.ParseError ex1)
+                {
+                    consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+                }
+                catch (Exception)
                 {
                     consoleText.AppendText("Expression cannot be executed\n");
                 }
@@ -287,6 +291,7 @@ namespace WpfApp1
             var dialog = new SaveFileDialog
             {
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                
                 Filter = "MyMathsPal File (*.mmp)|*.mmp"
             };
 
@@ -343,6 +348,12 @@ namespace WpfApp1
             }
 
             UpdateVariableWindow();
+            consoleText.Text += ">>";
+        }
+
+        private void ClearButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            consoleText.Clear();
             consoleText.Text += ">>";
         }
     }

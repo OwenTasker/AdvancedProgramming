@@ -27,7 +27,6 @@ let TokenizeTestData =
         TestCaseData(["^"], ["^"])
         TestCaseData(["("], ["("])
         TestCaseData([")"], [")"])
-        TestCaseData(["="], ["="])
         TestCaseData([">"], [">"])
         TestCaseData(["-";">"], ["->"])
         TestCaseData(["+";"+"], ["+";"+"])
@@ -65,7 +64,6 @@ let OperatorCases =
         TestCaseData(["("],[Lpar])
         TestCaseData([")"],[Rpar])
         TestCaseData(["/"],[Divide])
-        TestCaseData(["="],[Equals])
         TestCaseData(["->"],[Assign])
     ]
     
@@ -148,6 +146,7 @@ let ErrorCases =
         TestCaseData(["£"])
         TestCaseData(["$"])
         TestCaseData(["@"])
+        TestCaseData(["="])
         TestCaseData(["<"])
         TestCaseData(["%"])
         TestCaseData(["\""])

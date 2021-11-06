@@ -19,6 +19,7 @@ let rec tokenize input =
             match tail with
             | ">" :: tailTail -> head + ">" :: tokenize tailTail
             | _ -> head :: tokenize tail
+        | "=" -> raise (TokenizeError "Invalid Operator. The Assignment Operator is \"->\"")
         | SymbolMatch _ ->  head :: tokenize tail
         | NumberMatchLex _ ->
             if tail.Length > 0 then(
@@ -46,7 +47,7 @@ let rec tokenize input =
                     // Build single digit number, lex next element
                 else head :: tokenize tail
             )else [head]
-        | _ -> raise (TokenizeError "Invalid Token recognized: Please Try Again")
+        | _ -> raise (TokenizeError "Tokenize Error: Invalid Token recognized")
         
 // Scan each token by recursively scanning the list tail. Prepend elements to output and
 // reverse for efficiency.
@@ -76,13 +77,12 @@ let rec scan tokens output  =
         | "(" -> scan tokensTail (Lpar :: output)
         | ")" -> scan tokensTail (Rpar :: output)
         | "/" -> scan tokensTail (Divide :: output)
-        | "=" -> scan tokensTail (Equals :: output)
         | "->" -> scan tokensTail (Assign :: output)
         | "," -> scan tokensTail (Comma :: output)
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
         | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
-        | _ -> raise (ScanError "We dont know how you did this so please let us know") 
+        | _ -> raise (ScanError "Scan Error: Malformed Tokens") 
         
 let lexer input =
     let tokenizedVal = tokenize input

@@ -10,15 +10,17 @@ let interpret (input) =
     let lexedVals = lexer input
     
     try
-        expression(lexedVals) |> ignore
+        let x = statement lexedVals
+        Console.WriteLine x
     with
     | TokenizeError _ as e -> Console.WriteLine(e.Message)
     | ScanError _ as e -> Console.WriteLine(e.Message)
-    | ParseError as e -> Console.WriteLine(e.Message) 
+    | ParseError _ as e -> Console.WriteLine(e.Message) 
     
     let a, _ = exec lexedVals (Map<string, terminal list>[])
     
     Console.WriteLine a
+            
 
 [<EntryPoint>]
 let main args =

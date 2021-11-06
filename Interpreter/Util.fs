@@ -1,4 +1,4 @@
-﻿module Interpreter.Util
+module Interpreter.Util
 
 open System.Text.RegularExpressions
 
@@ -13,13 +13,12 @@ type terminal =
     | Lpar
     | Rpar
     | Assign
-    | Equals
     | Function of string
     | Word of string
     | Number of float
     | Comma
 
-exception ParseError
+exception ParseError of string
 exception ScanError of string
 exception TokenizeError of string
 exception CalculateError
@@ -32,10 +31,18 @@ let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
                 "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
                 "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
 
+let functions = [
+                 ("ceil", "One Argument; A function to determine the ceiling of a decimal value, given a value of 2.1, will return 3")
+                 ("floor", "One Argument; A function to determine the floor of a decimal value, given a value of 2.1, will return 2")
+                 ("sqrt", "One Argument; A function to determine the square root of a value, given a value of 4, will return 2")
+                 ("cbrt", "One Argument; A function to determine the cube root of a value, given a value of 8, will return 2")
+                 ("round", "One Argument; A function to determine the rounded value of the provided argument, given a value of 2.5, will return 3")
+                 ("plot", "")
+                 ]
+
 let functionRegexString =
-    let functions = ["ceil";"floor";"sqrt";"round"]
     let functionRegex = [
-        for i in functions -> "(^" + i + "$)|"
+        for (x,_) in functions -> "(^" + x + "$)|"
     ]
     let generateRegex = (String.concat "" functionRegex)
     generateRegex.Remove(generateRegex.Length-1)
@@ -103,7 +110,6 @@ let rec terminalListToString str list =
     | Number x :: tail -> terminalListToString (str + string x ) tail
     | Word x :: tail -> terminalListToString (str + x ) tail
     | Assign :: tail -> terminalListToString (str + "->") tail
-    | Equals :: tail -> terminalListToString (str + " = ") tail
     | [] -> str
     | _ -> failwith "shouldn't happen don't want to think about proper error right now it's 8:35am but more importantly it's only October and I'm so bored"
     
