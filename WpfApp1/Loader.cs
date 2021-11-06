@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using Interpreter;
 using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
@@ -13,8 +14,12 @@ namespace WpfApp1
         private readonly Dictionary<string, FSharpList<Util.terminal>> _variables = new();
         private string ConsoleContent { get; set; }
 
-
-        public (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load()
+        public static string DecideFileToLoad(string fileToLoad)
+        {
+            return fileToLoad;
+        }
+        
+        public static string DecideFileToLoad()
         {
             var fileDialog = new OpenFileDialog
             {
@@ -24,17 +29,23 @@ namespace WpfApp1
                 Multiselect = false
             };
 
+            return fileDialog.ShowDialog() != true ? null : fileDialog.FileName;
+        }
+
+
+        public (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load(string loadFile)
+        {
+            
+            
             //If no file is selected return, else load that file
-            if (fileDialog.ShowDialog() != true)
+            if (loadFile == null)
             {
                 return (false, null, null);
             }
 
             try
             {
-                //Get the path of specified file
-                var filePath = fileDialog.FileName;
-                foreach (var loadedLine in File.ReadLines(filePath))
+                foreach (var loadedLine in File.ReadLines(loadFile))
                 {
                     //Make sure line is an assigned variable
                     if (loadedLine.StartsWith("VARIABLE"))
@@ -62,11 +73,11 @@ namespace WpfApp1
             }
             catch (Util.TokenizeError)
             {
-                throw new LoadException("Error In Variable Section of file " + fileDialog.FileName);
+                throw new LoadException("Error In Variable Section of file " + loadFile);
             }
             catch (Util.ScanError)
             {
-                throw new LoadException("Error In Variable Section of file " + fileDialog.FileName);
+                throw new LoadException("Error In Variable Section of file " + loadFile);
             }
 
             ConsoleContent += ">>";

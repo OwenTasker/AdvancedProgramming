@@ -10,10 +10,12 @@
 
   <ItemGroup>
     <None Remove="mymathspal_logo.ico" />
+    <None Include="SaveLoad Tests\TestingFiles\testJustVariablesAndUserDefinedFunctionsValid.mmp" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Interpreter\Interpreter.fsproj" />
+    <ProjectReference Include="..\WpfApp1.Tests\WpfApp1.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
