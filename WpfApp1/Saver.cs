@@ -46,11 +46,12 @@ namespace WpfApp1
             var savableInfo = new string[VariableContents.Count + 1];
             var idx = 0;
 
+            //Please dont change this without also changing Loader, they are almost entirely linked
             foreach (var (key, value) in VariableContents)
             {
                 var values = value.Aggregate("[", (current, VARIABLE) => current + Util.individualTerminalToString(VARIABLE));
                 values += "]";
-                var text = $"VARIABLE: [{key}, {values}]";
+                var text = $"VARIABLE: [{key},{values}]";
                 savableInfo[idx++] = text;
             }
 

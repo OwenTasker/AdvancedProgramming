@@ -43,7 +43,7 @@ namespace WpfApp1
                         line = line[..^1];
                         var dictArr = line.Split(",");
                         var lexableInput = dictArr[1];
-                        lexableInput = lexableInput.Substring(1).Replace("[", "").Replace("]", "");
+                        lexableInput = lexableInput.Replace("[", "").Replace("]", "");
                         var inpList = lexableInput.Select(character => character.ToString()).ToList();
 
                         var inpFList = ListModule.OfSeq(inpList);
