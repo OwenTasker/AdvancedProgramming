@@ -263,98 +263,38 @@ namespace WpfApp1
 
         private void SaveButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            var newText = consoleText.Text;
-            newText = newText.Replace("\n", "");
-            var isValidToSave = Regex.Match(newText, "(>>.*){2}");
-
-            //If not enough characters present to save, return, else continue
-            if (!isValidToSave.Success)
+            try
             {
-                MessageBox.Show("Insufficient Console Text To Save. Please execute at least one line");
-                return;
+                var saver = new Saver(consoleText.Text, _environment);
+                saver.SaveContents();
             }
-
-            var savableInfo = new string[_environment.Count + 1];
-            var idx = 0;
-
-            //Collect each variable and add them to savableInfo
-            foreach (var (key, value) in _environment)
+            catch (SaveException e)
             {
-                var text = $"[{key}, {value}]";
-                savableInfo[idx] = text;
-                idx += 1;
+                MessageBox.Show(e.Message);
             }
-
-            //Add console text to savableInfo
-            savableInfo[idx] = consoleText.Text[..^3];
-
-            var dialog = new SaveFileDialog
-            {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                
-                Filter = "MyMathsPal File (*.mmp)|*.mmp"
-            };
-
-            if (dialog.ShowDialog() != true)
-            {
-                MessageBox.Show("Cancelled Save Operation");
-                return;
-            }
-
-            File.WriteAllLines(dialog.FileName, savableInfo);
+            
         }
 
         private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            var fileDialog = new OpenFileDialog
+            try
             {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                Filter = "MyMathsPal Files (*.mmp)|*.mmp;",
-                FilterIndex = 1,
-                Multiselect = false
-            };
-
-            //If no file is selected return, else load that file
-            if (fileDialog.ShowDialog() != true)
-            {
-                MessageBox.Show("Load Cancelled/Not Successful");
-                return;
+                var loader = new Loader();
+                var loadedVals = loader.Load();
+                if (!loadedVals.Item1) return;
+                _environment = loadedVals.Item3;
+                consoleText.Text = loadedVals.Item2;
+                UpdateVariableWindow();
             }
-
-            consoleText.Clear();
-            _environment.Clear();
-            UpdateVariableWindow();
-
-            //Get the path of specified file
-            var filePath = fileDialog.FileName;
-
-            foreach (var loadedLine in File.ReadLines(filePath))
+            catch (LoadException e)
             {
-                //Make sure line is an assigned variable
-                if (loadedLine.Contains(','))
-                {
-                    var line = loadedLine[1..];
-                    line = line[..^1];
-                    var dictArr = line.Split(",");
-                    var inputList = dictArr[1].Select(c => c.ToString()).ToList();
-                    var inputFSharpList = ListModule.OfSeq(inputList);
-                    var lexerOutput = Lexer.lexer(inputFSharpList);
-                    _environment.Add(dictArr[0], lexerOutput);
-                }
-                else
-                {
-                    consoleText.Text += loadedLine + "\n";
-                }
+                MessageBox.Show(e.Message);
             }
-
-            UpdateVariableWindow();
-            consoleText.Text += ">>";
         }
 
         private void ClearButton_OnClick(object sender, RoutedEventArgs e)
         {
-            consoleText.Clear();
-            consoleText.Text += ">>";
+            consoleText.Text = ">>";
         }
     }
 }

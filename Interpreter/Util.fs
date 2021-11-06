@@ -2,6 +2,14 @@ module Interpreter.Util
 
 open System.Text.RegularExpressions
 
+exception ParseError of string
+exception ScanError of string
+exception TokenizeError of string
+exception TerminalError of string
+exception CalculateError
+exception UnaryError
+exception ExecError
+
 type terminal =
     | Plus
     | Times
@@ -13,17 +21,10 @@ type terminal =
     | Lpar
     | Rpar
     | Assign
+    | Comma    
     | Function of string
     | Word of string
     | Number of float
-    | Comma
-
-exception ParseError of string
-exception ScanError of string
-exception TokenizeError of string
-exception CalculateError
-exception UnaryError
-exception ExecError
 
 let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
 let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
@@ -42,7 +43,7 @@ let functions = [
 
 let functionRegexString =
     let functionRegex = [
-        for (x,_) in functions -> "(^" + x + "$)|"
+        for x,_ in functions -> "(^" + x + "$)|"
     ]
     let generateRegex = (String.concat "" functionRegex)
     generateRegex.Remove(generateRegex.Length-1)
@@ -62,8 +63,8 @@ let (|NumberMatchLex|_|) (input:string) =
     else
         None
 
+//https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
 let (|NumberMatchScan|_|) (input:string) =
-    //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
     if Regex.IsMatch(input, "[+-]?([0-9]*[.])?[0-9]+") then
         Some(input)
     else
@@ -96,20 +97,38 @@ let inline toMap kvps =
     |> Seq.map (|KeyValue|)
     |> Map.ofSeq
 
+let individualTerminalToString x =
+    match x with
+    | Times -> "*"
+    | Divide -> "/"
+    | Plus 
+    | UnaryPlus -> "+"
+    | Minus 
+    | UnaryMinus -> "-"
+    | Exponent -> "^"
+    | Lpar -> "("
+    | Rpar -> ")"
+    | Assign -> "->"
+    | Comma -> ","
+    | Function func -> string func
+    | Word word -> string word
+    | Number num -> string num
+
 let rec terminalListToString str list =
     match list with
+    | UnaryPlus :: tail
     | Plus :: tail -> terminalListToString (str + "+" ) tail
+    | UnaryMinus :: tail
     | Minus :: tail -> terminalListToString (str + "-" ) tail
     | Times :: tail -> terminalListToString (str + "*" ) tail
     | Divide :: tail -> terminalListToString (str + "/" ) tail
     | Exponent :: tail -> terminalListToString (str + "^" ) tail
     | Lpar :: tail -> terminalListToString (str + "(" ) tail
     | Rpar :: tail -> terminalListToString (str + ")" ) tail
-    | UnaryPlus :: tail -> terminalListToString (str + "+" ) tail
-    | UnaryMinus :: tail -> terminalListToString (str + "-" ) tail
     | Number x :: tail -> terminalListToString (str + string x ) tail
-    | Word x :: tail -> terminalListToString (str + x ) tail
+    | Word x :: tail
+    | Function x :: tail -> terminalListToString (str + x) tail
     | Assign :: tail -> terminalListToString (str + "->") tail
+    | Comma :: tail -> terminalListToString (str + ",") tail
     | [] -> str
-    | _ -> failwith "shouldn't happen don't want to think about proper error right now it's 8:35am but more importantly it's only October and I'm so bored"
     
