@@ -280,10 +280,11 @@ namespace WpfApp1
             try
             {
                 var loader = new Loader();
-                var loadedVals = loader.Load();
-                if (!loadedVals.Item1) return;
-                _environment = loadedVals.Item3;
-                consoleText.Text = loadedVals.Item2;
+                var file = Loader.DecideFileToLoad();
+                var (item1, item2, dictionary) = loader.Load(file);
+                if (!item1) return;
+                _environment = dictionary;
+                consoleText.Text = item2;
                 UpdateVariableWindow();
             }
             catch (LoadException e)
