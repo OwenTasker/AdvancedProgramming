@@ -81,7 +81,6 @@ namespace WpfApp1
         {
             //Calculate starting byte of pixel
             var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
-            Console.WriteLine(offset + "");
             //Set BGR to black
             _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
         }
