@@ -137,30 +137,28 @@ namespace WpfApp1
             
         }
 
-        void GraphPopUp_Closing(object sender, CancelEventArgs e)
+        private void GraphPopUp_Closing(object sender, CancelEventArgs e)
         {
             // If data is dirty, notify user and ask for a response
-            if (isDataDirty)
+            if (!isDataDirty) return;
+            const string msg = "Close graph without saving?";
+            var result = 
+                MessageBox.Show(
+                    msg, 
+                    "MyMathsPal", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Warning);
+            if (result == MessageBoxResult.No)
             {
-                var msg = "Close graph without saving?";
-                var result = 
-                    MessageBox.Show(
-                        msg, 
-                        "MyMathsPal", 
-                        MessageBoxButton.YesNo, 
-                        MessageBoxImage.Warning);
-                if (result == MessageBoxResult.No)
-                {
-                    // If user doesn't want to close, cancel closure
-                    e.Cancel = true;
-                }
-                else
-                {
-                    //Delete temp image of graph before closing
-                    ImageGraph.Source = new BitmapImage(new Uri("Images/graph.png", UriKind.Relative));
-                    var path = Path.GetTempPath();
-                    File.Delete(path + "MyMathsPal\\graph" + _thisImageId + ".png");
-                }
+                // If user doesn't want to close, cancel closure
+                e.Cancel = true;
+            }
+            else
+            {
+                //Delete temp image of graph before closing
+                ImageGraph.Source = new BitmapImage(new Uri("Images/graph.png", UriKind.Relative));
+                var path = Path.GetTempPath();
+                File.Delete(path + "MyMathsPal\\graph" + _thisImageId + ".png");
             }
         }
         
