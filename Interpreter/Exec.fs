@@ -1,10 +1,22 @@
-﻿module Interpreter.Exec
+﻿/// <summary>
+/// Module containing methods for execution of commands passed to the MyMathsPal Interpreter.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter</summary>
+/// </namespacedoc>
+///
+module Interpreter.Exec
 
 open Interpreter.Util
 
 // http://mathcenter.oxford.emory.edu/site/cs171/shuntingYardAlgorithm/
 
-let calculate operator op1 op2 =
+/// <summary>
+/// Performs a binary operation given a terminal representing plus, minus, times, divide, or exponent
+/// and two operands as Number terminals.
+/// </summary>
+let performBinaryOperation operator op1 op2 =
     match operator with
     | Plus -> Number (op1 + op2)
     | Minus -> Number (op1 - op2)
@@ -15,13 +27,20 @@ let calculate operator op1 op2 =
         | _ -> Number (op1 / op2)
     | Exponent -> Number (op1 ** op2)
     | _ -> raise CalculateError
-    
-let unary operator operand =
+
+/// <summary>
+/// Performs a unary arithmetic operation given terminals representing a unary operator and an operand.
+/// </summary>
+let performUnaryOperation operator operand =
     match operator with
     | UnaryMinus -> Number -operand
     | UnaryPlus -> Number operand
     | _ -> raise UnaryError
-        
+
+/// <summary>
+/// Reads the top of the operator stack and passes said operator and necessary operands from the number stack to
+/// the correct handling method. Prepends the result to the number stack.
+/// </summary>
 let performOperation opList numList =
     match opList with
     | []
@@ -33,29 +52,31 @@ let performOperation opList numList =
         match numList with
         | [] -> raise ExecError
         | [ Number f; ] ->
-            tail, (unary operator f) :: []
+            tail, (performUnaryOperation operator f) :: []
         | _ ->
             match numList.[0] with
             | Number f ->
-                tail, ((unary operator f) :: numList.[1 .. ])
+                tail, ((performUnaryOperation operator f) :: numList.[1 .. ])
             | _ -> raise ExecError
     | head :: tail ->
         match numList with
-        | [] -> raise ExecError
+        | [] 
         | [ Number _; ] -> raise ExecError
         | [ Number f; Number g; ] ->
             let operand1 = f
             let operand2 = g
-            tail, ((calculate head operand2 operand1) :: [])
+            tail, ((performBinaryOperation head operand2 operand1) :: [])
         | _ ->
             match numList.[0], numList.[1] with
             | Number f, Number g ->
                 let operand1 = f
                 let operand2 = g
-                tail, ((calculate head operand2 operand1) :: numList.[2 .. ])
+                tail, ((performBinaryOperation head operand2 operand1) :: numList.[2 .. ])
             | _ -> raise ExecError
 
-        
+/// <summary>
+/// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
+/// </summary>
 let rec evaluateBrackets opList numList =
     match opList with
     | []
@@ -70,7 +91,11 @@ let rec evaluateBrackets opList numList =
         | opList, numList ->
             evaluateBrackets opList numList
 
-let precedenceAssociativity =
+/// <summary>
+/// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
+/// performBinaryOperation functions.
+/// </summary>
+let precedenceAssociativityMap =
     Map [(UnaryMinus, (4, "r"))
          (UnaryPlus, (4, "r"))
          (Exponent, (3, "r"))
@@ -78,13 +103,24 @@ let precedenceAssociativity =
          (Divide, (2, "l"))
          (Plus, (1, "l"))
          (Minus, (1, "l"))]
-    
-let getPrecedence operator =
-    (Map.find operator precedenceAssociativity) |> fst
-    
-let getAssociativity operator =
-    (Map.find operator precedenceAssociativity) |> snd
 
+/// <summary>
+/// Retrieves the precedence for an operator from the map.
+/// </summary>
+let getPrecedence operator =
+    (Map.find operator precedenceAssociativityMap) |> fst
+
+/// <summary>
+/// Retrieves the associativity for an operator from the map.
+/// </summary>
+let getAssociativity operator =
+    (Map.find operator precedenceAssociativityMap) |> snd
+
+/// <summary>
+/// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
+/// expression into an operator stack and a number stack. Performs calculations depending on precedence and
+/// associativity rather than producing a reverse Polish notation output.
+/// </summary>
 let rec reduceRecursive tokens opList numList (env: Map<string, terminal list>) =
     match tokens with
     | tokenHead :: tokenTail ->
@@ -137,24 +173,36 @@ let rec reduceRecursive tokens opList numList (env: Map<string, terminal list>) 
             let results = performOperation opList numList
             match results with
             | opList, numList -> reduceRecursive tokens opList numList env
-            
+
+/// <summary>
+/// Wrapper for reduceRecursive to call it with empty operator and number stacks.
+/// </summary>
 and reduce tokens (env: Map<string, terminal list>) =
     reduceRecursive tokens [] [] env
-   
+
+/// <summary>
+/// Checks whether a function contains any variables whose values are not defined in the current environment.
+/// </summary>
 let rec closed terminals (env: Map<string, terminal list>) =
     match terminals with
     | [] -> true
     | Word x :: tail ->
         if env.ContainsKey x && closed env.[x] env then closed tail env else false
     | _ :: tail -> closed tail env
-    
+
+/// <summary>
+/// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
+/// </summary>
 let rec createTerminalListUpToComma inList outList =
     match inList with
     | Rpar :: _ -> (inList, List.rev outList)
     | Comma :: tail -> (tail, List.rev outList)
     | any :: tail -> createTerminalListUpToComma tail (any :: outList)
     | [] -> raise ExecError
-    
+
+/// <summary>
+/// Creates an environment from a list of terminals representing Comma separate assignments.
+/// </summary>
 let rec setArguments terminals (env: Map<string, terminal list>) =
     match terminals with
     | Rpar :: _ ->
@@ -163,7 +211,11 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
         match createTerminalListUpToComma tail [] with
         | a, b -> setArguments a (env.Add(x, [reduce b env] ))
     | _ -> raise ExecError
-    
+
+/// <summary>
+/// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
+/// a valid statement and an execution environment.
+/// </summary>
 let exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->

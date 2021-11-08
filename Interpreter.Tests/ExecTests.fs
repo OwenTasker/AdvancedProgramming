@@ -73,37 +73,37 @@ let InvalidCalculateData =
     
 [<TestCaseSource("CalculatePlusData")>]
 let GivenCalculate_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Plus op1 op2
+    let result = performBinaryOperation Plus op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateMinusData")>]
 let GivenCalculate_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Minus op1 op2
+    let result = performBinaryOperation Minus op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateTimesData")>]
 let GivenCalculate_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Times op1 op2
+    let result = performBinaryOperation Times op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("CalculateDivideData")>]
 let GivenCalculate_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Divide op1 op2
+    let result = performBinaryOperation Divide op1 op2
     Assert.That(result, Is.EqualTo(res))
     
     
 [<TestCaseSource("CalculateExponentData")>]
 let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Exponent op1 op2
+    let result = performBinaryOperation Exponent op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("InvalidCalculateData")>]
 let GivenCalculate_WhenPassedInvalidOperator_RaiseCalculateError(operator: terminal) =
-    Assert.Throws<CalculateError>(fun () -> calculate operator 1.0 1.0 |> ignore) |> ignore
+    Assert.Throws<CalculateError>(fun () -> performBinaryOperation operator 1.0 1.0 |> ignore) |> ignore
     
 [<Test>]
 let GivenCalculate_WhenPassedDivideByZero_RaiseCalculateError() =
-    Assert.Throws<CalculateError>(fun () -> calculate Divide 1.0 0.0 |> ignore) |> ignore
+    Assert.Throws<CalculateError>(fun () -> performBinaryOperation Divide 1.0 0.0 |> ignore) |> ignore
     
 let ValidUnaryData =
     [
@@ -126,12 +126,12 @@ let InvalidUnaryData =
     
 [<TestCaseSource("ValidUnaryData")>]
 let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2: float, res: terminal) =
-    let result = unary op1 op2
+    let result = performUnaryOperation op1 op2
     Assert.That(result, Is.EqualTo(res))
     
 [<TestCaseSource("InvalidUnaryData")>]
 let GivenUnary_WhenPassedInvalidOperator_RaiseUnaryError(operator: terminal) =
-    Assert.Throws<UnaryError>(fun () -> unary operator 1.0 |> ignore) |> ignore
+    Assert.Throws<UnaryError>(fun () -> performUnaryOperation operator 1.0 |> ignore) |> ignore
     
 let ValidNoVariablesReduceCases =
     [
