@@ -35,17 +35,9 @@ namespace WpfApp1
 
             //Set graph background to white and opacity to max
             //Add basic x and y axis
-            for (var i = 0; i < _imageBuffer.Length; i+=4)
+            for (var i = 0; i < _imageBuffer.Length; i++)
             {
-                if (i % (ImageWidth * BytesPerPixel) != 0 && i > (ImageWidth * BytesPerPixel))
-                {
-                    _imageBuffer[i] = _imageBuffer[i+1] = _imageBuffer[i+2] = _imageBuffer[i+3] = 255;
-                }
-                else
-                {
-                    _imageBuffer[i + 3] = 255;
-                }
-                
+                _imageBuffer[i] = 255;
             }
 
             //Generate image of graph
@@ -98,6 +90,34 @@ namespace WpfApp1
             LabelXMax.Content = Math.Round(xMax);
             LabelXMin.Content = Math.Round(xMin);
             
+            //Find yArray index of y=0, default to below graph
+            var yZero = 0;
+            //y=0 is above graph
+            if (yArray[749] < 0.0)
+            {
+                yZero = 479;
+            }
+            //y=0 is within graph
+            else
+            {
+                for (var i = 0; i < 750; i++)
+                {
+                    //if y=0 exists exactly
+                    if (yArray[i] == 0.0)
+                    {
+                        yZero = i;
+                        break;
+                    }
+                    //if y=0 is skipped, set to line below
+                    if (!(yArray[i] > 0.0)) continue;
+                    yZero = i - 1;
+                    break;
+                }
+            }
+            
+            //Draw axis
+            DrawAxis(xArray, yZero);
+            
             //Scale y values to size of graph
             for (var i = 0; i < ImageWidth; i++)
             {
@@ -106,7 +126,7 @@ namespace WpfApp1
             
             yMax = yArray.Max();
 
-            var scale = (ImageHeight - 1) / yMax;
+            var scale = (ImageHeight) / yMax;
 
             for (var i = 0; i < ImageWidth; i++)
             {
@@ -133,6 +153,15 @@ namespace WpfApp1
                     image.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png" );
                 }
             }
+            
+        }
+
+        private void DrawAxis(double[] xArray, int yZero)
+        {
+            var temp = yZero / 750.0;
+            temp *= ImageHeight;
+            yZero = (int)(temp * 400.0);
+            
             
         }
 
