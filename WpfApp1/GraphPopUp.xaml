@@ -11,8 +11,9 @@
         Height="500"
         Width="825"
         Background="#B4C7E7"
-        Icon="mymathspal_logo.ico">
-    
+        Icon="mymathspal_logo.ico"
+        Closing="GraphPopUp_Closing">
+        
     <Grid>
         
         <Image Name="ImageGraph" Source="Images/graph.png"  VerticalAlignment="Center" HorizontalAlignment="Center" Height="400" Width="750"/>
