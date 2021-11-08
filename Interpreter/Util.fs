@@ -6,9 +6,9 @@ exception ParseError of string
 exception ScanError of string
 exception TokenizeError of string
 exception TerminalError of string
-exception CalculateError
-exception UnaryError
-exception ExecError
+exception CalculateError of string
+exception UnaryError of string
+exception ExecError of string
 
 type terminal =
     | Plus

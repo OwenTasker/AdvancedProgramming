@@ -23,10 +23,10 @@ let performBinaryOperation operator op1 op2 =
     | Times -> Number (op1 * op2)
     | Divide ->
         match op2 with
-        | 0.0 -> raise CalculateError
+        | 0.0 -> raise (CalculateError "Calculate Error: Divide by zero, this operation is undefined.")
         | _ -> Number (op1 / op2)
     | Exponent -> Number (op1 ** op2)
-    | _ -> raise CalculateError
+    | _ -> raise (CalculateError "Calculate Error: Invalid operator passed.")
 
 /// <summary>
 /// Performs a unary arithmetic operation given terminals representing a unary operator and an operand.
@@ -35,7 +35,7 @@ let performUnaryOperation operator operand =
     match operator with
     | UnaryMinus -> Number -operand
     | UnaryPlus -> Number operand
-    | _ -> raise UnaryError
+    | _ -> raise (UnaryError "Unary Error: Invalid operator passed.")
 
 /// <summary>
 /// Reads the top of the operator stack and passes said operator and necessary operands from the number stack to
@@ -45,23 +45,23 @@ let performOperation opList numList =
     match opList with
     | []
     | Rpar :: _ 
-    | Lpar :: _ -> raise ExecError
+    | Lpar :: _ -> raise (ExecError "Execution Error: Parenthesis encountered as an operator.")
     | UnaryMinus :: tail
     | UnaryPlus :: tail ->
         let operator = opList.[0]
         match numList with
-        | [] -> raise ExecError
+        | [] -> raise (ExecError "Execution Error: Unary operation called without any remaining operands.")
         | [ Number f; ] ->
             tail, (performUnaryOperation operator f) :: []
         | _ ->
             match numList.[0] with
             | Number f ->
                 tail, ((performUnaryOperation operator f) :: numList.[1 .. ])
-            | _ -> raise ExecError
+            | _ -> raise (ExecError "Execution Error: Number stack contains non-number tokens.")
     | head :: tail ->
         match numList with
-        | [] 
-        | [ Number _; ] -> raise ExecError
+        | [] -> raise (ExecError "Execution Error: Binary operation called without any operands.")
+        | [ Number _; ] -> raise (ExecError "Execution Error: Binary operation called with only one operand.")
         | [ Number f; Number g; ] ->
             let operand1 = f
             let operand2 = g
@@ -72,7 +72,7 @@ let performOperation opList numList =
                 let operand1 = f
                 let operand2 = g
                 tail, ((performBinaryOperation head operand2 operand1) :: numList.[2 .. ])
-            | _ -> raise ExecError
+            | _ -> raise (ExecError "Execution Error: Number stack contains non-number tokens.")
 
 /// <summary>
 /// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
@@ -80,11 +80,11 @@ let performOperation opList numList =
 let rec evaluateBrackets opList numList =
     match opList with
     | []
-    | Rpar :: _ -> raise ExecError
+    | Rpar :: _ -> raise (ExecError "Execution Error: Parenthesis encountered as an operator.")
     | Lpar :: tail ->
         match numList with
         | _ :: _ -> tail, numList
-        | [] -> raise ExecError
+        | [] -> raise (ExecError "Execution Error: Empty number stack following evaluation of bracketed expression.")
     | _ ->
         let results = performOperation opList numList
         match results with
@@ -131,7 +131,7 @@ let rec reduceRecursive tokens opList numList (env: Map<string, terminal list>) 
             if env.ContainsKey x then
                 let value = reduce env.[x] env
                 reduceRecursive tokenTail opList (value :: numList) env
-            else raise ExecError
+            else raise (ExecError "Execution Error: Expression with unbound variables passed to reduce.")
         | Lpar ->
             reduceRecursive tokenTail (tokenHead :: opList) numList env
         | Rpar ->
@@ -161,14 +161,15 @@ let rec reduceRecursive tokens opList numList (env: Map<string, terminal list>) 
                         opList, numList ->
                             reduceRecursive tokens opList numList env
                     else reduceRecursive tokenTail (tokenHead :: opList) numList env
-        | _ -> raise ExecError
+        | _ -> raise (ExecError "Execution Error: Invalid terminal passed to reduce.")
     | [] ->
         match opList with
         | [] ->
             match numList with
             | [ _ ] -> numList.[0]
-            | _ -> raise ExecError
-        | Lpar :: _ -> raise ExecError
+            | _ -> raise (ExecError "Execution Error: Reduction did not result in exactly one terminal in the number
+                          stack")
+        | Lpar :: _ -> raise (ExecError "Execution Error: Unmatched left parenthesis.")
         | _ ->
             let results = performOperation opList numList
             match results with
@@ -198,7 +199,7 @@ let rec createTerminalListUpToComma inList outList =
     | Rpar :: _ -> (inList, List.rev outList)
     | Comma :: tail -> (tail, List.rev outList)
     | any :: tail -> createTerminalListUpToComma tail (any :: outList)
-    | [] -> raise ExecError
+    | [] -> raise (ExecError "Execution Error: Function call missing right parenthesis.")
 
 /// <summary>
 /// Creates an environment from a list of terminals representing Comma separate assignments.
@@ -210,7 +211,7 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
     | Word x :: Assign :: tail ->
         match createTerminalListUpToComma tail [] with
         | a, b -> setArguments a (env.Add(x, [reduce b env] ))
-    | _ -> raise ExecError
+    | _ -> raise (ExecError "Execution Error: Function call contains non-assignment expression.")
 
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
@@ -230,7 +231,7 @@ let exec terminals (env: Map<string, terminal list>) =
         let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
         if closed [Word x] combinedEnv then 
             [reduce [Word x] combinedEnv], (env |> Map.toSeq |> dict)
-        else raise ExecError
+        else raise (ExecError "Execution Error: Assignments given in function call do not close expression.")
     | _ ->
         if closed terminals env then
             [reduce terminals env], (env |> Map.toSeq |> dict)
