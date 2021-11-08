@@ -16,6 +16,12 @@ open Interpreter.Util
 /// Performs a binary operation given a terminal representing plus, minus, times, divide, or exponent
 /// and two operands as Number terminals.
 /// </summary>
+///
+/// <param name="operator">A terminal representing the operator.</param>
+/// <param name="op1">A Number terminal for the left side of the operation.</param>
+/// <param name="op2">A Number terminal for the right side of the operation.</param>
+///
+/// <returns>A Number containing the result of the operation.</returns>
 let performBinaryOperation operator op1 op2 =
     match operator with
     | Plus -> Number (op1 + op2)
@@ -31,6 +37,11 @@ let performBinaryOperation operator op1 op2 =
 /// <summary>
 /// Performs a unary arithmetic operation given terminals representing a unary operator and an operand.
 /// </summary>
+/// 
+/// <param name="operator">A terminal representing the operator.</param>
+/// <param name="operand">A Number terminal containing the operand.</param>
+///
+/// <returns>A Number containing the result of the operation.</returns>
 let performUnaryOperation operator operand =
     match operator with
     | UnaryMinus -> Number -operand
@@ -41,6 +52,14 @@ let performUnaryOperation operator operand =
 /// Reads the top of the operator stack and passes said operator and necessary operands from the number stack to
 /// the correct handling method. Prepends the result to the number stack.
 /// </summary>
+/// 
+/// <param name="opList">A stack of terminals representing operators.</param>
+/// <param name="numList">A stack of Number terminals.</param>
+///
+/// <returns>
+/// A tuple containing the tail of the operator stack, and the number stack with the result of the popped operation
+/// prepended to replace used operands.
+/// </returns>
 let performOperation opList numList =
     match opList with
     | []
@@ -77,6 +96,11 @@ let performOperation opList numList =
 /// <summary>
 /// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
 /// </summary>
+/// 
+/// <param name="opList"></param>
+/// <param name="numList"></param>
+///
+/// <returns></returns>
 let rec evaluateBrackets opList numList =
     match opList with
     | []
@@ -107,12 +131,20 @@ let precedenceAssociativityMap =
 /// <summary>
 /// Retrieves the precedence for an operator from the map.
 /// </summary>
+/// 
+/// <param name="operator"></param>
+///
+/// <returns></returns>
 let getPrecedence operator =
     (Map.find operator precedenceAssociativityMap) |> fst
 
 /// <summary>
 /// Retrieves the associativity for an operator from the map.
 /// </summary>
+///
+/// <param name="operator"></param>
+///
+/// <returns></returns>
 let getAssociativity operator =
     (Map.find operator precedenceAssociativityMap) |> snd
 
@@ -121,6 +153,13 @@ let getAssociativity operator =
 /// expression into an operator stack and a number stack. Performs calculations depending on precedence and
 /// associativity rather than producing a reverse Polish notation output.
 /// </summary>
+///
+/// <param name="tokens"></param>
+/// <param name="opList"></param>
+/// <param name="numList"></param>
+/// <param name="env"></param>
+///
+/// <returns></returns>
 let rec reduceRecursive tokens opList numList (env: Map<string, terminal list>) =
     match tokens with
     | tokenHead :: tokenTail ->
@@ -178,12 +217,22 @@ let rec reduceRecursive tokens opList numList (env: Map<string, terminal list>) 
 /// <summary>
 /// Wrapper for reduceRecursive to call it with empty operator and number stacks.
 /// </summary>
+///
+/// <param name="tokens"></param>
+/// <param name="env"></param>
+///
+/// <returns></returns>
 and reduce tokens (env: Map<string, terminal list>) =
     reduceRecursive tokens [] [] env
 
 /// <summary>
 /// Checks whether a function contains any variables whose values are not defined in the current environment.
 /// </summary>
+///
+/// <param name="terminals"></param>
+/// <param name="env"></param>
+///
+/// <returns></returns>
 let rec closed terminals (env: Map<string, terminal list>) =
     match terminals with
     | [] -> true
@@ -194,6 +243,11 @@ let rec closed terminals (env: Map<string, terminal list>) =
 /// <summary>
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
 /// </summary>
+///
+/// <param name="inList"></param>
+/// <param name="outList"></param>
+///
+/// <returns></returns>
 let rec createTerminalListUpToComma inList outList =
     match inList with
     | Rpar :: _ -> (inList, List.rev outList)
@@ -204,6 +258,11 @@ let rec createTerminalListUpToComma inList outList =
 /// <summary>
 /// Creates an environment from a list of terminals representing Comma separate assignments.
 /// </summary>
+///
+/// <param name="terminals"></param>
+/// <param name="env"></param>
+///
+/// <returns></returns>
 let rec setArguments terminals (env: Map<string, terminal list>) =
     match terminals with
     | Rpar :: _ ->
@@ -217,6 +276,11 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
 /// a valid statement and an execution environment.
 /// </summary>
+///
+/// <param name="terminals"></param>
+/// <param name="env"></param>
+///
+/// <returns></returns>
 let exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->
