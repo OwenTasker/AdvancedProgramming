@@ -175,12 +175,12 @@ namespace WpfApp1
                 throw new Util.ExecError();
             }
             var range = max - min;
-            var step = range / 750.0;
+            var step = range / 749.0;
             
             var xArray = new double[750];
             for (var i = 0; i < 750; i++)
             {
-                xArray[i] = (i + 1) * step;
+                xArray[i] = min + (i) * step;
             }
 
             return xArray;
@@ -226,7 +226,19 @@ namespace WpfApp1
             var argsArray = args.Split(",");
             var trimmedArgsArray = argsArray.ToList().Select(x => x.Trim()).ToList();
 
-            // If 3 parameters not passed then throw error
+            //Set default range if not supplied
+            if (trimmedArgsArray.Count == 1)
+            {
+                var tempArray = trimmedArgsArray;
+                trimmedArgsArray = new List<string>
+                {
+                    tempArray.First(),
+                    "-10",
+                    "10"
+                };
+            }
+            
+            // If invalid number of parameters passed then throw error
             if (trimmedArgsArray.Count != 3)
             {
                 // Think about maybe just presenting a message instead
