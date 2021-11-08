@@ -17,7 +17,7 @@ open Interpreter.Util
 /// and two operands as Number terminals.
 /// </summary>
 ///
-/// <param name="operator">A terminal representing the operator.</param>
+/// <param name="operator">A terminal representing an operator.</param>
 /// <param name="op1">A Number terminal for the left side of the operation.</param>
 /// <param name="op2">A Number terminal for the right side of the operation.</param>
 ///
@@ -38,7 +38,7 @@ let performBinaryOperation operator op1 op2 =
 /// Performs a unary arithmetic operation given terminals representing a unary operator and an operand.
 /// </summary>
 /// 
-/// <param name="operator">A terminal representing the operator.</param>
+/// <param name="operator">A terminal representing an operator.</param>
 /// <param name="operand">A Number terminal containing the operand.</param>
 ///
 /// <returns>A Number containing the result of the operation.</returns>
@@ -57,8 +57,7 @@ let performUnaryOperation operator operand =
 /// <param name="numStack">A stack of Number terminals.</param>
 ///
 /// <returns>
-/// A tuple containing the tail of the operator stack, and the number stack with the result of the popped operation
-/// prepended to replace used operands.
+/// The number stack with the outcome of the operation prepended.
 /// </returns>
 let performOperation operator numStack =
     match operator with
@@ -73,28 +72,31 @@ let performOperation operator numStack =
         | _ ->
             match numStack.[0] with
             | Number f ->
-                ((performUnaryOperation operator f) :: numStack.[1 .. ])
+                (performUnaryOperation operator f) :: numStack.[1 .. ]
             | _ -> raise (ExecError "Execution Error: Number stack contains non-number tokens.")
     | _ ->
         match numStack with
         | [] -> raise (ExecError "Execution Error: Binary operation called without any operands.")
         | [ Number _; ] -> raise (ExecError "Execution Error: Binary operation called with only one operand.")
         | [ Number f; Number g; ] ->
-            ((performBinaryOperation operator f g) :: [])
+            (performBinaryOperation operator f g) :: []
         | _ ->
             match numStack.[0], numStack.[1] with
             | Number f, Number g ->
-                ((performBinaryOperation operator f g) :: numStack.[2 .. ])
+                (performBinaryOperation operator f g) :: numStack.[2 .. ]
             | _ -> raise (ExecError "Execution Error: Number stack contains non-number tokens.")
 
 /// <summary>
 /// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
 /// </summary>
 /// 
-/// <param name="opStack">A stack </param>
-/// <param name="numStack"></param>
+/// <param name="opStack">A stack of terminals representing operators.</param>
+/// <param name="numStack">A stack of Number terminals.</param>
 ///
-/// <returns></returns>
+/// <returns>
+/// A tuple containing the operator stack with all elements up to and including the next left parenthesis popped and
+/// the number stack with the elements updated to represent the outcome of the bracketed operation.
+/// </returns>
 let rec evaluateBrackets opStack numStack =
     match opStack with
     | []
@@ -123,9 +125,9 @@ let precedenceAssociativityMap =
 /// Retrieves the precedence for an operator from the map.
 /// </summary>
 /// 
-/// <param name="operator"></param>
+/// <param name="operator">A terminal representing an operator.</param>
 ///
-/// <returns></returns>
+/// <returns>The precedence value of the operator.</returns>
 let getPrecedence operator =
     (Map.find operator precedenceAssociativityMap) |> fst
 
@@ -133,9 +135,9 @@ let getPrecedence operator =
 /// Retrieves the associativity for an operator from the map.
 /// </summary>
 ///
-/// <param name="operator"></param>
+/// <param name="operator">A terminal representing an operator.</param>
 ///
-/// <returns></returns>
+/// <returns>The associativity value of the operator.</returns>
 let getAssociativity operator =
     (Map.find operator precedenceAssociativityMap) |> snd
 
@@ -145,12 +147,12 @@ let getAssociativity operator =
 /// associativity rather than producing a reverse Polish notation output.
 /// </summary>
 ///
-/// <param name="terminals"></param>
-/// <param name="opStack"></param>
-/// <param name="numStack"></param>
-/// <param name="env"></param>
+/// <param name="terminals">A queue of terminals representing an expression in infix notation.</param>
+/// <param name="opStack">A stack of operator terminals to compute the result of the infix expression.</param>
+/// <param name="numStack">A stack of Number terminals to compute the result of the infix expression.</param>
+/// <param name="env">The execution environment for any variables in the expression.</param>
 ///
-/// <returns></returns>
+/// <returns>A Number terminal containing the outcome of the expression.</returns>
 let rec reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
     match terminals with
     | terminalHead :: terminalTail ->
@@ -204,10 +206,10 @@ let rec reduceRecursive terminals opStack numStack (env: Map<string, terminal li
 /// Wrapper for reduceRecursive to call it with empty operator and number stacks.
 /// </summary>
 ///
-/// <param name="terminals"></param>
-/// <param name="env"></param>
+/// <param name="terminals">A list of terminals representing an expression in infix notation.</param>
+/// <param name="env">The execution environment for any variables in the expression.</param>
 ///
-/// <returns></returns>
+/// <returns>A Number terminal containing the outcome of the expression.</returns>
 and reduce terminals (env: Map<string, terminal list>) =
     reduceRecursive terminals [] [] env
 
@@ -215,8 +217,8 @@ and reduce terminals (env: Map<string, terminal list>) =
 /// Checks whether a function contains any variables whose values are not defined in the current environment.
 /// </summary>
 ///
-/// <param name="terminals"></param>
-/// <param name="env"></param>
+/// <param name="terminals">A list of terminals representing an expression in infix notation.</param>
+/// <param name="env">The execution environment for any variables in the expression.</param>
 ///
 /// <returns></returns>
 let rec closed terminals (env: Map<string, terminal list>) =
@@ -232,10 +234,15 @@ let rec closed terminals (env: Map<string, terminal list>) =
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
 /// </summary>
 ///
-/// <param name="inList"></param>
-/// <param name="outList"></param>
+/// <param name="inList">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="outList">A list to contain a single assignment expression taken from the input list.</param>
 ///
-/// <returns></returns>
+/// <returns>
+/// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
+/// the output list.
+/// </returns>
 let rec createTerminalListUpToComma inList outList =
     match inList with
     | Rpar :: _ -> (inList, List.rev outList)
@@ -247,8 +254,10 @@ let rec createTerminalListUpToComma inList outList =
 /// Creates an environment from a list of terminals representing Comma separate assignments.
 /// </summary>
 ///
-/// <param name="terminals"></param>
-/// <param name="env"></param>
+/// <param name="terminals">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
 ///
 /// <returns></returns>
 let rec setArguments terminals (env: Map<string, terminal list>) =
@@ -264,10 +273,10 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
 /// a valid statement and an execution environment.
 /// </summary>
 ///
-/// <param name="terminals"></param>
-/// <param name="env"></param>
+/// <param name="terminals">A list of terminals representing a valid MyMathsPal statement.</param>
+/// <param name="env">The current MyMathsPal execution environment.</param>
 ///
-/// <returns></returns>
+/// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
 let exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->
