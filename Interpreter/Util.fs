@@ -49,6 +49,10 @@ let functions = [
 
 // https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
 /// <summary>Function to test whether a string is comprised only of digits.</summary>
+///
+/// <param name="s">A string to query for its composition.</param>
+///
+/// <returns>A boolean confirming whether or not the string was composed only digits.</returns>
 let strContainsOnlyNumber (s:string) = System.Double.TryParse s |> fst
 
 //https://gist.github.com/theburningmonk/3363893
@@ -59,6 +63,10 @@ let inline toMap kvps =
     |> Map.ofSeq
 
 /// <summary>Function to convert a terminal to its string representation.</summary>
+///
+/// <param name="x">A terminal represented by the terminal type.</param>
+///
+/// <returns>A string representation of the terminal.</returns>
 let individualTerminalToString x =
     match x with
     | Times -> "*"
@@ -77,6 +85,11 @@ let individualTerminalToString x =
     | Number num -> string num
 
 /// <summary>Function to convert a list of terminals to a string.</summary>
+///
+/// <param name="str">A string containing the as yet converted terminals.</param>
+/// <param name="list">A list of terminals to convert to a string.</param>
+/// 
+/// <returns>A string representation of the terminal list.</returns>
 let rec terminalListToString str list =
     match list with
     | head :: tail -> terminalListToString (str + individualTerminalToString head ) tail
