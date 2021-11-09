@@ -1,3 +1,11 @@
+/// <summary>
+/// Module containing functions for parsing of statements passed to the MyMathsPal Interpreter. Represents acceptable
+/// statements in Bachus-Naur Form as a set of functions.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter</summary>
+/// </namespacedoc>
 module Interpreter.Parser
 
 open Interpreter.Util
@@ -5,6 +13,7 @@ open Interpreter.Util
 // https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf
 
 // statement ::= variable -> expression
+/// <summary>Function to parse a statement</summary>
 let rec statement terminals =
     match terminals with
     | Word _ :: tail ->

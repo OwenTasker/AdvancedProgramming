@@ -1,9 +1,17 @@
+/// <summary>
+/// Module containing tests for the functions defined in Interpreter.Parser.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter.Tests</summary>
+/// </namespacedoc>
 module Interpreter.Tests.ParserTests
 
 open NUnit.Framework
 open Interpreter.Parser
 open Interpreter.Util
 
+/// <summary>List of test cases representing valid inputs to the parser.</summary>
 let ValidCases =
     [
         TestCaseData([Number 1.0;])
@@ -52,17 +60,20 @@ let ValidCases =
         TestCaseData([UnaryMinus; UnaryMinus; Function "floor"; Lpar; Number 2.0 ; Rpar;])
         TestCaseData([Function "floor"; Lpar; Number 2.0 ; Rpar;])
     ]
-    
+
+/// <summary>Test to ensure that statement correctly parses valid input.</summary>
 [<TestCaseSource("ValidCases")>]
 let GivenStatement_WhenPassedValidStatement_ReturnEmptyArray(terminals: terminal list) =
     let result = statement terminals
     Assert.That(result, Is.EqualTo([]))
-    
+
+/// <summary>Test to ensure that parse correctly parses valid input.</summary>
 [<TestCaseSource("ValidCases")>]
 let GivenParse_WhenPassedValidExpression_ReturnTrue(terminals: terminal list) =
      let result = parse terminals
      Assert.That(result, Is.EqualTo(true))
-    
+
+/// <summary>List of test cases representing invalid inputs to the parser.</summary>
 let InvalidCases =
     [
         TestCaseData([Plus;])
@@ -112,11 +123,13 @@ let InvalidCases =
         TestCaseData([Word "x"; Exponent])
         TestCaseData([Exponent; Word "x";])
     ]
-    
+
+/// <summary>Test to ensure that statement correctly throws an exception for invalid input.</summary>
 [<TestCaseSource("InvalidCases")>]
 let GivenStatement_WhenPassedInvalidExpression_ThenRaiseParseError(terminals: terminal list) =
     Assert.Throws<ParseError>(fun () -> statement terminals |> ignore) |> ignore
 
+/// <summary>Test to ensure that parse correctly throws an exception for invalid input.</summary>
 [<TestCaseSource("InvalidCases")>]
 let GivenParse_WhenPassedInvalidExpression_ReturnFalse(terminals: terminal list) =
      let result = parse terminals

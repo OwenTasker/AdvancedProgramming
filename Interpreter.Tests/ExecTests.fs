@@ -1,11 +1,19 @@
-﻿module Interpreter.Tests.ExecTests
+﻿/// <summary>
+/// Module containing tests for the functions defined in Interpreter.Exec.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter.Tests</summary>
+/// </namespacedoc>
+module Interpreter.Tests.ExecTests
 
 open System.Collections.Generic
 open NUnit.Framework
 open Interpreter.Exec
 open Interpreter.Util
-    
-let CalculatePlusData =
+
+/// <summary>Test cases for valid addition input to PerformBinaryOperation.</summary>
+let PerformBinaryOperationPlusData =
     [
         TestCaseData(1, 6, Number 7.0)
         TestCaseData(0, 5, Number 5.0)
@@ -15,8 +23,9 @@ let CalculatePlusData =
         TestCaseData(7, -7, Number 0.0)
         TestCaseData(-19, 19, Number 0.0)
     ]
-    
-let CalculateMinusData =
+
+/// <summary>Test cases for valid subtraction input to PerformBinaryOperation.</summary>
+let PerformBinaryOperationMinusData =
     [
         TestCaseData(1, 6, Number -5.0)
         TestCaseData(0, 5, Number -5.0)
@@ -27,8 +36,9 @@ let CalculateMinusData =
         TestCaseData(7, -7, Number 14.0)
         TestCaseData(-19, 19, Number -38.0)
     ]
-    
-let CalculateTimesData =
+
+/// <summary>Test cases for valid multiplication input to PerformBinaryOperation.</summary>
+let PerformBinaryOperationTimesData =
     [
         TestCaseData(1, 6, Number 6.0)
         TestCaseData(6, 1, Number 6.0)
@@ -40,8 +50,9 @@ let CalculateTimesData =
         TestCaseData(10, -10, Number -100.0)
         TestCaseData(-10, 10, Number -100.0)
     ]
-    
-let CalculateDivideData =
+
+/// <summary>Test cases for valid division input to PerformBinaryOperation.</summary>
+let PerformBinaryOperationDivideData =
     [
         TestCaseData(1, 6, Number (1.0/6.0))
         TestCaseData(0, 5, Number 0.0)
@@ -51,8 +62,9 @@ let CalculateDivideData =
         TestCaseData(7, -7, Number -1.0)
         TestCaseData(-19, 19, Number -1.0)
     ]
-    
-let CalculateExponentData =
+
+/// <summary>Test cases for valid exponentiation input to PerformBinaryOperation.</summary>
+let PerformBinaryOperationExponentData =
     [
         TestCaseData(1, 6, Number 1.0)
         TestCaseData(0, 5, Number 0.0)
@@ -62,49 +74,57 @@ let CalculateExponentData =
         TestCaseData(7, 2, Number 49.0)
         TestCaseData(-7, 2, Number 49.0)
     ]
-    
-let InvalidCalculateData =
+
+/// <summary>Test cases for invalid addition to PerformBinaryOperation.</summary>
+let InvalidPerformBinaryOperationData =
     [
         TestCaseData(Lpar)
         TestCaseData(Rpar)
         TestCaseData(UnaryPlus)
         TestCaseData(UnaryMinus)
     ]
-    
-[<TestCaseSource("CalculatePlusData")>]
-let GivenCalculate_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Plus op1 op2
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for additions.</summary>
+[<TestCaseSource("PerformBinaryOperationPlusData")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
+    let result = performBinaryOperation Plus op1 op2
     Assert.That(result, Is.EqualTo(res))
-    
-[<TestCaseSource("CalculateMinusData")>]
-let GivenCalculate_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Minus op1 op2
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for subtractions.</summary>
+[<TestCaseSource("PerformBinaryOperationMinusData")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
+    let result = performBinaryOperation Minus op1 op2
     Assert.That(result, Is.EqualTo(res))
-    
-[<TestCaseSource("CalculateTimesData")>]
-let GivenCalculate_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Times op1 op2
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for multiplication.</summary>
+[<TestCaseSource("PerformBinaryOperationTimesData")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
+    let result = performBinaryOperation Times op1 op2
     Assert.That(result, Is.EqualTo(res))
-    
-[<TestCaseSource("CalculateDivideData")>]
-let GivenCalculate_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Divide op1 op2
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for divisions.</summary>
+[<TestCaseSource("PerformBinaryOperationDivideData")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
+    let result = performBinaryOperation Divide op1 op2
     Assert.That(result, Is.EqualTo(res))
-    
-    
-[<TestCaseSource("CalculateExponentData")>]
-let GivenCalculate_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
-    let result = calculate Exponent op1 op2
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for exponentiation.</summary>
+[<TestCaseSource("PerformBinaryOperationExponentData")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: float, op2: float, res: terminal) =
+    let result = performBinaryOperation Exponent op1 op2
     Assert.That(result, Is.EqualTo(res))
-    
-[<TestCaseSource("InvalidCalculateData")>]
-let GivenCalculate_WhenPassedInvalidOperator_RaiseCalculateError(operator: terminal) =
-    Assert.Throws<CalculateError>(fun () -> calculate operator 1.0 1.0 |> ignore) |> ignore
-    
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for invalid input.</summary>
+[<TestCaseSource("InvalidPerformBinaryOperationData")>]
+let GivenPerformBinaryOperation_WhenPassedInvalidOperator_RaisePerformBinaryOperationError(operator: terminal) =
+    Assert.Throws<CalculateError>(fun () -> performBinaryOperation operator 1.0 1.0 |> ignore) |> ignore
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for dividing by 0.</summary>
 [<Test>]
-let GivenCalculate_WhenPassedDivideByZero_RaiseCalculateError() =
-    Assert.Throws<CalculateError>(fun () -> calculate Divide 1.0 0.0 |> ignore) |> ignore
-    
+let GivenPerformBinaryOperation_WhenPassedDivideByZero_RaisePerformBinaryOperationError() =
+    Assert.Throws<CalculateError>(fun () -> performBinaryOperation Divide 1.0 0.0 |> ignore) |> ignore
+
+/// <summary>Test cases for valid input to calculateUnaryOperation.</summary>
 let ValidUnaryData =
     [
         TestCaseData(UnaryMinus, 1, Number -1.0)
@@ -112,7 +132,8 @@ let ValidUnaryData =
         TestCaseData(UnaryPlus, 1, Number 1.0)
         TestCaseData(UnaryPlus, -1, Number -1.0)
     ]
-    
+
+/// <summary>Test cases for invalid input to calculateUnaryOperation.</summary>
 let InvalidUnaryData =
     [
         TestCaseData(Plus)
@@ -123,16 +144,19 @@ let InvalidUnaryData =
         TestCaseData(Lpar)
         TestCaseData(Rpar)
     ]
-    
+
+/// <summary>Test to ensure that performUnaryOperation performs correctly for valid input.</summary>
 [<TestCaseSource("ValidUnaryData")>]
 let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2: float, res: terminal) =
-    let result = unary op1 op2
+    let result = performUnaryOperation op1 op2
     Assert.That(result, Is.EqualTo(res))
-    
+
+/// <summary>Test to ensure that performUnaryOperation performs correctly for invalid input.</summary>
 [<TestCaseSource("InvalidUnaryData")>]
 let GivenUnary_WhenPassedInvalidOperator_RaiseUnaryError(operator: terminal) =
-    Assert.Throws<UnaryError>(fun () -> unary operator 1.0 |> ignore) |> ignore
-    
+    Assert.Throws<UnaryError>(fun () -> performUnaryOperation operator 1.0 |> ignore) |> ignore
+
+/// <summary>Test cases for valid input to reduce, reduceRecursive and exec without variables.</summary>
 let ValidNoVariablesReduceCases =
     [
         //SIMPLE ADDITION CASES
@@ -239,22 +263,28 @@ let ValidNoVariablesReduceCases =
         TestCaseData([UnaryMinus; Lpar; UnaryPlus; Number 6.0; Divide; UnaryMinus; Number 3.0; Rpar; Exponent; Number 2.0], Number 4.0)
         TestCaseData([UnaryMinus; Number 2.0; Exponent; Number 3.0], Number -8.0)
     ]
-    
+
+/// <summary>Test to ensure that reduce returns the correct output with valid input without variables.</summary>
 [<TestCaseSource("ValidNoVariablesReduceCases")>]
 let GivenReduce_WhenPassedValidTokensWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
     let result = reduce tokens Map.empty
     Assert.That(result, Is.EqualTo(expected))
-    
+
+/// <summary>
+/// Test to ensure that reduceRecursive returns the correct output with valid input without variables.
+/// </summary>
 [<TestCaseSource("ValidNoVariablesReduceCases")>]
 let GivenReduceRecursive_WhenPassedValidTokensWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
     let result = reduceRecursive tokens [] [] Map.empty
     Assert.That(result, Is.EqualTo(expected))
-    
+
+/// <summary>Test to ensure that exec returns the correct output with valid input without variables.</summary>
 [<TestCaseSource("ValidNoVariablesReduceCases")>]
 let GivenExec_WhenPassedSimpleExpressionWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
     let result = exec tokens Map.empty
     Assert.That(result, Is.EqualTo([expected], Map.empty |> Map.toSeq |> dict))
-    
+
+/// <summary>Test cases for invalid input to reduce and reduceRecursive.</summary>
 let InvalidReduceCases =
     [
         TestCaseData([Comma;])
@@ -286,78 +316,76 @@ let InvalidReduceCases =
         TestCaseData([Assign;])
         TestCaseData([Word "x"; Assign])
     ]
-    
+
+/// <summary>Test to ensure that reduce returns the correct output with invalid input.</summary>
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenReduce_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
     Assert.Throws<ExecError>(fun () -> reduce tokens Map.empty |> ignore) |> ignore
-    
+
+/// <summary>Test to ensure that reduceRecursive returns the correct output with invalid input.</summary>
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenReduceRecursive_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
     Assert.Throws<ExecError>(fun () -> reduceRecursive tokens [] [] Map.empty |> ignore) |> ignore
-    
+
+/// <summary>Test to ensure that exec returns the correct output with invalid input.</summary>
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenExed_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
     Assert.Throws<ExecError>(fun () -> exec tokens Map.empty |> ignore) |> ignore
-    
+
+/// <summary>Test cases for valid input to performOperation.</summary>
 let ValidPerformOperationCases =
     [
-        TestCaseData([Plus;], [Number 1.0; Number 2.0;], (([] : terminal list), [Number 3.0;]))
-        TestCaseData([Minus;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 2.0;]))
-        TestCaseData([Times;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 8.0;]))
-        TestCaseData([Divide;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 2.0;]))
-        TestCaseData([Exponent;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 16.0;]))
-        TestCaseData([UnaryPlus;], [Number 2.0;], (([] : terminal list), [Number 2.0;]))
-        TestCaseData([UnaryMinus;], [Number 3.0;], (([] : terminal list), [Number -3.0;]))
-        TestCaseData([Plus; Plus;], [Number 1.0; Number 2.0;], ([Plus;], [Number 3.0;]))
-        TestCaseData([Minus; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 2.0;]))
-        TestCaseData([Times; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 8.0;]))
-        TestCaseData([Divide; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 2.0;]))
-        TestCaseData([Exponent; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 16.0;]))
-        TestCaseData([UnaryPlus; Plus;], [Number 2.0;], ([Plus;], [Number 2.0;]))
-        TestCaseData([UnaryMinus; Plus;], [Number 3.0;], ([Plus;], [Number -3.0;]))
-        TestCaseData([Plus;], [Number 1.0; Number 2.0; Number 2.0;], (([] : terminal list), [Number 3.0; Number 2.0;]))
-        TestCaseData([Minus;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
-        TestCaseData([Times;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 8.0; Number 2.0;]))
-        TestCaseData([Divide;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
-        TestCaseData([Exponent;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 16.0; Number 2.0;]))
-        TestCaseData([UnaryPlus;], [Number 2.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
-        TestCaseData([UnaryMinus;], [Number 3.0; Number 2.0;], (([] : terminal list), [Number -3.0; Number 2.0;]))
+        TestCaseData(Plus, [Number 1.0; Number 2.0;], [Number 3.0;])
+        TestCaseData(Minus, [Number 2.0; Number 4.0;], [Number 2.0;])
+        TestCaseData(Times, [Number 2.0; Number 4.0;], [Number 8.0;])
+        TestCaseData(Divide, [Number 2.0; Number 4.0;], [Number 2.0;])
+        TestCaseData(Exponent, [Number 2.0; Number 4.0;], [Number 16.0;])
+        TestCaseData(UnaryPlus, [Number 2.0;], [Number 2.0;])
+        TestCaseData(UnaryMinus, [Number 3.0;], [Number -3.0;])
+        TestCaseData(Plus, [Number 1.0; Number 2.0; Number 2.0;], [Number 3.0; Number 2.0;])
+        TestCaseData(Minus, [Number 2.0; Number 4.0; Number 2.0;], [Number 2.0; Number 2.0;])
+        TestCaseData(Times, [Number 2.0; Number 4.0; Number 2.0;], [Number 8.0; Number 2.0;])
+        TestCaseData(Divide, [Number 2.0; Number 4.0; Number 2.0;], [Number 2.0; Number 2.0;])
+        TestCaseData(Exponent, [Number 2.0; Number 4.0; Number 2.0;], [Number 16.0; Number 2.0;])
+        TestCaseData(UnaryPlus, [Number 2.0; Number 2.0;], [Number 2.0; Number 2.0;])
+        TestCaseData(UnaryMinus, [Number 3.0; Number 2.0;], [Number -3.0; Number 2.0;])
     ]
-    
+
+/// <summary>Test to ensure that performOperation performs correctly with valid input.</summary>
 [<TestCaseSource("ValidPerformOperationCases")>]
-let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(opList: terminal list, numList: terminal list, res: terminal list * terminal list) =
-    let result = performOperation opList numList
+let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(operator: terminal, numList: terminal list, res: terminal list) =
+    let result = performOperation operator numList
     Assert.That(result, Is.EqualTo(res))
-    
+
+/// <summary>Test cases for invalid input to performOperation.</summary>
 let InvalidPerformOperationsCases =
     [
-        TestCaseData(([] : terminal list), ([] : terminal list))
-        TestCaseData(([] : terminal list), [Number 1.0;])
-        TestCaseData(([] : terminal list), [Number 1.0; Number 2.0;])
-        TestCaseData([Rpar;], ([] : terminal list))
-        TestCaseData([Rpar], [Number 1.0;])
-        TestCaseData([Rpar], [Number 1.0; Number 2.0;])
-        TestCaseData([Lpar;], ([] : terminal list))
-        TestCaseData([Lpar], [Number 1.0;])
-        TestCaseData([Lpar], [Number 1.0; Number 2.0;])
-        TestCaseData([Plus;], ([] : terminal list))
-        TestCaseData([Plus;], [Number 1.0;])
-        TestCaseData([Minus;], ([] : terminal list))
-        TestCaseData([Minus], [Number 1.0;])
-        TestCaseData([Times;], ([] : terminal list))
-        TestCaseData([Times;], [Number 1.0;])
-        TestCaseData([Divide;], ([] : terminal list))
-        TestCaseData([Divide], [Number 1.0;])
-        TestCaseData([Exponent;], ([] : terminal list))
-        TestCaseData([Exponent;], [Number 1.0;])
-        TestCaseData([UnaryPlus;], ([] : terminal list))
-        TestCaseData([UnaryMinus], ([] : terminal list))
+        TestCaseData(Rpar, ([] : terminal list))
+        TestCaseData(Rpar, [Number 1.0;])
+        TestCaseData(Rpar, [Number 1.0; Number 2.0;])
+        TestCaseData(Lpar, ([] : terminal list))
+        TestCaseData(Lpar, [Number 1.0;])
+        TestCaseData(Lpar, [Number 1.0; Number 2.0;])
+        TestCaseData(Plus, ([] : terminal list))
+        TestCaseData(Plus, [Number 1.0;])
+        TestCaseData(Minus, ([] : terminal list))
+        TestCaseData(Minus, [Number 1.0;])
+        TestCaseData(Times, ([] : terminal list))
+        TestCaseData(Times, [Number 1.0;])
+        TestCaseData(Divide, ([] : terminal list))
+        TestCaseData(Divide, [Number 1.0;])
+        TestCaseData(Exponent, ([] : terminal list))
+        TestCaseData(Exponent, [Number 1.0;])
+        TestCaseData(UnaryPlus, ([] : terminal list))
+        TestCaseData(UnaryMinus, ([] : terminal list))
     ]
-    
+
+/// <summary>Test to ensure that performOperation performs correctly with valid input.</summary>
 [<TestCaseSource("InvalidPerformOperationsCases")>]
-let GivenPerformOperations_WhenPassedIncompleteArguments_RaiseExecError(opList: terminal list, numList: terminal list) =
-    Assert.Throws<ExecError>(fun () -> performOperation opList numList |> ignore) |> ignore
-    
+let GivenPerformOperations_WhenPassedIncompleteArguments_RaiseExecError(operator: terminal, numList: terminal list) =
+    Assert.Throws<ExecError>(fun () -> performOperation operator numList |> ignore) |> ignore
+
+/// <summary>Test cases for valid input to getPrecedence.</summary>
 let ValidGetPrecedenceData =
     [
         TestCaseData(UnaryMinus, 4)
@@ -368,7 +396,8 @@ let ValidGetPrecedenceData =
         TestCaseData(Plus, 1)
         TestCaseData(Minus, 1)
     ]
-    
+
+/// <summary>Test cases for valid input to getAssociativity.</summary>
 let ValidGetAssociativityData =
     [
         TestCaseData(UnaryMinus, "r")
@@ -379,17 +408,20 @@ let ValidGetAssociativityData =
         TestCaseData(Plus, "l")
         TestCaseData(Minus, "l")
     ]
-    
+
+/// <summary>Test to ensure that getPrecedence performs correctly under valid input.</summary>
 [<TestCaseSource("ValidGetPrecedenceData")>]
 let GivenGetPrecedence_WhenPassedOperatorWithPrecedence_ReturnCorrectPrecedence(operator: terminal, precedence: int) =
     let result = getPrecedence operator
     Assert.That(result, Is.EqualTo(precedence))
-    
+
+/// <summary>Test to ensure that getAssociativity performs correctly under valid input.</summary>
 [<TestCaseSource("ValidGetAssociativityData")>]
 let GivenGetAssociativity_WhenPassedOperatorWithAssociativity_ReturnCorrectAssociativity(operator: terminal, associativity: string) =
     let result = getAssociativity operator
     Assert.That(result, Is.EqualTo(associativity))
-    
+
+/// <summary>Test cases for invalid input to getPrecedence and getAssociativity.</summary>
 let InvalidGetPrecedenceAssociativityCases =
     [
         TestCaseData(Lpar)
@@ -397,14 +429,17 @@ let InvalidGetPrecedenceAssociativityCases =
         TestCaseData(Number 1.0)
     ]
 
+/// <summary>Test to ensure that getPrecedence correctly throws exception with invalid input.</summary>
 [<TestCaseSource("InvalidGetPrecedenceAssociativityCases")>]
 let GivenGetPrecedence_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(operator: terminal) =
     Assert.Throws<KeyNotFoundException>(fun () -> getPrecedence operator |> ignore) |> ignore
-    
+
+/// <summary>Test to ensure that getAssociativity correctly throws exception with invalid input.</summary>
 [<TestCaseSource("InvalidGetPrecedenceAssociativityCases")>]
 let GivenGetAssociativity_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(operator: terminal) =
     Assert.Throws<KeyNotFoundException>(fun () -> getAssociativity operator |> ignore) |> ignore
-    
+
+/// <summary>Test cases for valid input to evaluateBrackets.</summary>
 let ValidEvaluateBracketsCases =
     [
         TestCaseData([Lpar;], [Number 1.0; Number 2.0;], (([] : terminal list), [Number 1.0; Number 2.0;]))
@@ -414,12 +449,14 @@ let ValidEvaluateBracketsCases =
         TestCaseData([Plus; Lpar; Minus], [Number 1.0; Number 2.0;], ([Minus;], [Number 3.0;]))
         TestCaseData([Divide; Times; Plus; Lpar; Plus; Times; Divide;], [Number 1.0; Number 2.0; Number 4.0; Number 4.0;], ([Plus; Times; Divide;], [Number 12.0;]))
     ]
-    
+
+/// <summary>Test to ensure that evaluateBrackets performs correctly under valid input.</summary>
 [<TestCaseSource("ValidEvaluateBracketsCases")>]
 let GivenEvaluateBrackets_WhenPassedValidBracketedExpression_ThenReturnCorrectTuple(opList: terminal list, numList: terminal list, outLists: terminal list * terminal list) =
     let result = evaluateBrackets opList numList
     Assert.That(result, Is.EqualTo(outLists))
 
+/// <summary>Test cases for invalid input to evaluateBrackets.</summary>
 let InvalidEvaluateBracketsCases =
     [
         TestCaseData(([] : terminal list), ([] : terminal list))
@@ -434,15 +471,19 @@ let InvalidEvaluateBracketsCases =
         TestCaseData([Plus;], [Number 1.0; Number 2.0;])
         TestCaseData([Divide; Times; Plus;], [Number 1.0; Number 2.0; Number 4.0; Number 4.0;])
     ]
-    
+
+/// <summary>Test to ensure that evaluateBrackets correctly throws exception with invalid input.</summary>
 [<TestCaseSource("InvalidEvaluateBracketsCases")>]
 let GivenEvaluateBrackets_WhenPassedInvalidExpression_RaiseExecError(opList: terminal list, numList: terminal list) =
     Assert.Throws<ExecError>(fun () -> evaluateBrackets opList numList |> ignore) |> ignore
 
+/// <summary>Example environment for testing.</summary>
 let env = Map [("x", [Number 2.0])
                ("y", [Number 1.0; Plus; Word "x"])
                ("z", [Word "a"])
                ("q", [Word "x"; Plus; Word "z"])]
+
+/// <summary>Test cases for valid inputs to closed.</summary>
 let ClosedCases =
     [
         TestCaseData(([] : terminal list), true)
@@ -454,12 +495,14 @@ let ClosedCases =
         TestCaseData([Word "q"], false)
         TestCaseData([Word "x"; Plus; Word "z"], false)
     ]
-    
+
+/// <summary>Test to ensure that closed correctly recognises closed and free expressions.</summary>
 [<TestCaseSource("ClosedCases")>]
 let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean(terminals: terminal list, expected: bool) =
     let result = closed terminals env
     Assert.That(result, Is.EqualTo(expected))
-    
+
+/// <summary>Test cases for valid input to reduce and reduceRecursive with variables.</summary>
 let ValidVariablesReduceCases =
     [
         TestCaseData([Word "x"], Number 2.0)
@@ -470,17 +513,22 @@ let ValidVariablesReduceCases =
         TestCaseData([Word "x"; Times; Word "y"], Number 6.0)
         TestCaseData([Word "x"; Times; Word "y"; Times; Word "y"], Number 18.0)
     ]
-    
+
+/// <summary>Test to ensure that reduce returns correct output with valid input containing bound variables.</summary>
 [<TestCaseSource("ValidVariablesReduceCases")>]
 let GivenReduce_WhenPassedValidExpressionWithVariables_ReturnCorrectResult(terminals: terminal list, expected: terminal) =
     let result = reduce terminals env
     Assert.That(result, Is.EqualTo(expected))
-    
+
+/// <summary>
+/// Test to ensure that reduceRecursive returns correct output with valid input containing bound variables.
+/// </summary>
 [<TestCaseSource("ValidVariablesReduceCases")>]
 let GivenReduceRecursive_WhenPassedValidExpressionWithVariables_ReturnCorrectResult(terminals: terminal list, expected: terminal) =
     let result = reduceRecursive terminals [] [] env
     Assert.That(result, Is.EqualTo(expected))
-    
+
+/// <summary>Test cases for invalid input to reduce and reduceRecursive with variables.</summary>
 let InvalidVariablesReduceCases =
     [
         TestCaseData([Word "z"])
@@ -489,15 +537,18 @@ let InvalidVariablesReduceCases =
         TestCaseData([Word "a"])
         TestCaseData([Word "x"; Plus; Word "a"])
     ]
-    
+
+/// <summary>Test to ensure that reduce correctly throws exception with invalid input with variables.</summary>
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenReduce_WhenPassedInvalidTokensWithVariables_RaiseExecError(tokens: terminal list) =
     Assert.Throws<ExecError>(fun () -> reduce tokens env |> ignore) |> ignore
-    
+
+/// <summary>Test to ensure that reduceRecursive correctly throws exception with invalid input with variables.</summary>
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenReduceRecursive_WhenPassedInvalidTokensWithVariables_RaiseExecError(tokens: terminal list) =
     Assert.Throws<ExecError>(fun () -> reduceRecursive tokens [] [] env |> ignore) |> ignore
 
+/// <summary>Test cases for valid assign inputs to exec.</summary>
 let ValidExecAssignCases =
     [
         TestCaseData([Word "x"; Assign; Number 2.0], [Number 2.0], ("x", [Number 2.0]))
@@ -507,12 +558,14 @@ let ValidExecAssignCases =
         TestCaseData([Word "b"; Assign; Word "x"; Times; Word "y"], [Number 6.0], ("b", [Number 6.0]))
         TestCaseData([Word "x"; Assign; Word "x"; Plus; Number 1.0], [Number 3.0], ("x", [Number 3.0]))
     ]
-    
+
+/// <summary>Test to ensure that exec correctly updates environment when passed valid assign.</summary>
 [<TestCaseSource("ValidExecAssignCases")>]
 let GivenExec_WhenPassedValidAssign_ThenAddToEnvAndReturn(terminals: terminal list, reduction: terminal list, entry: string*terminal list) =
     let result = exec terminals env
     Assert.That(result, Is.EqualTo((reduction, (env.Add entry))))
 
+/// <summary>Test cases for valid input to createTerminalListUpToComma.</summary>
 let CreateTerminalListUpToCommaCases =
     [
         TestCaseData([Rpar], ([] : terminal list), ([Rpar], ([] : terminal list)))
@@ -524,23 +577,26 @@ let CreateTerminalListUpToCommaCases =
         TestCaseData([Comma; Word "y"; Assign; Number 3.0], ([] : terminal list), ([Word "y"; Assign; Number 3.0], ([] : terminal list)))
         TestCaseData([Comma; Word "y"; Assign; Number 3.0], [Number 2.0; Assign; Word "x"], ([Word "y"; Assign; Number 3.0], [Word "x"; Assign; Number 2.0]))
     ]
-    
+
+/// <summary>Test to ensure that createTerminalListUpToComma forms correct terminal list with valid input.</summary>
 [<TestCaseSource("CreateTerminalListUpToCommaCases")>]
 let GivenCreateTerminalListUpToComma_WhenPassedTokens_ReadUpToCommaOrRparCorrectly(terminalIn: terminal list, terminalsOut: terminal list, expected: terminal list * terminal list) =
     let result = createTerminalListUpToComma terminalIn terminalsOut
     Assert.That(result, Is.EqualTo(expected))
-    
+
+/// <summary>Test cases for invalid input to createTerminalListUpToComma.</summary>
 let CreateTerminalListUpToCommaErrorCases =
     [
         TestCaseData([] : terminal list)
+        TestCaseData([Word "x"; Assign; Number 2.0;])
     ]
-    
+
+/// <summary>Test to ensure that createTerminalListUpToComma correctly throws exception with invalid input.</summary>
 [<TestCaseSource("CreateTerminalListUpToCommaErrorCases")>]
 let GivenCreateTerminalListUpToComma_WhenPassedEmptyArray_RaiseExecError(terminalIn: terminal list) =
     Assert.Throws<ExecError>(fun () -> createTerminalListUpToComma terminalIn [] |> ignore) |> ignore
 
-//Setarguments
-
+/// <summary>Test cases for valid input to setArguments.</summary>
 let SetArgumentsCases =
     [
         TestCaseData([Rpar], Map [("x", [Number 2.0])], Map [("x", [Number 2.0])])
@@ -551,12 +607,14 @@ let SetArgumentsCases =
         TestCaseData([Word "x"; Assign; Number 2.0; Rpar], Map [("x", [Number 4.0])], Map [("x", [Number 2.0])])
         TestCaseData([Word "x"; Assign; Number 2.0; Comma; Word "y"; Assign; Number 3.0; Rpar], Map [("x", [Number 4.0])], Map [("x", [Number 2.0]); ("y", [Number 3.0])])
     ]
-    
+
+/// <summary>Test to ensure that set arguments creates the correct map when passed valid input.</summary>
 [<TestCaseSource("SetArgumentsCases")>]
 let GivenSetArguments_WhenPassedValidAssignments_ReturnUpdatedMap(terminals: terminal list, inMap: Map<string, terminal list>, outMap: Map<string, terminal list>) =
     let result = setArguments terminals inMap
     Assert.That(result, Is.EqualTo(outMap))
-    
+
+/// <summary>Test cases for invalid input to setArguments.</summary>
 let SetArgumentsErrorCases =
     [
         TestCaseData([] : terminal list)
@@ -574,11 +632,13 @@ let SetArgumentsErrorCases =
         TestCaseData([Assign;])
         TestCaseData([Word "x"; Assign])
     ]
-    
+
+/// <summary>Test to ensure that setArguments correctly throws exception with invalid input.</summary>
 [<TestCaseSource("SetArgumentsErrorCases")>]
 let GivenSetArguments_WhenInvalidAssignment_RaiseExecError(terminalIn: terminal list) =
     Assert.Throws<ExecError>(fun () -> setArguments terminalIn Map.empty<string, terminal list> |> ignore) |> ignore
-    
+
+/// <summary>Test cases for valid user function calls to exec.</summary>
 let UserFunctionCases =
     [
         TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Number 2.0])], [Number 2.0])
@@ -588,12 +648,14 @@ let UserFunctionCases =
         TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0])], [Number 16.0])
         TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Comma; Word "z"; Assign; Number 3.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])], [Number 19.0])
     ]
-    
+
+/// <summary>Test to ensure that exec returns correctly result with valid user function call.</summary>
 [<TestCaseSource("UserFunctionCases")>]
 let GivenExec_WhenPassedValidUserFunctionCall_ReturnCorrectResult(terminals: terminal list, env: Map<string, terminal list>, expected: terminal list) =
     let result = exec terminals env
     Assert.That(result, Is.EqualTo((expected, env |> Map.toSeq |> dict)))
-    
+
+/// <summary>Test cases for invalid input to exec with user functions.</summary>
 let UserFunctionErrorCases =
     [
         TestCaseData([Word "y"; Lpar;], Map [("y", [Number 2.0])])
@@ -603,7 +665,8 @@ let UserFunctionErrorCases =
         TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
         TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Comma;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
     ]
-    
+
+/// <summary>Test to ensure that exec correctly throws exception with invalid user function call.</summary>
 [<TestCaseSource("UserFunctionErrorCases")>]
 let GivenExec_WhenPassedInvalidUserFunctionCall_RaiseExecError(terminals: terminal list, env: Map<string, terminal list>) =
     Assert.Throws<ExecError>(fun () -> exec terminals env |> ignore) |> ignore
