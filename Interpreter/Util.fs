@@ -47,14 +47,6 @@ let functions = [
                  ("plot", "")
                  ]
 
-// https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
-/// <summary>Function to test whether a string is comprised only of digits.</summary>
-///
-/// <param name="s">A string to query for its composition.</param>
-///
-/// <returns>A boolean confirming whether or not the string was composed only digits.</returns>
-let strContainsOnlyNumber (s:string) = System.Double.TryParse s |> fst
-
 //https://gist.github.com/theburningmonk/3363893
 /// <summary>Function to convert a C# Dictionary to an F# Map.</summary>
 let inline toMap kvps =

@@ -3,27 +3,6 @@
 open NUnit.Framework
 open Interpreter.Util
     
-let validStrContainsOnlyNumberInputs = [
-    TestCaseData(".7")
-    TestCaseData("1")
-    TestCaseData("1.0")
-    TestCaseData("1.7")
-]
-
-[<TestCaseSource("validStrContainsOnlyNumberInputs")>]
-let givenStrContainsOnlyNumberInputs_WhenPassedValidInput_ReturnTrue (input:string) =
-    Assert.True(strContainsOnlyNumber input)
-
-let invalidStrContainsOnlyNumberInputs = [
-    TestCaseData("a")
-    TestCaseData(",")
-    TestCaseData(".")
-    TestCaseData("")
-]
-[<TestCaseSource("invalidStrContainsOnlyNumberInputs")>]
-let givenStrContainsOnlyNumberInputs_WhenPassedInvalidInput_ReturnFalse (input:string) =
-    Assert.False(strContainsOnlyNumber input)
-    
 let terminalsToStringInputAndOutput = [
     TestCaseData(Plus, "+")
     TestCaseData(UnaryPlus, "+")
