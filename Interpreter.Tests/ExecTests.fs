@@ -301,62 +301,52 @@ let GivenExed_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
     
 let ValidPerformOperationCases =
     [
-        TestCaseData([Plus;], [Number 1.0; Number 2.0;], (([] : terminal list), [Number 3.0;]))
-        TestCaseData([Minus;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 2.0;]))
-        TestCaseData([Times;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 8.0;]))
-        TestCaseData([Divide;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 2.0;]))
-        TestCaseData([Exponent;], [Number 2.0; Number 4.0;], (([] : terminal list), [Number 16.0;]))
-        TestCaseData([UnaryPlus;], [Number 2.0;], (([] : terminal list), [Number 2.0;]))
-        TestCaseData([UnaryMinus;], [Number 3.0;], (([] : terminal list), [Number -3.0;]))
-        TestCaseData([Plus; Plus;], [Number 1.0; Number 2.0;], ([Plus;], [Number 3.0;]))
-        TestCaseData([Minus; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 2.0;]))
-        TestCaseData([Times; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 8.0;]))
-        TestCaseData([Divide; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 2.0;]))
-        TestCaseData([Exponent; Plus;], [Number 2.0; Number 4.0;], ([Plus;], [Number 16.0;]))
-        TestCaseData([UnaryPlus; Plus;], [Number 2.0;], ([Plus;], [Number 2.0;]))
-        TestCaseData([UnaryMinus; Plus;], [Number 3.0;], ([Plus;], [Number -3.0;]))
-        TestCaseData([Plus;], [Number 1.0; Number 2.0; Number 2.0;], (([] : terminal list), [Number 3.0; Number 2.0;]))
-        TestCaseData([Minus;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
-        TestCaseData([Times;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 8.0; Number 2.0;]))
-        TestCaseData([Divide;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
-        TestCaseData([Exponent;], [Number 2.0; Number 4.0; Number 2.0;], (([] : terminal list), [Number 16.0; Number 2.0;]))
-        TestCaseData([UnaryPlus;], [Number 2.0; Number 2.0;], (([] : terminal list), [Number 2.0; Number 2.0;]))
-        TestCaseData([UnaryMinus;], [Number 3.0; Number 2.0;], (([] : terminal list), [Number -3.0; Number 2.0;]))
+        TestCaseData(Plus, [Number 1.0; Number 2.0;], [Number 3.0;])
+        TestCaseData(Minus, [Number 2.0; Number 4.0;], [Number 2.0;])
+        TestCaseData(Times, [Number 2.0; Number 4.0;], [Number 8.0;])
+        TestCaseData(Divide, [Number 2.0; Number 4.0;], [Number 2.0;])
+        TestCaseData(Exponent, [Number 2.0; Number 4.0;], [Number 16.0;])
+        TestCaseData(UnaryPlus, [Number 2.0;], [Number 2.0;])
+        TestCaseData(UnaryMinus, [Number 3.0;], [Number -3.0;])
+        TestCaseData(Plus, [Number 1.0; Number 2.0; Number 2.0;], [Number 3.0; Number 2.0;])
+        TestCaseData(Minus, [Number 2.0; Number 4.0; Number 2.0;], [Number 2.0; Number 2.0;])
+        TestCaseData(Times, [Number 2.0; Number 4.0; Number 2.0;], [Number 8.0; Number 2.0;])
+        TestCaseData(Divide, [Number 2.0; Number 4.0; Number 2.0;], [Number 2.0; Number 2.0;])
+        TestCaseData(Exponent, [Number 2.0; Number 4.0; Number 2.0;], [Number 16.0; Number 2.0;])
+        TestCaseData(UnaryPlus, [Number 2.0; Number 2.0;], [Number 2.0; Number 2.0;])
+        TestCaseData(UnaryMinus, [Number 3.0; Number 2.0;], [Number -3.0; Number 2.0;])
     ]
     
 [<TestCaseSource("ValidPerformOperationCases")>]
-let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(opList: terminal list, numList: terminal list, res: terminal list * terminal list) =
-    let result = performOperation opList numList
+let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(operator: terminal, numList: terminal list, res: terminal list) =
+    let result = performOperation operator numList
     Assert.That(result, Is.EqualTo(res))
     
 let InvalidPerformOperationsCases =
     [
-        TestCaseData(([] : terminal list), ([] : terminal list))
-        TestCaseData(([] : terminal list), [Number 1.0;])
-        TestCaseData(([] : terminal list), [Number 1.0; Number 2.0;])
-        TestCaseData([Rpar;], ([] : terminal list))
-        TestCaseData([Rpar], [Number 1.0;])
-        TestCaseData([Rpar], [Number 1.0; Number 2.0;])
-        TestCaseData([Lpar;], ([] : terminal list))
-        TestCaseData([Lpar], [Number 1.0;])
-        TestCaseData([Lpar], [Number 1.0; Number 2.0;])
-        TestCaseData([Plus;], ([] : terminal list))
-        TestCaseData([Plus;], [Number 1.0;])
-        TestCaseData([Minus;], ([] : terminal list))
-        TestCaseData([Minus], [Number 1.0;])
-        TestCaseData([Times;], ([] : terminal list))
-        TestCaseData([Times;], [Number 1.0;])
-        TestCaseData([Divide;], ([] : terminal list))
-        TestCaseData([Divide], [Number 1.0;])
-        TestCaseData([Exponent;], ([] : terminal list))
-        TestCaseData([Exponent;], [Number 1.0;])
-        TestCaseData([UnaryPlus;], ([] : terminal list))
-        TestCaseData([UnaryMinus], ([] : terminal list))
+        TestCaseData(Rpar, ([] : terminal list))
+        TestCaseData(Rpar, [Number 1.0;])
+        TestCaseData(Rpar, [Number 1.0; Number 2.0;])
+        TestCaseData(Lpar, ([] : terminal list))
+        TestCaseData(Lpar, [Number 1.0;])
+        TestCaseData(Lpar, [Number 1.0; Number 2.0;])
+        TestCaseData(Plus, ([] : terminal list))
+        TestCaseData(Plus, [Number 1.0;])
+        TestCaseData(Minus, ([] : terminal list))
+        TestCaseData(Minus, [Number 1.0;])
+        TestCaseData(Times, ([] : terminal list))
+        TestCaseData(Times, [Number 1.0;])
+        TestCaseData(Divide, ([] : terminal list))
+        TestCaseData(Divide, [Number 1.0;])
+        TestCaseData(Exponent, ([] : terminal list))
+        TestCaseData(Exponent, [Number 1.0;])
+        TestCaseData(UnaryPlus, ([] : terminal list))
+        TestCaseData(UnaryMinus, ([] : terminal list))
     ]
     
 [<TestCaseSource("InvalidPerformOperationsCases")>]
-let GivenPerformOperations_WhenPassedIncompleteArguments_RaiseExecError(opList: terminal list, numList: terminal list) =
-    Assert.Throws<ExecError>(fun () -> performOperation opList numList |> ignore) |> ignore
+let GivenPerformOperations_WhenPassedIncompleteArguments_RaiseExecError(operator: terminal, numList: terminal list) =
+    Assert.Throws<ExecError>(fun () -> performOperation operator numList |> ignore) |> ignore
     
 let ValidGetPrecedenceData =
     [

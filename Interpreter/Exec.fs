@@ -78,11 +78,11 @@ let performOperation operator numStack =
         | [] -> raise (ExecError "Execution Error: Binary operation called without any operands.")
         | [ Number _; ] -> raise (ExecError "Execution Error: Binary operation called with only one operand.")
         | [ Number f; Number g; ] ->
-            (performBinaryOperation operator f g) :: []
+            (performBinaryOperation operator g f) :: []
         | _ ->
             match numStack.[0], numStack.[1] with
             | Number f, Number g ->
-                (performBinaryOperation operator f g) :: numStack.[2 .. ]
+                (performBinaryOperation operator g f) :: numStack.[2 .. ]
             | _ -> raise (ExecError "Execution Error: Number stack contains non-number tokens.")
 
 /// <summary>
