@@ -24,13 +24,47 @@ namespace WpfApp1.SaveLoad_Tests
                 }),
                 Tuple.Create("b", new List<Util.terminal>
                 {
-                    Util.terminal.NewWord("word")
+                    Util.terminal.NewNumber(3.0),
+                    Util.terminal.Plus,
+                    Util.terminal.NewNumber(3.0)
                 }),
                 Tuple.Create("c", new List<Util.terminal>
                 {
                     Util.terminal.NewNumber(3.0),
-                    Util.terminal.Plus,
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testA")
+                }),
+                Tuple.Create("d", new List<Util.terminal>
+                {
                     Util.terminal.NewNumber(3.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testB"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0)
+                }),
+                Tuple.Create("e", new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(3.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testC"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewNumber(345.0)
+                }),
+                Tuple.Create("f", new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(3.0), Util.terminal.Times, Util.terminal.NewWord("testD"), Util.terminal.Minus, 
+                    Util.terminal.NewNumber(45.0), Util.terminal.Times, Util.terminal.NewNumber(345.0), Util.terminal.Plus,
+                    Util.terminal.NewWord("testE"), Util.terminal.Exponent, Util.terminal.NewNumber(5.0)
+                }),
+                Tuple.Create("g", new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(3.0), Util.terminal.Times, Util.terminal.NewWord("testF"), Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0), Util.terminal.Times, Util.terminal.NewNumber(345.0), Util.terminal.Plus,
+                    Util.terminal.NewWord("testG"), Util.terminal.Exponent, Util.terminal.NewNumber(5.0), Util.terminal.Minus,
+                    Util.terminal.Lpar, Util.terminal.NewWord("testH"), Util.terminal.Divide, Util.terminal.NewNumber(43.0),
+                    Util.terminal.Rpar
                 })
             };
 
