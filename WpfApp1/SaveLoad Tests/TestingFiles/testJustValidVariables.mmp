@@ -1,2 +1,3 @@
 ﻿VARIABLE: [a, [3]]
 VARIABLE: [b, [word]]
+VARIABLE: [c, [3+3]]

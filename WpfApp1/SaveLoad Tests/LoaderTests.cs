@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Interpreter;
 using NUnit.Framework;
 
@@ -13,19 +15,50 @@ namespace WpfApp1.SaveLoad_Tests
             var loader = new Loader();
             var loadFileVal = Loader.DecideFileToLoad("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
             var loadedValue = loader.Load(loadFileVal);
-            var keys = new List<string>();
-            var vals = new List<Util.terminal>();
+
+            var expectedResults = new List<Tuple<string, List<Util.terminal>>>
+            {
+                Tuple.Create("a", new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(3.0)
+                }),
+                Tuple.Create("b", new List<Util.terminal>
+                {
+                    Util.terminal.NewWord("word")
+                }),
+                Tuple.Create("c", new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(3.0),
+                    Util.terminal.Plus,
+                    Util.terminal.NewNumber(3.0),
+                })
+            };
+
+            var areAsExpected = new List<bool>();
+
+            var idx = 0;
             foreach (var (key, val) in loadedValue.Item3)
             {
-                keys.Add(key);
-                vals.Add(val.Head);
-                
+                var isKeyEqual = key.Equals(expectedResults[idx].Item1);
+                var isValueEqual = val.ToList().SequenceEqual(expectedResults[idx].Item2);
+
+                if (isKeyEqual && isValueEqual)
+                {
+                    areAsExpected.Add(true);
+                }
+                else
+                {
+                    areAsExpected.Add(false);
+                }
+
+                idx += 1;
+
             }
+
+            var areAllCorrect = areAsExpected.All(c => c);
             
-            var isFirstVariableCorrect = keys[0].Equals("a") &&  vals[0].Equals(Util.terminal.NewNumber(3.0));
-            var isSecondVariableCorrect = keys[1].Equals("b") && vals[1].Equals(Util.terminal.NewWord("word"));
             
-            Assert.True(isFirstVariableCorrect && isSecondVariableCorrect);
+            Assert.True(areAllCorrect);
         }
     }
 }
