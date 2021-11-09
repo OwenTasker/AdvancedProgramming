@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using Interpreter;
 using Microsoft.FSharp.Collections;
-using Microsoft.Win32;
 using JetBrains.Annotations;
 
 namespace WpfApp1
@@ -23,20 +21,38 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow
     {
+        /// <summary>
+        /// Execution environment for this session.
+        /// </summary>
         private IDictionary<string, FSharpList<Util.terminal>> _environment =
             new Dictionary<string, FSharpList<Util.terminal>>();
 
-        public class Variable
+        /// <summary>
+        /// Class to represent a user defined variable.
+        /// </summary>
+        private class Variable
         {
+            /// <summary>
+            /// Identifier of the variable.
+            /// </summary>
             public string Name { [UsedImplicitly] get; init; }
+            /// <summary>
+            /// Value held by the variable.
+            /// </summary>
             public string Value { [UsedImplicitly] get; init; }
         }
 
+        /// <summary>
+        /// Entry point, initializes the app window.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Method to refresh the variable pane, to be called whenever an action might cause the environment to update.
+        /// </summary>
         private void UpdateVariableWindow()
         {
             var keyValuePairs = _environment.ToList();
@@ -45,6 +61,9 @@ namespace WpfApp1
             varDisplay.ItemsSource = variablesList;
         }
 
+        /// <summary>
+        /// Method to control user submission of a statement to the application.
+        /// </summary>
         private void EnterButtonPress(object sender, RoutedEventArgs e)
         {
             if (inputText.Text == "Enter query here..." || string.IsNullOrEmpty(inputText.Text) ||
@@ -109,7 +128,7 @@ namespace WpfApp1
                 }
             }
         }
-
+        
         private IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function)
         {
             var funcStrings = function.Select(s => s.ToString()).ToList();
@@ -236,6 +255,9 @@ namespace WpfApp1
             return trimmedArgsArray;
         }
 
+        /// <summary>
+        /// Method to control user submission of a statement to the application.
+        /// </summary>
         private void EnterKeyClick(object sender, KeyEventArgs e)
         {
             if (e.Key != Key.Enter) 
@@ -245,6 +267,9 @@ namespace WpfApp1
             inputText.Clear();
         }
 
+        /// <summary>
+        /// Method to control removal of dummy text from input box.
+        /// </summary>
         private void InputTextBoxRemovePrompt(object sender, RoutedEventArgs e)
         {
             if (inputText.Text == "Enter query here...")
@@ -253,6 +278,9 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Method to control addition of dummy text to input box.
+        /// </summary>
         private void InputTextBoxAddPrompt(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(inputText.Text) || string.IsNullOrWhiteSpace(inputText.Text))
@@ -261,6 +289,9 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Method to control action of Save button.
+        /// </summary>
         private void SaveButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             try
@@ -275,6 +306,9 @@ namespace WpfApp1
             
         }
 
+        /// <summary>
+        /// Method to control action of Load button.
+        /// </summary>
         private void LoadButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             try
@@ -292,6 +326,9 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Method to control action of Clear button.
+        /// </summary>
         private void ClearButton_OnClick(object sender, RoutedEventArgs e)
         {
             consoleText.Text = ">>";
