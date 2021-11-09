@@ -1,5 +1,5 @@
 /// <summary>
-/// Module containing helper methods used by various areas of the MyMathsPal Interpreter.
+/// Module containing helper functions used by various areas of the MyMathsPal Interpreter.
 /// </summary>
 ///
 /// <namespacedoc>
@@ -46,9 +46,6 @@ let functions = [
                  ("round", "One Argument; A function to determine the rounded value of the provided argument, given a value of 2.5, will return 3")
                  ("plot", "")
                  ]
-
-
-/// <summary>List of valid digits in the Interpreter. To be used in tokenizing input.</summary>
 
 // https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
 /// <summary>Function to test whether a string is comprised only of digits.</summary>

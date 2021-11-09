@@ -1,9 +1,17 @@
-﻿module Interpreter.Lexer
+﻿/// <summary>
+/// Module containing functions for lexing characters passed to the MyMathsPal Interpreter.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter</summary>
+/// </namespacedoc>
+module Interpreter.Lexer
 
 open System
 open System.Text.RegularExpressions
 open Interpreter.Util
 
+/// <summary>List of valid digits in the Interpreter. To be used in tokenizing input.</summary>
 let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
 
 /// <summary>List of valid letters in the Interpreter. To be used in tokenizing input.</summary>
@@ -66,11 +74,11 @@ let (|FunctionMatch|_|) (input:string) =
     else
         None
 
-
-// Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
-// elements.
-// Build numbers/words by concatenating the individual chars into a single string and calling
-// lex on the tail of the tail.
+/// <summary>
+/// Function to tokenize characters passed as a list of the string representations recursively by processing the head
+/// element and calling again on the tail. Builds numbers and words by compiling into the next element to tokenize
+/// until it is not a number or letter respectively.
+/// </summary>
 let rec tokenize input =
     match input with
     | [] | [""] -> []
@@ -111,9 +119,8 @@ let rec tokenize input =
                 else head :: tokenize tail
             )else [head]
         | _ -> raise (TokenizeError "Tokenize Error: Invalid Token recognized")
-        
-// Scan each token by recursively scanning the list tail. Prepend elements to output and
-// reverse for efficiency.
+
+/// <summary>Function to read a list of tokens and output a list of equivalent terminals.</summary>
 let rec scan tokens output  =
     match tokens with
     | [] | [""] -> List.rev output
@@ -146,8 +153,7 @@ let rec scan tokens output  =
         | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
         | _ -> raise (ScanError "Scan Error: Malformed Tokens") 
-        
+
+/// <summary>Function to lex an input list of characters as strings by calling tokenize then scan.</summary>
 let lexer input =
-    let tokenizedVal = tokenize input
-    let scannedInput = scan tokenizedVal []
-    scannedInput
+    scan (tokenize input) []

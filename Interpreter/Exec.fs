@@ -1,5 +1,5 @@
 ﻿/// <summary>
-/// Module containing methods for execution of commands passed to the MyMathsPal Interpreter.
+/// Module containing functions for execution of commands passed to the MyMathsPal Interpreter.
 /// </summary>
 ///
 /// <namespacedoc>
