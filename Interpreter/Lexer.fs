@@ -38,36 +38,56 @@ let symbolRegexString =
     generateRegex.Remove(generateRegex.Length-1)
 
 //https://sodocumentation.net/fsharp/topic/962/active-patterns
-/// <summary>Function to match numbers passed to tokenize.</summary>     
-let (|NumberMatchLex|_|) (input:string) =
+/// <summary>Function to match valid number characters passed to tokenize.</summary>
+///
+/// <param name="input">A character as a string.</param>
+///
+/// <returns>An Option containing the input string if it was a number or a period, or None otherwise.</returns>
+let (|IntegerOrPeriodMatch|_|) (input:string) =
     if Regex.IsMatch(input, "[0-9]+|[.]") then
         Some(input)
     else
         None
 
 //https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
-/// <summary>Function to match numbers passed to scan.</summary>     
-let (|NumberMatchScan|_|) (input:string) =
-    if Regex.IsMatch(input, "[+-]?([0-9]*[.])?[0-9]+") then
+/// <summary>Function to match numbers passed to scan.</summary>
+///
+/// <param name="input">A string to query for its composition.</param>
+///
+/// <returns>An Option containing the input string if it was a number, or None otherwise.</returns> 
+let (|IntegerOrFloatMatch|_|) (input:string) =
+    if Regex.IsMatch(input, "([0-9]*[.])?[0-9]+") then
         Some(input)
     else
         None
 
-/// <summary>Function to match letters passed to the passed to tokenize or scan.</summary>     
+/// <summary>Function to match letters passed to the passed to tokenize or scan.</summary>
+/// 
+///  <param name="input">A string to query for its composition.</param>
+///
+/// <returns>An Option containing the input string if it was alphabetic, or None otherwise.</returns> 
 let (|AlphabetMatch|_|) (input:string)  =
     if Regex.IsMatch(input, "[a-zA-Z]+") then
         Some(input)
     else
         None
 
-/// <summary>Function to match symbols passed to the passed to tokenize or scan.</summary>  
+/// <summary>Function to match symbols passed to the passed to tokenize or scan.</summary>
+/// 
+/// <param name="input">A string to query for its composition.</param>
+///
+/// <returns>An Option containing the input string if it was a recognised symbol, or None otherwise.</returns>
 let (|SymbolMatch|_|) (input:string)  =
     if Regex.IsMatch(input, symbolRegexString) then
         Some(input)
     else
         None
 
-/// <summary>Function to match functions passed to the passed to tokenize or scan.</summary> 
+/// <summary>Function to match functions passed to the passed to tokenize or scan.</summary>
+///
+/// <param name="input">A string to query for its composition.</param>
+///
+/// <returns>An Option containing the input string if it was a predefined function, or None otherwise.</returns>
 let (|FunctionMatch|_|) (input:string) =
     if Regex.IsMatch(input, functionRegexString) then
         Some(input)
@@ -79,6 +99,10 @@ let (|FunctionMatch|_|) (input:string) =
 /// element and calling again on the tail. Builds numbers and words by compiling into the next element to tokenize
 /// until it is not a number or letter respectively.
 /// </summary>
+///
+/// <param name="input">A list of characters as strings.</param>
+///
+/// <returns>A list of valid tokens.</returns>
 let rec tokenize input =
     match input with
     | [] | [""] -> []
@@ -92,7 +116,7 @@ let rec tokenize input =
             | _ -> head :: tokenize tail
         | "=" -> raise (TokenizeError "Invalid Operator. The Assignment Operator is \"->\"")
         | SymbolMatch _ ->  head :: tokenize tail
-        | NumberMatchLex _ ->
+        | IntegerOrPeriodMatch _ ->
             if tail.Length > 0 then(
             // If we already have a number in head and the first tail element is a digit
                 if head.Length >= 1 && (List.contains tail.[0] digits || tail.[0] = ".") then (
@@ -121,6 +145,11 @@ let rec tokenize input =
         | _ -> raise (TokenizeError "Tokenize Error: Invalid Token recognized")
 
 /// <summary>Function to read a list of tokens and output a list of equivalent terminals.</summary>
+///
+/// <param name="tokens">A list of tokens as strings.</param>
+/// <param name="output">A list of terminals so far read from the input list</param>
+///
+/// <returns>A list of terminals.</returns>
 let rec scan tokens output  =
     match tokens with
     | [] | [""] -> List.rev output
@@ -150,10 +179,14 @@ let rec scan tokens output  =
         | "->" -> scan tokensTail (Assign :: output)
         | "," -> scan tokensTail (Comma :: output)
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
-        | NumberMatchScan _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
+        | IntegerOrFloatMatch _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
         | _ -> raise (ScanError "Scan Error: Malformed Tokens") 
 
 /// <summary>Function to lex an input list of characters as strings by calling tokenize then scan.</summary>
+///
+/// <param name="input">A list of characters as strings.</param>
+///
+/// <returns>A list of terminals.</returns>
 let lexer input =
     scan (tokenize input) []
