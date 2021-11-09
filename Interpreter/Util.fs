@@ -1,15 +1,26 @@
+/// <summary>
+/// Module containing helper methods used by various areas of the MyMathsPal Interpreter.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter</summary>
+/// </namespacedoc>
 module Interpreter.Util
 
-open System.Text.RegularExpressions
-
+/// <summary>Exception thrown when an error is encountered while parsing a list of terminals.</summary>
 exception ParseError of string
+/// <summary>Exception thrown when an error is encountered while scanning a list of tokens.</summary>
 exception ScanError of string
+/// <summary>Exception thrown when an error is encountered while tokenizing a list of strings.</summary>
 exception TokenizeError of string
-exception TerminalError of string
+/// <summary>Exception thrown when an error is encountered while computing a binary operation.</summary>
 exception CalculateError of string
+/// <summary>Exception thrown when an error is encountered while computing a unary operation.</summary>
 exception UnaryError of string
+/// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
 exception ExecError of string
 
+/// <summary>A type representing terminal characters accepted by the Interpreter.</summary>
 type terminal =
     | Plus
     | Times
@@ -25,13 +36,8 @@ type terminal =
     | Function of string
     | Word of string
     | Number of float
-
-let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
-let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
-                "n";"o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z";
-                "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
-                "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
-
+    
+/// <summary>List of valid predefined functions in the Interpreter.</summary>
 let functions = [
                  ("ceil", "One Argument; A function to determine the ceiling of a decimal value, given a value of 2.1, will return 3")
                  ("floor", "One Argument; A function to determine the floor of a decimal value, given a value of 2.1, will return 2")
@@ -41,62 +47,21 @@ let functions = [
                  ("plot", "")
                  ]
 
-let functionRegexString =
-    let functionRegex = [
-        for x,_ in functions -> "(^" + x + "$)|"
-    ]
-    let generateRegex = (String.concat "" functionRegex)
-    generateRegex.Remove(generateRegex.Length-1)
-    
-let symbolRegexString =
-    let symbols = ["+";"*";"-";"^";"/";"=";"(";")";">";","]
-    let symbolRegex = [
-        for i in symbols -> "(^\\" + i + "$)|"
-    ]
-    let generateRegex = (String.concat "" symbolRegex)
-    generateRegex.Remove(generateRegex.Length-1)
 
-//https://sodocumentation.net/fsharp/topic/962/active-patterns       
-let (|NumberMatchLex|_|) (input:string) =
-    if Regex.IsMatch(input, "[0-9]+|[.]") then
-        Some(input)
-    else
-        None
-
-//https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
-let (|NumberMatchScan|_|) (input:string) =
-    if Regex.IsMatch(input, "[+-]?([0-9]*[.])?[0-9]+") then
-        Some(input)
-    else
-        None
-
-let (|AlphabetMatch|_|) (input:string)  =
-    if Regex.IsMatch(input, "[a-zA-Z]+") then
-        Some(input)
-    else
-        None
-
-let (|SymbolMatch|_|) (input:string)  =
-    if Regex.IsMatch(input, symbolRegexString) then
-        Some(input)
-    else
-        None
-
-let (|FunctionMatch|_|) (input:string) =
-    if Regex.IsMatch(input, functionRegexString) then
-        Some(input)
-    else
-        None
+/// <summary>List of valid digits in the Interpreter. To be used in tokenizing input.</summary>
 
 // https://stackoverflow.com/questions/42253284/f-check-if-a-string-contains-only-number
+/// <summary>Function to test whether a string is comprised only of digits.</summary>
 let strContainsOnlyNumber (s:string) = System.Double.TryParse s |> fst
 
 //https://gist.github.com/theburningmonk/3363893
+/// <summary>Function to convert a C# Dictionary to an F# Map.</summary>
 let inline toMap kvps =
     kvps
     |> Seq.map (|KeyValue|)
     |> Map.ofSeq
 
+/// <summary>Function to convert a terminal to its string representation.</summary>
 let individualTerminalToString x =
     match x with
     | Times -> "*"
@@ -114,21 +79,8 @@ let individualTerminalToString x =
     | Word word -> string word
     | Number num -> string num
 
+/// <summary>Function to convert a list of terminals to a string.</summary>
 let rec terminalListToString str list =
     match list with
-    | UnaryPlus :: tail
-    | Plus :: tail -> terminalListToString (str + "+" ) tail
-    | UnaryMinus :: tail
-    | Minus :: tail -> terminalListToString (str + "-" ) tail
-    | Times :: tail -> terminalListToString (str + "*" ) tail
-    | Divide :: tail -> terminalListToString (str + "/" ) tail
-    | Exponent :: tail -> terminalListToString (str + "^" ) tail
-    | Lpar :: tail -> terminalListToString (str + "(" ) tail
-    | Rpar :: tail -> terminalListToString (str + ")" ) tail
-    | Number x :: tail -> terminalListToString (str + string x ) tail
-    | Word x :: tail
-    | Function x :: tail -> terminalListToString (str + x) tail
-    | Assign :: tail -> terminalListToString (str + "->") tail
-    | Comma :: tail -> terminalListToString (str + ",") tail
+    | head :: tail -> terminalListToString (str + individualTerminalToString head ) tail
     | [] -> str
-    

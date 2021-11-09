@@ -1,7 +1,70 @@
 ﻿module Interpreter.Lexer
 
 open System
+open System.Text.RegularExpressions
 open Interpreter.Util
+
+let digits = ["0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"]
+
+/// <summary>List of valid letters in the Interpreter. To be used in tokenizing input.</summary>
+let alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
+                "n";"o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z";
+                "A";"B";"C";"D";"E";"F";"G";"H";"I";"J";"K";"L";"M";
+                "N";"O";"P";"Q";"R";"S";"T";"U";"V";"W";"X";"Y";"Z"]
+
+/// <summary>Regex string for matching predefined functions.</summary>
+let functionRegexString =
+    let functionRegex = [
+        for x,_ in functions -> "(^" + x + "$)|"
+    ]
+    let generateRegex = (String.concat "" functionRegex)
+    generateRegex.Remove(generateRegex.Length-1)
+    
+/// <summary>Regex string for matching acceptable symbols.</summary>
+let symbolRegexString =
+    let symbols = ["+";"*";"-";"^";"/";"=";"(";")";">";","]
+    let symbolRegex = [
+        for i in symbols -> "(^\\" + i + "$)|"
+    ]
+    let generateRegex = (String.concat "" symbolRegex)
+    generateRegex.Remove(generateRegex.Length-1)
+
+//https://sodocumentation.net/fsharp/topic/962/active-patterns
+/// <summary>Function to match numbers passed to tokenize.</summary>     
+let (|NumberMatchLex|_|) (input:string) =
+    if Regex.IsMatch(input, "[0-9]+|[.]") then
+        Some(input)
+    else
+        None
+
+//https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
+/// <summary>Function to match numbers passed to scan.</summary>     
+let (|NumberMatchScan|_|) (input:string) =
+    if Regex.IsMatch(input, "[+-]?([0-9]*[.])?[0-9]+") then
+        Some(input)
+    else
+        None
+
+/// <summary>Function to match letters passed to the passed to tokenize or scan.</summary>     
+let (|AlphabetMatch|_|) (input:string)  =
+    if Regex.IsMatch(input, "[a-zA-Z]+") then
+        Some(input)
+    else
+        None
+
+/// <summary>Function to match symbols passed to the passed to tokenize or scan.</summary>  
+let (|SymbolMatch|_|) (input:string)  =
+    if Regex.IsMatch(input, symbolRegexString) then
+        Some(input)
+    else
+        None
+
+/// <summary>Function to match functions passed to the passed to tokenize or scan.</summary> 
+let (|FunctionMatch|_|) (input:string) =
+    if Regex.IsMatch(input, functionRegexString) then
+        Some(input)
+    else
+        None
 
 
 // Recursively lex the characters by calling lex at the head of the list and calling lex on the remaining
