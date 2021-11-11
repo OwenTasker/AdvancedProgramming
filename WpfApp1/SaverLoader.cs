@@ -121,7 +121,7 @@ namespace WpfApp1
         {
             var savableInfo = new string[variableContents.Count + 1];
             
-            var variableInfo = SaveVariables(variableContents);
+            var variableInfo = GenerateSaveVariables(variableContents);
 
             for (var i = 0; i < variableInfo.Length; i++)
             {
@@ -136,10 +136,10 @@ namespace WpfApp1
             return savableInfo;
         }
 
-        private static string[] SaveVariables(IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        public static string[] GenerateSaveVariables(IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
             var idx = 0;
-            var savedVariables = new string[variableContents.Count + 1];
+            var savedVariables = new string[variableContents.Count];
 
             foreach (var (key, value) in variableContents)
             {
