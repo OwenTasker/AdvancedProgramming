@@ -8,7 +8,7 @@ using Microsoft.Win32;
 
 namespace WpfApp1
 {
-    public class SaverLoader
+    public static class SaverLoader
     {
         public static string DecideFileToLoad(string fileToLoad)
         {
@@ -112,28 +112,34 @@ namespace WpfApp1
                 return;
             }
 
-            var savableInfo = GenerateSavableInfo(isValidToSaveConsoleContents, consoleContents, variableContents);
+            var savableInfo = GenerateSavableInfo(consoleContents, variableContents);
 
             File.WriteAllLines(dialog.FileName, savableInfo);
         }
 
-        private static string[] GenerateSavableInfo(bool isValidToSaveContents, string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        private static string[] GenerateSavableInfo(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
             var savableInfo = new string[variableContents.Count + 1];
             
-            var idx = SaveVariables(savableInfo, variableContents);
+            var variableInfo = SaveVariables(variableContents);
 
-            if (isValidToSaveContents)
+            for (var i = 0; i < variableInfo.Length; i++)
             {
-                savableInfo[idx] = consoleContents[..^3];
+                savableInfo[i] = variableInfo[i];
+            }
+
+            if (consoleContents != ">>")
+            {
+                savableInfo[^1] = consoleContents[..^3];
             }
 
             return savableInfo;
         }
 
-        private static int SaveVariables(IList<string> savableInfo, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        private static string[] SaveVariables(IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
             var idx = 0;
+            var savedVariables = new string[variableContents.Count + 1];
 
             foreach (var (key, value) in variableContents)
             {
@@ -141,10 +147,10 @@ namespace WpfApp1
                     current + Util.individualTerminalToString(terminalVal));
                 values += "]";
                 var text = $"VARIABLE: [{key},{values}]";
-                savableInfo[idx++] = text;
+                savedVariables[idx++] = text;
             }
 
-            return idx;
+            return savedVariables;
         }
     }
 
