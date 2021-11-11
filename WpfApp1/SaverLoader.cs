@@ -90,8 +90,12 @@ namespace WpfApp1
             throw new Util.ParseError();
         }
         
-        public static void SaveContents(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        public static void ConstructSaveContents(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
+            if (consoleContents == null || variableContents == null)
+            {
+                throw new SaveException("Unexpected Null Value");
+            }
             var isValidToSaveConsoleContents = consoleContents != ">>";
             var isValidToSaveVariableContents = variableContents.Count > 0;
 
@@ -100,10 +104,15 @@ namespace WpfApp1
                 throw new SaveException("Unable To Save: No Contents Or Variables");
             }
             
+            SaveContentsToFile(consoleContents, variableContents);
+        }
+
+        private static void SaveContentsToFile(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        {
             var dialog = new SaveFileDialog
             {
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                
+
                 Filter = "MyMathsPal File (*.mmp)|*.mmp"
             };
 
