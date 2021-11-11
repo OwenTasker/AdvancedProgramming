@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using Interpreter;
 using Microsoft.FSharp.Collections;
-using Microsoft.Win32;
 using JetBrains.Annotations;
 
 namespace WpfApp1
@@ -265,7 +263,7 @@ namespace WpfApp1
         {
             try
             {
-                Saver.SaveContents(consoleText.Text, _environment);
+                SaverLoader.SaveContents(consoleText.Text, _environment);
             }
             catch (SaveException e)
             {
@@ -278,9 +276,8 @@ namespace WpfApp1
         {
             try
             {
-                var loader = new Loader();
-                var file = Loader.DecideFileToLoad();
-                var (item1, item2, dictionary) = loader.Load(file);
+                var file = SaverLoader.DecideFileToLoad();
+                var (item1, item2, dictionary) = SaverLoader.Load(file);
                 if (!item1) return;
                 _environment = dictionary;
                 consoleText.Text = item2;

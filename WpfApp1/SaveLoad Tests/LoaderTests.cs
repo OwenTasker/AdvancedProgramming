@@ -14,10 +14,9 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenLoad_WhenPassedValidSaveFileWithSingleVariable_ReturnCorrectOutcome()
         {
-            var loader = new Loader();
             var loadFileVal =
-                Loader.DecideFileToLoad("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
-            var loadedValue = loader.Load(loadFileVal);
+                SaverLoader.DecideFileToLoad("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
+            var loadedValue = SaverLoader.Load(loadFileVal);
 
             var expectedResults = new List<Tuple<string, List<Util.terminal>>>
             {
@@ -199,8 +198,7 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public (string, FSharpList<Util.terminal>) GivenExtractVariable_ReturnCorrectTerminalRepresentation(string line)
         {
-            var loader = new Loader();
-            return loader.ExtractVariable(line);
+            return SaverLoader.ExtractVariable(line);
         }
 
         private static IEnumerable ExtractMalformedVariableLoadTestingFailConditions()
@@ -218,8 +216,8 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenMalformedExtractVariable_ThrowParseError(string line)
         {
-            var loader = new Loader();
-            Assert.Throws<Util.ParseError>(() => loader.ExtractVariable(line));
+            
+            Assert.Throws<Util.ParseError>(() => SaverLoader.ExtractVariable(line));
         }
         
         private static IEnumerable ExtractInvalidTokenVariableLoadTestingFailConditions()
@@ -233,8 +231,7 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenInvalidTokenExtractVariable_ThrowParseError(string line)
         {
-            var loader = new Loader();
-            Assert.Throws<Util.TokenizeError>(() => loader.ExtractVariable(line));
+            Assert.Throws<Util.TokenizeError>(() => SaverLoader.ExtractVariable(line));
         }
         
         private static IEnumerable ExtractMalformedTokensVariableLoadTestingFailConditions()
@@ -246,8 +243,7 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenMalformedTokenExtractVariable_ThrowScanError(string line)
         {
-            var loader = new Loader();
-            Assert.Throws<Util.ScanError>(() => loader.ExtractVariable(line));
+            Assert.Throws<Util.ScanError>(() => SaverLoader.ExtractVariable(line));
         }
     }
 }
