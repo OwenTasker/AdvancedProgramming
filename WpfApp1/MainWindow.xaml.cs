@@ -289,7 +289,7 @@ namespace WpfApp1
             }
             catch (LoadException e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show(e.Message  + "\nPlease Check The File Then Try Again");
             }
         }
 

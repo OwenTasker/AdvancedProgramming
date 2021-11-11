@@ -206,6 +206,12 @@ namespace WpfApp1.SaveLoad_Tests
         private static IEnumerable ExtractMalformedVariableLoadTestingFailConditions()
         {
             yield return new TestCaseData("VARIABLE: [a, [+]]");
+            yield return new TestCaseData("VARIABLE: [a, [-]]");
+            yield return new TestCaseData("VARIABLE: [a, [/]]");
+            yield return new TestCaseData("VARIABLE: [a, []]");
+            yield return new TestCaseData("VARIABLE: [a, [(1+3]]");
+            yield return new TestCaseData("VARIABLE: [a, [1+3)]]");
+            
         }
         
         [TestCaseSource(nameof(ExtractMalformedVariableLoadTestingFailConditions))]
@@ -219,6 +225,8 @@ namespace WpfApp1.SaveLoad_Tests
         private static IEnumerable ExtractInvalidTokenVariableLoadTestingFailConditions()
         {
             yield return new TestCaseData("VARIABLE: [a, [1+1?]]");
+            yield return new TestCaseData("VARIABLE: [a, [1@1]]");
+            yield return new TestCaseData("VARIABLE: [a, [1~1]]");
         }
         
         [TestCaseSource(nameof(ExtractInvalidTokenVariableLoadTestingFailConditions))]
@@ -227,6 +235,19 @@ namespace WpfApp1.SaveLoad_Tests
         {
             var loader = new Loader();
             Assert.Throws<Util.TokenizeError>(() => loader.ExtractVariable(line));
+        }
+        
+        private static IEnumerable ExtractMalformedTokensVariableLoadTestingFailConditions()
+        {
+            yield return new TestCaseData("VARIABLE: [a, [.]]");
+        }
+        
+        [TestCaseSource(nameof(ExtractMalformedTokensVariableLoadTestingFailConditions))]
+        [Test]
+        public void GivenMalformedTokenExtractVariable_ThrowScanError(string line)
+        {
+            var loader = new Loader();
+            Assert.Throws<Util.ScanError>(() => loader.ExtractVariable(line));
         }
     }
 }
