@@ -24,9 +24,7 @@ namespace WpfApp1
             var isValidToSaveConsoleContents = ConsoleContents != ">>";
             var isValidToSaveVariableContents = VariableContents.Count > 0;
 
-            var isValidToSave = isValidToSaveConsoleContents || isValidToSaveVariableContents;
-
-            if (!isValidToSave)
+            if (!(isValidToSaveConsoleContents || isValidToSaveVariableContents))
             {
                 throw new SaveException("Unable To Save: No Contents Or Variables");
             }
@@ -43,24 +41,31 @@ namespace WpfApp1
                 return;
             }
 
+            var savableInfo = SavableInfo(isValidToSaveConsoleContents);
+
+            File.WriteAllLines(dialog.FileName, savableInfo);
+        }
+
+        private string[] SavableInfo(bool isValidToSaveContents)
+        {
             var savableInfo = new string[VariableContents.Count + 1];
             var idx = 0;
 
-            //Please dont change this without also changing Loader, they are almost entirely linked
             foreach (var (key, value) in VariableContents)
             {
-                var values = value.Aggregate("[", (current, VARIABLE) => current + Util.individualTerminalToString(VARIABLE));
+                var values = value.Aggregate("[", (current, terminalVal) => 
+                    current + Util.individualTerminalToString(terminalVal));
                 values += "]";
                 var text = $"VARIABLE: [{key},{values}]";
                 savableInfo[idx++] = text;
             }
-
-            if (isValidToSaveConsoleContents)
+            
+            if (isValidToSaveContents)
             {
                 savableInfo[idx] = ConsoleContents[..^3];
             }
 
-            File.WriteAllLines(dialog.FileName, savableInfo);
+            return savableInfo;
         }
     }
 
