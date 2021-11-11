@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows;
 using Interpreter;
 using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
@@ -50,21 +49,11 @@ namespace WpfApp1
                     //Make sure line is an assigned variable
                     if (loadedLine.StartsWith("VARIABLE"))
                     {
-                        var line = loadedLine[10..];
-                        line = line[..^1];
-                        var dictArr = line.Split(",");
-                        var variableName = dictArr[0][1..];
-                        var lexableInput = dictArr[1];
-                        lexableInput = lexableInput.Replace("[", "").Replace("]", "");
-                        var inpList = lexableInput.Select(character => character.ToString()).ToList();
-
-                        var inpFList = ListModule.OfSeq(inpList);
-
-                        var lexedOutput = Lexer.lexer(inpFList);
+                        var (variableName, lexedOutput) = ExtractVariable(loadedLine);
 
                         _variables.Add(variableName, lexedOutput);
                     }
-                    //If Line wasnt a variable, print it to the console
+                    //If Line wasnt a variable, append to ConsoleContent
                     else
                     {
                         ConsoleContent += loadedLine + "\n";
@@ -79,9 +68,27 @@ namespace WpfApp1
             {
                 throw new LoadException("Error In Variable Section of file " + loadFile);
             }
-
+        
             ConsoleContent += ">>";
             return (true, ConsoleContent, _variables);
+        }
+
+        public (string variableName, FSharpList<Util.terminal> lexedOutput) ExtractVariable(string inputLine)
+        {
+            
+            var line = inputLine[10..];
+            line = line[..^1];
+            var dictArr = line.Split(",");
+            var variableName = dictArr[0][1..];
+            var lexableInput = dictArr[1];
+            lexableInput = lexableInput.Replace("[", "").Replace("]", "");
+            var inpList = lexableInput.Select(character => character.ToString()).ToList();
+
+            var inpFList = ListModule.OfSeq(inpList);
+
+            var lexedOutput = Lexer.lexer(inpFList);
+            
+            return (variableName, lexedOutput);
         }
     }
 
