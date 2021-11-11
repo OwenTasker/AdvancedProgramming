@@ -265,8 +265,7 @@ namespace WpfApp1
         {
             try
             {
-                var saver = new Saver(consoleText.Text, _environment);
-                saver.SaveContents();
+                Saver.SaveContents(consoleText.Text, _environment);
             }
             catch (SaveException e)
             {

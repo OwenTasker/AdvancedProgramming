@@ -10,19 +10,11 @@ namespace WpfApp1
 {
     public class Saver
     {
-        private string ConsoleContents { get; set; }
-        private IDictionary<string, FSharpList<Util.terminal>> VariableContents { get; set; }
-
-        public Saver(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        
+        public static void SaveContents(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
-            this.ConsoleContents = consoleContents;
-            this.VariableContents = variableContents;
-        }
-
-        public void SaveContents()
-        {
-            var isValidToSaveConsoleContents = ConsoleContents != ">>";
-            var isValidToSaveVariableContents = VariableContents.Count > 0;
+            var isValidToSaveConsoleContents = consoleContents != ">>";
+            var isValidToSaveVariableContents = variableContents.Count > 0;
 
             if (!(isValidToSaveConsoleContents || isValidToSaveVariableContents))
             {
@@ -41,31 +33,39 @@ namespace WpfApp1
                 return;
             }
 
-            var savableInfo = SavableInfo(isValidToSaveConsoleContents);
+            var savableInfo = SavableInfo(isValidToSaveConsoleContents, consoleContents, variableContents);
 
             File.WriteAllLines(dialog.FileName, savableInfo);
         }
 
-        private string[] SavableInfo(bool isValidToSaveContents)
+        private static string[] SavableInfo(bool isValidToSaveContents, string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
-            var savableInfo = new string[VariableContents.Count + 1];
+            var savableInfo = new string[variableContents.Count + 1];
+            
+            var idx = SaveVariables(savableInfo, variableContents);
+
+            if (isValidToSaveContents)
+            {
+                savableInfo[idx] = consoleContents[..^3];
+            }
+
+            return savableInfo;
+        }
+
+        private static int SaveVariables(string[] savableInfo, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        {
             var idx = 0;
 
-            foreach (var (key, value) in VariableContents)
+            foreach (var (key, value) in variableContents)
             {
-                var values = value.Aggregate("[", (current, terminalVal) => 
+                var values = value.Aggregate("[", (current, terminalVal) =>
                     current + Util.individualTerminalToString(terminalVal));
                 values += "]";
                 var text = $"VARIABLE: [{key},{values}]";
                 savableInfo[idx++] = text;
             }
-            
-            if (isValidToSaveContents)
-            {
-                savableInfo[idx] = ConsoleContents[..^3];
-            }
 
-            return savableInfo;
+            return idx;
         }
     }
 
