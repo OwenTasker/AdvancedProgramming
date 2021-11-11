@@ -60,13 +60,9 @@ namespace WpfApp1
                     }
                 }
             }
-            catch (Util.TokenizeError)
+            catch (Exception)
             {
-                throw new LoadException("Error In Variable Section of file " + loadFile);
-            }
-            catch (Util.ScanError)
-            {
-                throw new LoadException("Error In Variable Section of file " + loadFile);
+                throw new LoadException("Error In Variable Section of file: " + loadFile);
             }
         
             ConsoleContent += ">>";
@@ -87,8 +83,13 @@ namespace WpfApp1
             var inpFList = ListModule.OfSeq(inpList);
 
             var lexedOutput = Lexer.lexer(inpFList);
-            
-            return (variableName, lexedOutput);
+
+            if (Parser.parse(lexedOutput))
+            {
+                return (variableName, lexedOutput);
+            }
+
+            throw new Util.ParseError();
         }
     }
 

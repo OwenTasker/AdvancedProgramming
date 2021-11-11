@@ -10,12 +10,13 @@ namespace WpfApp1.SaveLoad_Tests
 {
     public class LoaderTests
     {
-  
+
         [Test]
         public void GivenLoad_WhenPassedValidSaveFileWithSingleVariable_ReturnCorrectOutcome()
         {
             var loader = new Loader();
-            var loadFileVal = Loader.DecideFileToLoad("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
+            var loadFileVal =
+                Loader.DecideFileToLoad("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
             var loadedValue = loader.Load(loadFileVal);
 
             var expectedResults = new List<Tuple<string, List<Util.terminal>>>
@@ -56,16 +57,22 @@ namespace WpfApp1.SaveLoad_Tests
                 }),
                 Tuple.Create("f", new List<Util.terminal>
                 {
-                    Util.terminal.NewNumber(3.0), Util.terminal.Times, Util.terminal.NewWord("testD"), Util.terminal.Minus, 
-                    Util.terminal.NewNumber(45.0), Util.terminal.Times, Util.terminal.NewNumber(345.0), Util.terminal.Plus,
+                    Util.terminal.NewNumber(3.0), Util.terminal.Times, Util.terminal.NewWord("testD"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0), Util.terminal.Times, Util.terminal.NewNumber(345.0),
+                    Util.terminal.Plus,
                     Util.terminal.NewWord("testE"), Util.terminal.Exponent, Util.terminal.NewNumber(5.0)
                 }),
                 Tuple.Create("g", new List<Util.terminal>
                 {
-                    Util.terminal.NewNumber(3.0), Util.terminal.Times, Util.terminal.NewWord("testF"), Util.terminal.Minus,
-                    Util.terminal.NewNumber(45.0), Util.terminal.Times, Util.terminal.NewNumber(345.0), Util.terminal.Plus,
-                    Util.terminal.NewWord("testG"), Util.terminal.Exponent, Util.terminal.NewNumber(5.0), Util.terminal.Minus,
-                    Util.terminal.Lpar, Util.terminal.NewWord("testH"), Util.terminal.Divide, Util.terminal.NewNumber(43.0),
+                    Util.terminal.NewNumber(3.0), Util.terminal.Times, Util.terminal.NewWord("testF"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0), Util.terminal.Times, Util.terminal.NewNumber(345.0),
+                    Util.terminal.Plus,
+                    Util.terminal.NewWord("testG"), Util.terminal.Exponent, Util.terminal.NewNumber(5.0),
+                    Util.terminal.Minus,
+                    Util.terminal.Lpar, Util.terminal.NewWord("testH"), Util.terminal.Divide,
+                    Util.terminal.NewNumber(43.0),
                     Util.terminal.Rpar
                 })
             };
@@ -92,12 +99,12 @@ namespace WpfApp1.SaveLoad_Tests
             }
 
             var areAllCorrect = areAsExpected.All(c => c);
-            
-            
+
+
             Assert.True(areAllCorrect);
         }
 
-        private static IEnumerable LoadTesting()
+        private static IEnumerable ExtractVariableLoadTesting()
         {
             yield return new TestCaseData("VARIABLE: [a, [1]]").Returns(("a", ListModule.OfSeq(new List<Util.terminal>
             {
@@ -109,14 +116,117 @@ namespace WpfApp1.SaveLoad_Tests
                 Util.terminal.Plus,
                 Util.terminal.NewNumber(1.0)
             })));
+            yield return new TestCaseData("VARIABLE: [a, [1*testA]]").Returns(("a",
+                ListModule.OfSeq(new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(1.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testA")
+                })));
+            yield return new TestCaseData("VARIABLE: [a, [1*testA-45]]").Returns(("a",
+                ListModule.OfSeq(new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(1.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testA"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0)
+                })));
+            yield return new TestCaseData("VARIABLE: [a, [1*testA-45*345]]").Returns(("a",
+                ListModule.OfSeq(new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(1.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testA"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewNumber(345.0),
+                })));
+            yield return new TestCaseData("VARIABLE: [a, [1*testA-45*345+testB]]").Returns(("a",
+                ListModule.OfSeq(new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(1.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testA"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewNumber(345.0),
+                    Util.terminal.Plus,
+                    Util.terminal.NewWord("testB"),
+                })));
+            yield return new TestCaseData("VARIABLE: [a, [1*testA-45*345+testB^5]]").Returns(("a",
+                ListModule.OfSeq(new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(1.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testA"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewNumber(345.0),
+                    Util.terminal.Plus,
+                    Util.terminal.NewWord("testB"),
+                    Util.terminal.Exponent,
+                    Util.terminal.NewNumber(5.0),
+                })));
+            yield return new TestCaseData("VARIABLE: [a, [1*testA-45*345+testB^5-(testC/43)]]").Returns(("a",
+                ListModule.OfSeq(new List<Util.terminal>
+                {
+                    Util.terminal.NewNumber(1.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewWord("testA"),
+                    Util.terminal.Minus,
+                    Util.terminal.NewNumber(45.0),
+                    Util.terminal.Times,
+                    Util.terminal.NewNumber(345.0),
+                    Util.terminal.Plus,
+                    Util.terminal.NewWord("testB"),
+                    Util.terminal.Exponent,
+                    Util.terminal.NewNumber(5.0),
+                    Util.terminal.Minus,
+                    Util.terminal.Lpar,
+                    Util.terminal.NewWord("testC"),
+                    Util.terminal.Divide,
+                    Util.terminal.NewNumber(43.0),
+                    Util.terminal.Rpar,
+                })));
+            
         }
 
-        [TestCaseSource(nameof(LoadTesting))]
+        [TestCaseSource(nameof(ExtractVariableLoadTesting))]
         [Test]
         public (string, FSharpList<Util.terminal>) GivenExtractVariable_ReturnCorrectTerminalRepresentation(string line)
         {
             var loader = new Loader();
             return loader.ExtractVariable(line);
+        }
+
+        private static IEnumerable ExtractMalformedVariableLoadTestingFailConditions()
+        {
+            yield return new TestCaseData("VARIABLE: [a, [+]]");
+        }
+        
+        [TestCaseSource(nameof(ExtractMalformedVariableLoadTestingFailConditions))]
+        [Test]
+        public void GivenMalformedExtractVariable_ThrowParseError(string line)
+        {
+            var loader = new Loader();
+            Assert.Throws<Util.ParseError>(() => loader.ExtractVariable(line));
+        }
+        
+        private static IEnumerable ExtractInvalidTokenVariableLoadTestingFailConditions()
+        {
+            yield return new TestCaseData("VARIABLE: [a, [1+1?]]");
+        }
+        
+        [TestCaseSource(nameof(ExtractInvalidTokenVariableLoadTestingFailConditions))]
+        [Test]
+        public void GivenInvalidTokenExtractVariable_ThrowParseError(string line)
+        {
+            var loader = new Loader();
+            Assert.Throws<Util.TokenizeError>(() => loader.ExtractVariable(line));
         }
     }
 }
