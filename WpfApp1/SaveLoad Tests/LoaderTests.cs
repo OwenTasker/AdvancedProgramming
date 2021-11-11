@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Interpreter;
@@ -96,41 +97,26 @@ namespace WpfApp1.SaveLoad_Tests
             Assert.True(areAllCorrect);
         }
 
-        private static IEnumerable<object[]> _loadTesting()
+        private static IEnumerable LoadTesting()
         {
-            yield return 
-                new object[]
-                {
-                    new Tuple<string, (string, List<Util.terminal>)>("VARIABLE [a, [1]]", ("a", new List<Util.terminal>
-                    {
-                        Util.terminal.NewNumber(1.0)
-                    }))
-                };
-            yield return
-                new object[]
-                {
-                    "1+1",
-                    new List<Util.terminal>
-                        {Util.terminal.NewNumber(1.0), Util.terminal.Plus, Util.terminal.NewNumber(1.0)}
-                };
+            yield return new TestCaseData("VARIABLE: [a, [1]]").Returns(("a", ListModule.OfSeq(new List<Util.terminal>
+            {
+                Util.terminal.NewNumber(1.0)
+            })));
+            yield return new TestCaseData("VARIABLE: [a, [1+1]]").Returns(("a", ListModule.OfSeq(new List<Util.terminal>
+            {
+                Util.terminal.NewNumber(1.0),
+                Util.terminal.Plus,
+                Util.terminal.NewNumber(1.0)
+            })));
         }
 
-        [TestCaseSource(nameof(_loadTesting))]
+        [TestCaseSource(nameof(LoadTesting))]
         [Test]
-        public void GivenExtractVariable_ReturnCorrectTerminalRepresentation(IEnumerable<object> inputAndOutput)
+        public (string, FSharpList<Util.terminal>) GivenExtractVariable_ReturnCorrectTerminalRepresentation(string line)
         {
-            
-            var enumeratedType = inputAndOutput.Cast <Tuple<string, (string,List<Util.terminal>)>>().GetEnumerator();
-            var expectedName = enumeratedType.Current?.Item1;
-            var valueToLoad = enumeratedType.Current?.Item2.Item1;
-            var expectedOutput = ListModule.OfSeq(enumeratedType.Current?.Item2.Item2);
-            enumeratedType.Dispose();
-
             var loader = new Loader();
-            loader.ExtractVariable(valueToLoad);
-            
-
-
+            return loader.ExtractVariable(line);
         }
     }
 }
