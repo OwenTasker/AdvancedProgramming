@@ -23,6 +23,10 @@
     <None Remove="graph.png" />
   </ItemGroup>
 
+<!--  <ItemGroup>-->
+<!--    <Compile Include="SaverLoader.cs"/>-->
+<!--  </ItemGroup>-->
+  
   <ItemGroup>
     <PackageReference Include="FSharp.Core" Version="6.0.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
