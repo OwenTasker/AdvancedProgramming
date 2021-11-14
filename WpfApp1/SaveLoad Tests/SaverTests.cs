@@ -59,7 +59,6 @@ namespace WpfApp1.SaveLoad_Tests
             yield return new TestCaseData(new ValueTuple<string, IDictionary<string, FSharpList<Util.terminal>>>(
                 null, new Dictionary<string, FSharpList<Util.terminal>>()));
         }
-            
         
         [TestCaseSource(nameof(GenerateInvalidSaveData))]
         [Test]
@@ -67,6 +66,47 @@ namespace WpfApp1.SaveLoad_Tests
         {
             Assert.Throws<SaveException>(() => SaverLoader.Saver.ConstructSaveContents(vals.Item1, vals.Item2));
         }
+
+        private static IEnumerable GenerateSaveDataForGenerateSavableData()
+        {
+            yield return new TestCaseData(">> 1+1\n2\n>>", new Dictionary<string, FSharpList<Util.terminal>>()
+            {
+                {
+                    "a", ListModule.OfSeq(new List<Util.terminal>
+                    {
+                        Util.terminal.NewNumber(1.0),
+                        Util.terminal.Plus,
+                        Util.terminal.NewNumber(1.0)
+                    })
+                },
+                {
+                    "b", ListModule.OfSeq( new List<Util.terminal>
+                    {
+                        Util.terminal.NewNumber(2.0),
+                        Util.terminal.Times,
+                        Util.terminal.NewNumber(2.0)
+                    })
+                }
+            }).Returns(new[]
+            {
+                "VARIABLE: [a,[1+1]]",
+                "VARIABLE: [b,[2*2]]",
+                ">> 1+1\n2"
+            });
+        }
+
+        [TestCaseSource(nameof(GenerateSaveDataForGenerateSavableData))]
+        [Test]
+        public string[] GivenGenerateSaveData_WhenProvidedValidSavableInput_ReturnCorrectArray
+            (string consoleContent, Dictionary<string, FSharpList<Util.terminal>> variableContent)
+        {
+            return SaverLoader.Saver.GenerateSavableInfo(consoleContent, variableContent);
+            
+        }
+        
+
+
+
 
         [Test]
         public void GivenSaveContents_WhenProvidedNullNull_ThrowSaveException()

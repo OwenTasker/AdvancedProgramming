@@ -100,17 +100,17 @@ namespace WpfApp1
                     throw new SaveException("Unable To Save: No Contents Or Variables");
                 }
 
-                SaveContentsToFile(DetermineFileToSaveTo().FileName, consoleContents, variableContents);
+                var fileToSaveTo = DetermineFileToSaveTo();
+                
+                if (fileToSaveTo != null)
+                {
+                    SaveContentsToFile(fileToSaveTo.FileName, consoleContents, variableContents);
+                }
             }
 
-            private static void SaveContentsToFile(string fileToSaveTo, string consoleContents,
+            private static void SaveContentsToFile(string fileToSaveTo, string consoleContents, 
                 IDictionary<string, FSharpList<Util.terminal>> variableContents)
             {
-                if (fileToSaveTo == null)
-                {
-                    throw new SaveException("Error Saving To This File: Please Try Again");
-                }
-
                 File.WriteAllLines(fileToSaveTo, GenerateSavableInfo(consoleContents, variableContents));
             }
 
@@ -126,7 +126,7 @@ namespace WpfApp1
                 return dialog.ShowDialog() != true ? null : dialog;
             }
 
-            private static string[] GenerateSavableInfo(string consoleContents,
+            public static string[] GenerateSavableInfo(string consoleContents,
                 IDictionary<string, FSharpList<Util.terminal>> variableContents)
             {
                 var savableInfo = new string[variableContents.Count + 1];
