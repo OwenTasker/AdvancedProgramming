@@ -93,6 +93,39 @@ namespace WpfApp1.SaveLoad_Tests
                 "VARIABLE: [b,[2*2]]",
                 ">> 1+1\n2"
             });
+            
+            yield return new TestCaseData(">> ", new Dictionary<string, FSharpList<Util.terminal>>()
+            {
+                {
+                    "a", ListModule.OfSeq(new List<Util.terminal>
+                    {
+                        Util.terminal.NewNumber(1.0),
+                        Util.terminal.Plus,
+                        Util.terminal.NewNumber(1.0)
+                    })
+                },
+                {
+                    "b", ListModule.OfSeq( new List<Util.terminal>
+                    {
+                        Util.terminal.NewNumber(2.0),
+                        Util.terminal.Times,
+                        Util.terminal.NewNumber(2.0)
+                    })
+                }
+            }).Returns(new[]
+            {
+                "VARIABLE: [a,[1+1]]",
+                "VARIABLE: [b,[2*2]]",
+                ""
+            });
+            
+            yield return new TestCaseData(">> 1+1\n2\n>>", new Dictionary<string, FSharpList<Util.terminal>>
+            {}).Returns(new[]
+            {
+                ">> 1+1\n2"
+            });
+            
+            
         }
 
         [TestCaseSource(nameof(GenerateSaveDataForGenerateSavableData))]
