@@ -104,14 +104,8 @@ namespace WpfApp1
                 
                 if (fileToSaveTo != null)
                 {
-                    SaveContentsToFile(fileToSaveTo.FileName, consoleContents, variableContents);
+                    File.WriteAllLines(fileToSaveTo.FileName, GenerateSavableInfo(consoleContents, variableContents));
                 }
-            }
-
-            private static void SaveContentsToFile(string fileToSaveTo, string consoleContents, 
-                IDictionary<string, FSharpList<Util.terminal>> variableContents)
-            {
-                File.WriteAllLines(fileToSaveTo, GenerateSavableInfo(consoleContents, variableContents));
             }
 
             private static SaveFileDialog DetermineFileToSaveTo()
