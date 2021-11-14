@@ -12,15 +12,16 @@ namespace WpfApp1.SaveLoad_Tests
     {
 
         [Test]
-        public void GivenLoad_WhenPassedNull_ThrowLoadException()
+        public void GivenLoad_WhenPassedNull_ReturnFalseNullNull()
         {
-            Assert.Throws<LoadException>(() => SaverLoader.Load(null));
+            (bool, string, IDictionary<string, FSharpList<Util.terminal>>) resTuple = (false, null, null);
+            Assert.That(SaverLoader.Loader.Load(null), Is.EqualTo(resTuple));
         }
         
         [Test]
         public void GivenLoad_WhenPassedValidSaveFileWithSingleVariable_ReturnCorrectOutcome()
         {
-            var loadedValue = SaverLoader.Load("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
+            var loadedValue = SaverLoader.Loader.Load("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
 
             var expectedResults = new List<Tuple<string, List<Util.terminal>>>
             {
@@ -110,7 +111,22 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenLoad_WhenPassedValidSaveFileWithOnlyConsoleContents_ReturnCorrectOutcome()
         {
-            
+            var loadedValue = SaverLoader.Loader.Load("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidConsoleContents.mmp");
+            Assert.That(loadedValue.Item2, Is.EqualTo(">> 1+1+1\n3\n>> var->199\n199\n>> 5*5\n25\n>>"));
+        }
+
+        [Test]
+        public void GivenLoad_WhenPassedFileContainingInvalidVariableContents_ThrowLoadException()
+        {
+            Assert.Throws<LoadException>(() =>
+                SaverLoader.Loader.Load("../WpfApp1/SaveLoad Tests/TestingFiles/testInvalidVariables.mmp"));
+        }        
+        
+        [Test]
+        public void GivenLoad_WhenPassedNonExistentFile_ThrowLoadException()
+        {
+            Assert.Throws<LoadException>(() =>
+                SaverLoader.Loader.Load("../WpfApp1/SaveLoad Tests/TestingFiles/testNonExistentFile"));
         }
 
         private static IEnumerable ExtractVariableLoadTesting()
@@ -208,7 +224,7 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public (string, FSharpList<Util.terminal>) GivenExtractVariable_ReturnCorrectTerminalRepresentation(string line)
         {
-            return SaverLoader.ExtractVariable(line);
+            return SaverLoader.Loader.ExtractVariable(line);
         }
 
         private static IEnumerable ExtractMalformedVariableLoadTestingFailConditions()
@@ -227,7 +243,7 @@ namespace WpfApp1.SaveLoad_Tests
         public void GivenMalformedExtractVariable_ThrowParseError(string line)
         {
             
-            Assert.Throws<Util.ParseError>(() => SaverLoader.ExtractVariable(line));
+            Assert.Throws<Util.ParseError>(() => SaverLoader.Loader.ExtractVariable(line));
         }
         
         private static IEnumerable ExtractInvalidTokenVariableLoadTestingFailConditions()
@@ -241,7 +257,7 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenInvalidTokenExtractVariable_ThrowParseError(string line)
         {
-            Assert.Throws<Util.TokenizeError>(() => SaverLoader.ExtractVariable(line));
+            Assert.Throws<Util.TokenizeError>(() => SaverLoader.Loader.ExtractVariable(line));
         }
         
         private static IEnumerable ExtractMalformedTokensVariableLoadTestingFailConditions()
@@ -253,7 +269,7 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenMalformedTokenExtractVariable_ThrowScanError(string line)
         {
-            Assert.Throws<Util.ScanError>(() => SaverLoader.ExtractVariable(line));
+            Assert.Throws<Util.ScanError>(() => SaverLoader.Loader.ExtractVariable(line));
         }
     }
 }

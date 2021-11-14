@@ -276,8 +276,8 @@ namespace WpfApp1
         {
             try
             {
-                var file = SaverLoader.DecideFileToLoad();
-                var (item1, item2, dictionary) = SaverLoader.Load(file);
+                var file = SaverLoader.Loader.DecideFileToLoad();
+                var (item1, item2, dictionary) = SaverLoader.Loader.Load(file);
                 if (!item1) return;
                 _environment = dictionary;
                 consoleText.Text = item2;

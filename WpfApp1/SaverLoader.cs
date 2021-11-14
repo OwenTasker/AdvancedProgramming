@@ -10,99 +10,107 @@ namespace WpfApp1
 {
     public static class SaverLoader
     {
-        public static string DecideFileToLoad()
+        public static class Loader
         {
-            var fileDialog = new OpenFileDialog
+            public static string DecideFileToLoad()
             {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                Filter = "MyMathsPal Files (*.mmp)|*.mmp;",
-                FilterIndex = 1,
-                Multiselect = false
-            };
-
-            return fileDialog.ShowDialog() != true ? null : fileDialog.FileName;
-        }
-        
-        public static (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load(string loadFile)
-        {
-
-            var variables = new Dictionary<string, FSharpList<Util.terminal>>();
-            var consoleContents = "";
-            
-            //If no file is selected return, else load that file
-            if (loadFile == null)
-            {
-                throw new LoadException("No File Selected: Please Try Again");
-            }
-
-            try
-            {
-                foreach (var loadedLine in File.ReadLines(loadFile))
+                var fileDialog = new OpenFileDialog
                 {
-                    //Make sure line is an assigned variable
-                    if (loadedLine.StartsWith("VARIABLE"))
-                    {
-                        var (variableName, lexedOutput) = ExtractVariable(loadedLine);
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    Filter = "MyMathsPal Files (*.mmp)|*.mmp;",
+                    FilterIndex = 1,
+                    Multiselect = false
+                };
 
-                        variables.Add(variableName, lexedOutput);
-                    }
-                    //If Line wasnt a variable, append to ConsoleContent
-                    else
+                return fileDialog.ShowDialog() != true ? null : fileDialog.FileName;
+            }
+        
+            public static (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load(string loadFile)
+            {
+                var variables = new Dictionary<string, FSharpList<Util.terminal>>();
+                var consoleContents = "";
+
+                //If no file is selected return, else load that file
+                if (loadFile == null)
+                {
+                    return (false, null, null);
+                }
+
+                try
+                {
+                    foreach (var loadedLine in File.ReadLines(loadFile))
                     {
-                        consoleContents += loadedLine + "\n";
+                        //Make sure line is an assigned variable
+                        if (loadedLine.StartsWith("VARIABLE"))
+                        {
+                            var (variableName, lexedOutput) = ExtractVariable(loadedLine);
+
+                            variables.Add(variableName, lexedOutput);
+                        }
+                        //If Line wasnt a variable, append to ConsoleContent
+                        else
+                        {
+                            consoleContents += loadedLine + "\n";
+                        }
                     }
                 }
+                catch (Util.ParseError)
+                {
+                    throw new LoadException("Error In Variable Section of file: " + loadFile);
+                }
+                catch (FileNotFoundException)
+                {
+                    throw new LoadException("Could Not Find File Specified: Please Try Again");
+                }
+
+                consoleContents += ">>";
+                return (true, consoleContents, variables);
             }
-            catch (Exception)
+
+            public static (string variableName, FSharpList<Util.terminal> lexedOutput) ExtractVariable(string inputLine)
             {
-                throw new LoadException("Error In Variable Section of file: " + loadFile);
+                var line = inputLine[10..];
+                line = line[..^1];
+                var dictArr = line.Split(",");
+                var variableName = dictArr[0][1..];
+                var lexableInput = dictArr[1];
+                lexableInput = lexableInput.Replace("[", "").Replace("]", "");
+                var inpList = lexableInput.Select(character => character.ToString()).ToList();
+
+                var inpFList = ListModule.OfSeq(inpList);
+
+                var lexedOutput = Lexer.lexer(inpFList);
+
+                if (Parser.parse(lexedOutput))
+                {
+                    return (variableName, lexedOutput);
+                }
+                throw new Util.ParseError();
             }
-        
-            consoleContents += ">>";
-            return (true, consoleContents, variables);
-        }
-
-        public static (string variableName, FSharpList<Util.terminal> lexedOutput) ExtractVariable(string inputLine)
-        {
-            
-            var line = inputLine[10..];
-            line = line[..^1];
-            var dictArr = line.Split(",");
-            var variableName = dictArr[0][1..];
-            var lexableInput = dictArr[1];
-            lexableInput = lexableInput.Replace("[", "").Replace("]", "");
-            var inpList = lexableInput.Select(character => character.ToString()).ToList();
-
-            var inpFList = ListModule.OfSeq(inpList);
-
-            var lexedOutput = Lexer.lexer(inpFList);
-
-            if (Parser.parse(lexedOutput))
-            {
-                return (variableName, lexedOutput);
-            }
-
-            throw new Util.ParseError();
         }
         
+          
         public static void ConstructSaveContents(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
-            if (consoleContents == null || variableContents == null)
-            {
-                throw new SaveException("Unexpected Null Value");
-            }
-            var isValidToSaveConsoleContents = consoleContents != ">>";
-            var isValidToSaveVariableContents = variableContents.Count > 0;
-
-            if (!(isValidToSaveConsoleContents || isValidToSaveVariableContents))
+            if (!(consoleContents != ">>" || variableContents.Count > 0) || consoleContents == null)
             {
                 throw new SaveException("Unable To Save: No Contents Or Variables");
             }
             
-            SaveContentsToFile(consoleContents, variableContents);
+            SaveContentsToFile(DetermineFileToSaveTo().FileName, consoleContents, variableContents);
+        }
+        
+        private static void SaveContentsToFile(string fileToSaveTo, string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        {
+            if (fileToSaveTo == null)
+            {
+                throw new SaveException("Error Saving To This File: Please Try Again");
+            }
+
+            File.WriteAllLines(fileToSaveTo, GenerateSavableInfo(consoleContents, variableContents));
         }
 
-        private static void SaveContentsToFile(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        private static SaveFileDialog DetermineFileToSaveTo()
         {
             var dialog = new SaveFileDialog
             {
@@ -111,14 +119,7 @@ namespace WpfApp1
                 Filter = "MyMathsPal File (*.mmp)|*.mmp"
             };
 
-            if (dialog.ShowDialog() != true)
-            {
-                return;
-            }
-
-            var savableInfo = GenerateSavableInfo(consoleContents, variableContents);
-
-            File.WriteAllLines(dialog.FileName, savableInfo);
+            return dialog.ShowDialog() != true ? null : dialog;
         }
 
         private static string[] GenerateSavableInfo(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)

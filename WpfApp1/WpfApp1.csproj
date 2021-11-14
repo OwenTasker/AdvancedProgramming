@@ -22,10 +22,6 @@
     <Resource Include="mymathspal_logo.ico" />
     <None Remove="graph.png" />
   </ItemGroup>
-
-<!--  <ItemGroup>-->
-<!--    <Compile Include="SaverLoader.cs"/>-->
-<!--  </ItemGroup>-->
   
   <ItemGroup>
     <PackageReference Include="FSharp.Core" Version="6.0.0" />
