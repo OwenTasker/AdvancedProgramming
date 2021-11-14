@@ -265,7 +265,7 @@ namespace WpfApp1
             {
                 SaverLoader.Saver.ConstructSaveContents(consoleText.Text, _environment);
             }
-            catch (SaveException e)
+            catch (SaverLoader.Saver.SaveException e)
             {
                 MessageBox.Show(e.Message);
             }
@@ -283,7 +283,7 @@ namespace WpfApp1
                 consoleText.Text = item2;
                 UpdateVariableWindow();
             }
-            catch (LoadException e)
+            catch (SaverLoader.Loader.LoadException e)
             {
                 MessageBox.Show(e.Message  + "\nPlease Check The File Then Try Again");
             }

@@ -64,7 +64,7 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenConstructSaveContents_WhenProvidedInvalidOrNullValue_ThrowSaveException((string, IDictionary<string, FSharpList<Util.terminal>>) vals)
         {
-            Assert.Throws<SaveException>(() => SaverLoader.Saver.ConstructSaveContents(vals.Item1, vals.Item2));
+            Assert.Throws<SaverLoader.Saver.SaveException>(() => SaverLoader.Saver.ConstructSaveContents(vals.Item1, vals.Item2));
         }
 
         private static IEnumerable GenerateSaveDataForGenerateSavableData()
@@ -144,7 +144,7 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenSaveContents_WhenProvidedNullNull_ThrowSaveException()
         {
-            Assert.Throws<SaveException>(() => SaverLoader.Saver.ConstructSaveContents(null, null));
+            Assert.Throws<SaverLoader.Saver.SaveException>(() => SaverLoader.Saver.ConstructSaveContents(null, null));
         }
     }
 }

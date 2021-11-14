@@ -88,6 +88,14 @@ namespace WpfApp1
 
                 throw new Util.ParseError();
             }
+            
+            public class LoadException : Exception
+            {
+                public LoadException(string message): base(message)
+                {
+                }
+            }
+
         }
 
         public static class Saver
@@ -157,20 +165,15 @@ namespace WpfApp1
 
                 return savedVariables;
             }
+            
+                
+            public class SaveException : Exception
+            {
+                public SaveException(string message): base(message)
+                {
+                }
+            }
         }
     }
 
-    public class LoadException : Exception
-    {
-        public LoadException(string message): base(message)
-        {
-        }
-    }
-    
-    public class SaveException : Exception
-    {
-        public SaveException(string message): base(message)
-        {
-        }
-    }
 }

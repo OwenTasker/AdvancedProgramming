@@ -118,14 +118,14 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenLoad_WhenPassedFileContainingInvalidVariableContents_ThrowLoadException()
         {
-            Assert.Throws<LoadException>(() =>
+            Assert.Throws<SaverLoader.Loader.LoadException>(() =>
                 SaverLoader.Loader.Load("../WpfApp1/SaveLoad Tests/TestingFiles/testInvalidVariables.mmp"));
         }        
         
         [Test]
         public void GivenLoad_WhenPassedNonExistentFile_ThrowLoadException()
         {
-            Assert.Throws<LoadException>(() =>
+            Assert.Throws<SaverLoader.Loader.LoadException>(() =>
                 SaverLoader.Loader.Load("../WpfApp1/SaveLoad Tests/TestingFiles/testNonExistentFile"));
         }
 
