@@ -134,13 +134,8 @@ namespace WpfApp1.SaveLoad_Tests
             (string consoleContent, Dictionary<string, FSharpList<Util.terminal>> variableContent)
         {
             return SaverLoader.Saver.GenerateSavableInfo(consoleContent, variableContent);
-            
         }
         
-
-
-
-
         [Test]
         public void GivenSaveContents_WhenProvidedNullNull_ThrowSaveException()
         {
