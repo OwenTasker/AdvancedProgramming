@@ -10,11 +10,6 @@ namespace WpfApp1
 {
     public static class SaverLoader
     {
-        public static string DecideFileToLoad(string fileToLoad)
-        {
-            return fileToLoad;
-        }
-        
         public static string DecideFileToLoad()
         {
             var fileDialog = new OpenFileDialog
@@ -37,7 +32,7 @@ namespace WpfApp1
             //If no file is selected return, else load that file
             if (loadFile == null)
             {
-                return (false, null, null);
+                throw new LoadException("No File Selected: Please Try Again");
             }
 
             try

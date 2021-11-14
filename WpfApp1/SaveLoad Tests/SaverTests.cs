@@ -12,7 +12,7 @@ namespace WpfApp1.SaveLoad_Tests
         private static IEnumerable GenerateSaveVariableValid()
         {
             yield return new TestCaseData(new Tuple<string, FSharpList<Util.terminal>>(
-                "a", ListModule.OfSeq(new List<Util.terminal>()
+                "a", ListModule.OfSeq(new List<Util.terminal>
                 {
                    Util.terminal.NewNumber(1.0), 
                    Util.terminal.Plus, 
@@ -22,7 +22,7 @@ namespace WpfApp1.SaveLoad_Tests
                 "VARIABLE: [a,[1+1]]"
             });
             yield return new TestCaseData(new Tuple<string, FSharpList<Util.terminal>>(
-                "a", ListModule.OfSeq(new List<Util.terminal>()
+                "a", ListModule.OfSeq(new List<Util.terminal>
                 {
                     Util.terminal.NewNumber(1.0), 
                     Util.terminal.Times, 
@@ -32,7 +32,7 @@ namespace WpfApp1.SaveLoad_Tests
                 "VARIABLE: [a,[1*1]]"
             });
             yield return new TestCaseData(new Tuple<string, FSharpList<Util.terminal>>(
-                "word", ListModule.OfSeq(new List<Util.terminal>()
+                "word", ListModule.OfSeq(new List<Util.terminal>
                 {
                     Util.terminal.NewNumber(1.0), 
                     Util.terminal.Plus, 

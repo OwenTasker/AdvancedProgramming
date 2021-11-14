@@ -12,11 +12,15 @@ namespace WpfApp1.SaveLoad_Tests
     {
 
         [Test]
+        public void GivenLoad_WhenPassedNull_ThrowLoadException()
+        {
+            Assert.Throws<LoadException>(() => SaverLoader.Load(null));
+        }
+        
+        [Test]
         public void GivenLoad_WhenPassedValidSaveFileWithSingleVariable_ReturnCorrectOutcome()
         {
-            var loadFileVal =
-                SaverLoader.DecideFileToLoad("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
-            var loadedValue = SaverLoader.Load(loadFileVal);
+            var loadedValue = SaverLoader.Load("../WpfApp1/SaveLoad Tests/TestingFiles/testJustValidVariables.mmp");
 
             var expectedResults = new List<Tuple<string, List<Util.terminal>>>
             {
@@ -101,6 +105,12 @@ namespace WpfApp1.SaveLoad_Tests
 
 
             Assert.True(areAllCorrect);
+        }
+
+        [Test]
+        public void GivenLoad_WhenPassedValidSaveFileWithOnlyConsoleContents_ReturnCorrectOutcome()
+        {
+            
         }
 
         private static IEnumerable ExtractVariableLoadTesting()
