@@ -49,7 +49,7 @@ namespace WpfApp1.SaveLoad_Tests
         {
             var (item1, item2) = input;
             var inputDict = new Dictionary<string, FSharpList<Util.terminal>> {{item1, item2}};
-            return SaverLoader.GenerateSaveVariables(inputDict);
+            return SaverLoader.Saver.GenerateSaveVariables(inputDict);
         }
 
         private static IEnumerable GenerateInvalidSaveData()
@@ -65,13 +65,13 @@ namespace WpfApp1.SaveLoad_Tests
         [Test]
         public void GivenConstructSaveContents_WhenProvidedInvalidOrNullValue_ThrowSaveException((string, IDictionary<string, FSharpList<Util.terminal>>) vals)
         {
-            Assert.Throws<SaveException>(() => SaverLoader.ConstructSaveContents(vals.Item1, vals.Item2));
+            Assert.Throws<SaveException>(() => SaverLoader.Saver.ConstructSaveContents(vals.Item1, vals.Item2));
         }
 
         [Test]
         public void GivenSaveContents_WhenProvidedNullNull_ThrowSaveException()
         {
-            Assert.Throws<SaveException>(() => SaverLoader.ConstructSaveContents(null, null));
+            Assert.Throws<SaveException>(() => SaverLoader.Saver.ConstructSaveContents(null, null));
         }
     }
 }

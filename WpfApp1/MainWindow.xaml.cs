@@ -263,7 +263,7 @@ namespace WpfApp1
         {
             try
             {
-                SaverLoader.ConstructSaveContents(consoleText.Text, _environment);
+                SaverLoader.Saver.ConstructSaveContents(consoleText.Text, _environment);
             }
             catch (SaveException e)
             {

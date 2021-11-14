@@ -24,7 +24,7 @@ namespace WpfApp1
 
                 return fileDialog.ShowDialog() != true ? null : fileDialog.FileName;
             }
-        
+
             public static (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load(string loadFile)
             {
                 var variables = new Dictionary<string, FSharpList<Util.terminal>>();
@@ -85,77 +85,84 @@ namespace WpfApp1
                 {
                     return (variableName, lexedOutput);
                 }
+
                 throw new Util.ParseError();
             }
         }
-        
-          
-        public static void ConstructSaveContents(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+
+        public static class Saver
         {
-            if (!(consoleContents != ">>" || variableContents.Count > 0) || consoleContents == null)
+            public static void ConstructSaveContents(string consoleContents,
+                IDictionary<string, FSharpList<Util.terminal>> variableContents)
             {
-                throw new SaveException("Unable To Save: No Contents Or Variables");
-            }
-            
-            SaveContentsToFile(DetermineFileToSaveTo().FileName, consoleContents, variableContents);
-        }
-        
-        private static void SaveContentsToFile(string fileToSaveTo, string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
-        {
-            if (fileToSaveTo == null)
-            {
-                throw new SaveException("Error Saving To This File: Please Try Again");
+                if (!(consoleContents != ">>" || variableContents.Count > 0) || consoleContents == null)
+                {
+                    throw new SaveException("Unable To Save: No Contents Or Variables");
+                }
+
+                SaveContentsToFile(DetermineFileToSaveTo().FileName, consoleContents, variableContents);
             }
 
-            File.WriteAllLines(fileToSaveTo, GenerateSavableInfo(consoleContents, variableContents));
-        }
-
-        private static SaveFileDialog DetermineFileToSaveTo()
-        {
-            var dialog = new SaveFileDialog
+            private static void SaveContentsToFile(string fileToSaveTo, string consoleContents,
+                IDictionary<string, FSharpList<Util.terminal>> variableContents)
             {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                if (fileToSaveTo == null)
+                {
+                    throw new SaveException("Error Saving To This File: Please Try Again");
+                }
 
-                Filter = "MyMathsPal File (*.mmp)|*.mmp"
-            };
-
-            return dialog.ShowDialog() != true ? null : dialog;
-        }
-
-        private static string[] GenerateSavableInfo(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
-        {
-            var savableInfo = new string[variableContents.Count + 1];
-            
-            var variableInfo = GenerateSaveVariables(variableContents);
-
-            for (var i = 0; i < variableInfo.Length; i++)
-            {
-                savableInfo[i] = variableInfo[i];
+                File.WriteAllLines(fileToSaveTo, GenerateSavableInfo(consoleContents, variableContents));
             }
 
-            if (consoleContents != ">>")
+            private static SaveFileDialog DetermineFileToSaveTo()
             {
-                savableInfo[^1] = consoleContents[..^3];
+                var dialog = new SaveFileDialog
+                {
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+
+                    Filter = "MyMathsPal File (*.mmp)|*.mmp"
+                };
+
+                return dialog.ShowDialog() != true ? null : dialog;
             }
 
-            return savableInfo;
-        }
-
-        public static string[] GenerateSaveVariables(IDictionary<string, FSharpList<Util.terminal>> variableContents)
-        {
-            var idx = 0;
-            var savedVariables = new string[variableContents.Count];
-
-            foreach (var (key, value) in variableContents)
+            private static string[] GenerateSavableInfo(string consoleContents,
+                IDictionary<string, FSharpList<Util.terminal>> variableContents)
             {
-                var values = value.Aggregate("[", (current, terminalVal) =>
-                    current + Util.individualTerminalToString(terminalVal));
-                values += "]";
-                var text = $"VARIABLE: [{key},{values}]";
-                savedVariables[idx++] = text;
+                var savableInfo = new string[variableContents.Count + 1];
+
+                var variableInfo = GenerateSaveVariables(variableContents);
+
+                for (var i = 0; i < variableInfo.Length; i++)
+                {
+                    savableInfo[i] = variableInfo[i];
+                }
+
+                if (consoleContents != ">>")
+                {
+                    savableInfo[^1] = consoleContents[..^3];
+                }
+
+                return savableInfo;
             }
 
-            return savedVariables;
+            public static string[] GenerateSaveVariables(
+                IDictionary<string, FSharpList<Util.terminal>> variableContents)
+            {
+                var idx = 0;
+                var savedVariables = new string[variableContents.Count];
+
+                foreach (var (key, value) in variableContents)
+                {
+                    var values = value.Aggregate("[", (current, terminalVal) =>
+                        current + Util.individualTerminalToString(terminalVal));
+                    values += "]";
+                    var text = $"VARIABLE: [{key},{values}]";
+                    savedVariables[idx++] = text;
+                }
+
+                return savedVariables;
+            }
         }
     }
 
@@ -165,6 +172,7 @@ namespace WpfApp1
         {
         }
     }
+    
     public class SaveException : Exception
     {
         public SaveException(string message): base(message)
