@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.IO;
 using System.Windows.Media.Imaging;
+using JetBrains.Annotations;
 
 namespace WpfApp1
 {
@@ -74,6 +75,7 @@ namespace WpfApp1
             //Calculate starting byte of pixel
             var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
             //Set BGR to black
+            Console.WriteLine(offset);
             _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
         }
 
@@ -89,34 +91,9 @@ namespace WpfApp1
             LabelYMin.Content = Math.Round(yMin);
             LabelXMax.Content = Math.Round(xMax);
             LabelXMin.Content = Math.Round(xMin);
-            
-            //Find yArray index of y=0, default to below graph
-            var yZero = 0;
-            //y=0 is above graph
-            if (yArray[749] < 0.0)
-            {
-                yZero = 479;
-            }
-            //y=0 is within graph
-            else
-            {
-                for (var i = 0; i < 750; i++)
-                {
-                    //if y=0 exists exactly
-                    if (yArray[i] == 0.0)
-                    {
-                        yZero = i;
-                        break;
-                    }
-                    //if y=0 is skipped, set to line below
-                    if (!(yArray[i] > 0.0)) continue;
-                    yZero = i - 1;
-                    break;
-                }
-            }
-            
+
             //Draw axis
-            DrawAxis(xArray, yZero);
+            DrawAxis(xArray, yArray);
             
             //Scale y values to size of graph
             for (var i = 0; i < ImageWidth; i++)
@@ -156,13 +133,81 @@ namespace WpfApp1
             
         }
 
-        private void DrawAxis(double[] xArray, int yZero)
+        private void DrawAxis([NotNull] double[] xArray, [NotNull] double[] yArray)
         {
+            //Find yArray index of y=0, default to below graph
+            var yZero = 0;
+            //y=0 is above graph
+            if (yArray[749] < 0.0)
+            {
+                yZero = 479;
+            }
+            //y=0 is within graph
+            else
+            {
+                for (var i = 0; i < 750; i++)
+                {
+                    //if y=0 exists exactly
+                    if (yArray[i] == 0.0)
+                    {
+                        yZero = i;
+                        break;
+                    }
+                    //if y=0 is skipped, set to line below
+                    if (!(yArray[i] > 0.0)) continue;
+                    yZero = i - 1;
+                    break;
+                }
+            }
+            
+            //Scale y=0 line to image size
             var temp = yZero / 750.0;
             temp *= ImageHeight;
-            yZero = (int)(temp * 400.0);
+            yZero = (int)temp;
+
+            //Dray y=0 line
+            var offset = yZero * ImageWidth * BytesPerPixel;
+            for (var i = 0; i < ImageWidth * BytesPerPixel; i += 4)
+            {
+                _imageBuffer[i + offset] = _imageBuffer[i + 1 + offset] = _imageBuffer[i + 2 + offset] = 0;
+            }
             
+            //Find xArray index of x=0, default to left of graph
+            var xZero = 0;
+            //x=0 is to right of graph
+            if (xArray[749] < 0.0)
+            {
+                xZero = 479;
+            }
+            //x=0 is within graph
+            else
+            {
+                for (var i = 0; i < 750; i++)
+                {
+                    //if x=0 exists exactly
+                    if (xArray[i] == 0.0)
+                    {
+                        xZero = i;
+                        break;
+                    }
+                    //if x=0 is skipped, set to line to left
+                    if (!(xArray[i] > 0.0)) continue;
+                    xZero = i - 1;
+                    break;
+                }
+            }
             
+            //Scale x=0 line to image size
+            temp = xZero / 750.0;
+            temp *= ImageWidth;
+            xZero = (int)temp;
+
+            //Dray x=0 line
+            offset = xZero * BytesPerPixel;
+            for (var i = 0; i < ImageHeight; i ++)
+            {
+                _imageBuffer[i + offset] = _imageBuffer[i + 1 + offset] = _imageBuffer[i + 2 + offset] = 0;
+            }
         }
 
         private void GraphPopUp_Closing(object sender, CancelEventArgs e)
