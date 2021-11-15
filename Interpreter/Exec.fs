@@ -8,6 +8,7 @@
 module Interpreter.Exec
 
 open Interpreter.Util
+open Interpreter.Differentiate
 
 // http://mathcenter.oxford.emory.edu/site/cs171/shuntingYardAlgorithm/
 
@@ -293,6 +294,13 @@ let exec terminals (env: Map<string, terminal list>) =
         if closed [Word x] combinedEnv
         then [reduce [Word x] combinedEnv], (env |> Map.toSeq |> dict)
         else raise (ExecError "Execution Error: Assignments given in function call do not close expression.")
+    | Function a :: tail ->
+        match a with
+        | "differentiate" ->
+            match tail.[0], tail.[tail.Length-1] with
+            | Lpar, Rpar -> differentiate tail.[1..(tail.Length-2)], (env |> Map.toSeq |> dict)
+            | _ -> failwith "malformed expression"
+        | _ -> failwith "malformed expression"
     | _ ->
         if closed terminals env
         then [reduce terminals env], (env |> Map.toSeq |> dict)
