@@ -35,7 +35,6 @@ namespace WpfApp1
             InitializeComponent();
 
             //Set graph background to white and opacity to max
-            //Add basic x and y axis
             for (var i = 0; i < _imageBuffer.Length; i++)
             {
                 _imageBuffer[i] = 255;
@@ -73,6 +72,7 @@ namespace WpfApp1
         private void PlotPixel(int x, int y)
         {
             //Calculate starting byte of pixel
+            Console.WriteLine(ImageWidth + " * " + BytesPerPixel + " * " + y + " + " + x + " * " + BytesPerPixel);
             var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
             //Set BGR to black
             Console.WriteLine(offset);
@@ -103,7 +103,7 @@ namespace WpfApp1
             
             yMax = yArray.Max();
 
-            var scale = (ImageHeight) / yMax;
+            var scale = (ImageHeight - 1) / yMax;
 
             for (var i = 0; i < ImageWidth; i++)
             {
@@ -165,7 +165,7 @@ namespace WpfApp1
             temp *= ImageHeight;
             yZero = (int)temp;
 
-            //Dray y=0 line
+            //Draw y=0 line
             var offset = yZero * ImageWidth * BytesPerPixel;
             for (var i = 0; i < ImageWidth * BytesPerPixel; i += 4)
             {
@@ -174,8 +174,13 @@ namespace WpfApp1
             
             //Find xArray index of x=0, default to left of graph
             var xZero = 0;
+            
+            if (xArray[0] > 0.0)
+            {
+                //nothing
+            }
             //x=0 is to right of graph
-            if (xArray[749] < 0.0)
+            else if (xArray[749] < 0.0)
             {
                 xZero = 479;
             }
@@ -197,16 +202,17 @@ namespace WpfApp1
                 }
             }
             
+            Console.WriteLine("xZero: " + xZero);
+            
             //Scale x=0 line to image size
             temp = xZero / 750.0;
             temp *= ImageWidth;
             xZero = (int)temp;
 
-            //Dray x=0 line
-            offset = xZero * BytesPerPixel;
+            //Draw x=0 line
             for (var i = 0; i < ImageHeight; i ++)
             {
-                _imageBuffer[i + offset] = _imageBuffer[i + 1 + offset] = _imageBuffer[i + 2 + offset] = 0;
+                PlotPixel(xZero, i);
             }
         }
 
