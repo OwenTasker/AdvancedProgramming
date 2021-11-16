@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <None Remove="mymathspal_logo.ico" />
-    <None Include="SaveLoad Tests\TestingFiles\testJustValidVariables.mmp" />
   </ItemGroup>
 
   <ItemGroup>
