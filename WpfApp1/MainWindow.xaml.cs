@@ -296,10 +296,9 @@ namespace WpfApp1
         {
             try
             {
-                var saver = new Saver(consoleText.Text, _environment);
-                saver.SaveContents();
+                SaverLoader.ConstructSaveContents(consoleText.Text, _environment);
             }
-            catch (SaveException e)
+            catch (SaverLoader.SaveLoadException e)
             {
                 MessageBox.Show(e.Message);
             }
@@ -313,17 +312,15 @@ namespace WpfApp1
         {
             try
             {
-                var loader = new Loader();
-                var file = Loader.DecideFileToLoad();
-                var (item1, item2, dictionary) = loader.Load(file);
+                var (item1, item2, dictionary) = SaverLoader.Load();
                 if (!item1) return;
                 _environment = dictionary;
                 consoleText.Text = item2;
                 UpdateVariableWindow();
             }
-            catch (LoadException e)
+            catch (SaverLoader.SaveLoadException e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show(e.Message  + "\nPlease Check The File Then Try Again");
             }
         }
 
