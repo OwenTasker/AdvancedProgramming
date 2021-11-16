@@ -330,6 +330,8 @@ namespace WpfApp1
         private void ClearButton_OnClick(object sender, RoutedEventArgs e)
         {
             consoleText.Text = ">>";
+            _environment = new Dictionary<string, FSharpList<Util.terminal>>();
+            UpdateVariableWindow();
         }
     }
 }
