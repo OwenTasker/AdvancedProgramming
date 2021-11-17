@@ -581,7 +581,7 @@ let CreateTerminalListUpToCommaCases =
 /// <summary>Test to ensure that createTerminalListUpToComma forms correct terminal list with valid input.</summary>
 [<TestCaseSource("CreateTerminalListUpToCommaCases")>]
 let GivenCreateTerminalListUpToComma_WhenPassedTokens_ReadUpToCommaOrRparCorrectly(terminalIn: terminal list, terminalsOut: terminal list, expected: terminal list * terminal list) =
-    let result = createTerminalListUpToComma terminalIn terminalsOut
+    let result = extractAssignment terminalIn terminalsOut
     Assert.That(result, Is.EqualTo(expected))
 
 /// <summary>Test cases for invalid input to createTerminalListUpToComma.</summary>
@@ -594,7 +594,7 @@ let CreateTerminalListUpToCommaErrorCases =
 /// <summary>Test to ensure that createTerminalListUpToComma correctly throws exception with invalid input.</summary>
 [<TestCaseSource("CreateTerminalListUpToCommaErrorCases")>]
 let GivenCreateTerminalListUpToComma_WhenPassedEmptyArray_RaiseExecError(terminalIn: terminal list) =
-    Assert.Throws<ExecError>(fun () -> createTerminalListUpToComma terminalIn [] |> ignore) |> ignore
+    Assert.Throws<ExecError>(fun () -> extractAssignment terminalIn [] |> ignore) |> ignore
 
 /// <summary>Test cases for valid input to setArguments.</summary>
 let SetArgumentsCases =

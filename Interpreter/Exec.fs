@@ -210,19 +210,33 @@ let rec closed terminals (env: Map<string, terminal list>) =
 /// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
 /// the output list.
 /// </returns>
-let rec createTerminalListUpToComma inList outList =
+let rec extractAssignment inList outList =
     match inList with
     | Rpar :: _ -> (inList, List.rev outList)
     | Comma :: inTail -> (inTail, List.rev outList)
-    | any :: inTail -> createTerminalListUpToComma inTail (any :: outList)
+    | any :: inTail -> extractAssignment inTail (any :: outList)
     | [] -> raise (ExecError "Execution Error: Function call missing right parenthesis.")
-    
+
+/// <summary>
+/// Reads a list of terminals, prepending them to an output list, up to a Comma or final Rpar terminal
+/// </summary>
+///
+/// <param name="inList">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="outList">A list to contain a single expression taken from the input list.</param>
+///
+/// <returns>
+/// A tuple containing the input list and the output list with the leftmost expression moved from the input list to
+/// the output list.
+/// </returns>
 let rec extractExpression inList outList =
     match inList with
     | [ Rpar ] -> ([], List.rev outList)
     | Comma :: inTail -> (inTail, List.rev outList)
     | any :: inTail -> extractExpression inTail (any :: outList)
     | [] -> raise (ExecError "Execution Error: Function call missing right parenthesis.")
+    
 /// <summary>
 /// Creates an environment from a list of terminals representing Comma separate assignments.
 /// </summary>
@@ -237,7 +251,7 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
     match terminals with
     | Rpar :: _ -> env
     | Word x :: Assign :: tail ->
-        match createTerminalListUpToComma tail [] with
+        match extractAssignment tail [] with
         | a, b -> setArguments a (env.Add(x, [reduce b env] ))
     | _ -> raise (ExecError "Execution Error: Function call contains non-assignment expression.")
 
