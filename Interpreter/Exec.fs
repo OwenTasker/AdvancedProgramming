@@ -109,39 +109,6 @@ let rec evaluateBrackets opStack numStack =
         evaluateBrackets tail (performOperation head numStack)
 
 /// <summary>
-/// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
-/// performBinaryOperation functions.
-/// </summary>
-let precedenceAssociativityMap =
-    Map [(UnaryMinus, (4, "r"))
-         (UnaryPlus, (4, "r"))
-         (Exponent, (3, "r"))
-         (Times, (2, "l"))
-         (Divide, (2, "l"))
-         (Plus, (1, "l"))
-         (Minus, (1, "l"))]
-
-/// <summary>
-/// Retrieves the precedence for an operator from the map.
-/// </summary>
-/// 
-/// <param name="operator">A terminal representing an operator.</param>
-///
-/// <returns>The precedence value of the operator.</returns>
-let getPrecedence operator =
-    (Map.find operator precedenceAssociativityMap) |> fst
-
-/// <summary>
-/// Retrieves the associativity for an operator from the map.
-/// </summary>
-///
-/// <param name="operator">A terminal representing an operator.</param>
-///
-/// <returns>The associativity value of the operator.</returns>
-let getAssociativity operator =
-    (Map.find operator precedenceAssociativityMap) |> snd
-
-/// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
 /// expression into an operator stack and a number stack. Performs calculations depending on precedence and
 /// associativity rather than producing a reverse Polish notation output.
