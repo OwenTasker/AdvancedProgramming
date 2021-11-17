@@ -118,7 +118,7 @@ let WordCases =
         TestCaseData(["D"], [Word "D"])
         TestCaseData(["E"], [Word "E"])
         TestCaseData(["Word";"Word"], [Word "Word"; Word "Word"])
-        TestCaseData(["Word";"5";"Word"], [Word "Word"; Number 5.0; Word "Word"])
+        TestCaseData(["Word";"5";"Word"], [Word "Word"; Number 5.0; Times; Word "Word"])
     ]
 
 /// <summary>Test cases for number inputs to scan.</summary>
