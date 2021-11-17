@@ -25,7 +25,12 @@ type Dual =
     | Var of real : terminal * epsilon : float
     | Expr of real : terminal list *  epsilon : terminal list
     
-    // (a + be) + (c + de) = (a + c) + (b + d)e
+    /// <summary>Sums two Duals according to the identity (a + be) + (c + de) = (a + c) + (b + d)e</summary>
+    /// 
+    /// <param name="operand1">The left hand operand, corresponding to a + be</param>
+    /// <param name="operand2">The right hand operand, corresponding to c + de</param>
+    /// 
+    /// <returns>The result of addition of two Duals (a + c) + (b + d)e</returns>
     static member (+) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
         | Var (a, _), Const (c, _)
@@ -46,7 +51,14 @@ type Dual =
         | Expr (a, b), Expr (c, d) -> Expr (a @ Plus :: c,
                                             b @ Plus :: d)
     
-    //(a + be) - (c + de) = (a - c) + (b - d)e
+    /// <summary>
+    /// Subtracts one Dual from another according to the identity (a + be) - (c + de) = (a - c) + (b - d)e
+    /// </summary>
+    /// 
+    /// <param name="operand1">The left hand operand, corresponding to a + be</param>
+    /// <param name="operand2">The right hand operand, corresponding to c + de</param>
+    /// 
+    /// <returns>The result of subtraction of two Duals (a - c) + (b - d)e</returns>
     static member (-) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
         | Var (a, _), Const (c,_)
@@ -68,6 +80,12 @@ type Dual =
                                             b @ Minus :: d)
         
     // (a + be)(c + de) = ac + (ad + bc)e
+    /// <summary>Multiplies two Duals according to the identity (a + be)(c + de) = ac + (ad + bc)e</summary>
+    /// 
+    /// <param name="operand1">The left hand operand, corresponding to a + be</param>
+    /// <param name="operand2">The right hand operand, corresponding to c + de</param>
+    /// 
+    /// <returns>The result of multiplication of two Duals ac + (ad + bc)e</returns>
     static member (*) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
         | Var (a, _), Const (c,_) -> Expr ([a; Times; c;],
@@ -90,6 +108,14 @@ type Dual =
                                             Lpar :: a @ Rpar :: Times :: Lpar :: d @ Rpar :: Plus :: Lpar :: b @ Rpar :: Times :: Lpar :: c @ [Rpar])
         
     // (a + be)/(c + de) = a/c + ((bc - ad)/c^2)e
+    /// <summary>
+    /// Divides one Dual by another according to the identity (a + be)/(c + de) = a/c + ((bc - ad)/c^2)e
+    /// </summary>
+    /// 
+    /// <param name="operand1">The left hand operand, corresponding to a + be</param>
+    /// <param name="operand2">The right hand operand, corresponding to c + de</param>
+    /// 
+    /// <returns>The result of division of two Duals (a + be)/(c + de) = a/c + ((bc - ad)/c^2)e</returns>
     static member (/) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
         | Var (a, _), Const (c,_) -> Expr ([a; Divide; c;],
@@ -113,6 +139,14 @@ type Dual =
         
     // (a + be)^(c + de) = (a^c) + (c*a^(c-1))e
     // THIS IS CURRENTLY INCORRECTLY DEFINED, WHEN A VARIABLE IS AN EXPONENT IT SHOULDN'T FOLLOW THE POWER RULE.
+    /// <summary>
+    /// Raises one Dual to the power of another according to the identity (a + be) + (c + de) = (a + c) + (b + d)e
+    /// </summary>
+    /// 
+    /// <param name="operand1">The left hand operand, corresponding to a + be</param>
+    /// <param name="operand2">The right hand operand, corresponding to c + de</param>
+    /// 
+    /// <returns>The result of exponentiation of two Duals (a + be)^(c + de) = (a^c) + (c*a^(c-1))e</returns>
     static member Pow (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
         | Var (a, _), Const (c,_) -> Expr ([a; Exponent; c],
@@ -179,9 +213,7 @@ let performUnaryOperation operator operand =
 /// <param name="operator">A terminal representing an operator.</param>
 /// <param name="numStack">A stack of Duals.</param>
 ///
-/// <returns>
-/// The number stack with the outcome of the operation prepended.
-/// </returns>
+/// <returns>The number stack with the outcome of the operation prepended.</returns>
 let performOperation operator numStack =
     match operator with
     | Rpar 
