@@ -1,19 +1,33 @@
-﻿module Interpreter.Differentiate
-
-// http://www.ams.org/publicoutreach/feature-column/fc-2017-12#:~:text=Dual%20numbers%20and%20the%20forward,%3D0%20%CF%B5%202%20%3D%200%20.
-// https://www.infoq.com/presentations/automatic-differentiation/
+﻿/// <summary>
+/// Module containing functions for differentiation of expressions. Interprets values as dual numbers which are defined
+/// such that operations thereupon result in a derivative being calculated.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter</summary>
+/// </namespacedoc>
+module Interpreter.Differentiate
 
 open Interpreter.Util
 
+/// <summary>
+/// Type defining dual numbers as being of the form a + be where e^2 = 0. Operations are redefined under this type
+/// such that the e term gives the derivative of the real term.
+/// </summary>
+///
+/// <remarks>
+/// http://www.ams.org/publicoutreach/feature-column/fc-2017-12#:~:text=Dual%20numbers%20and%20the%20forward,%3D0%20%CF%B5%202%20%3D%200%20.
+/// https://www.infoq.com/presentations/automatic-differentiation/
+/// </remarks>
+/// 
 type Dual =
-    | Const of x : terminal * eps : float
-    | Var of x : terminal * eps : float
-    | Expr of x : terminal list *  eps : terminal list
-    | Op of terminal
+    | Const of real : terminal * epsilon : float
+    | Var of real : terminal * epsilon : float
+    | Expr of real : terminal list *  epsilon : terminal list
     
     // (a + be) + (c + de) = (a + c) + (b + d)e
-    static member (+) (a : Dual, b : Dual) =
-        match a, b with
+    static member (+) (operand1 : Dual, operand2 : Dual) =
+        match operand1, operand2 with
         | Var (a, _), Const (c, _)
         | Const (a, _), Var (c, _) -> Expr ([a; Plus; c;],
                                            [Number 1.0])
@@ -31,11 +45,10 @@ type Dual =
                                              b)
         | Expr (a, b), Expr (c, d) -> Expr (a @ Plus :: c,
                                             b @ Plus :: d)
-        | _ -> failwith "can't add op"
     
     //(a + be) - (c + de) = (a - c) + (b - d)e
-    static member (-) (a : Dual, b : Dual) =
-        match a, b with
+    static member (-) (operand1 : Dual, operand2 : Dual) =
+        match operand1, operand2 with
         | Var (a, _), Const (c,_)
         | Const (a, _), Var (c,_) -> Expr ([a; Minus; c;],
                                            [Number 1.0])
@@ -53,11 +66,10 @@ type Dual =
                                              b)
         | Expr (a, b), Expr (c, d) -> Expr (a @ Minus :: c,
                                             b @ Minus :: d)
-        | _ -> failwith "can't add op"
         
     // (a + be)(c + de) = ac + (ad + bc)e
-    static member (*) (a : Dual, b : Dual) =
-        match a, b with
+    static member (*) (operand1 : Dual, operand2 : Dual) =
+        match operand1, operand2 with
         | Var (a, _), Const (c,_) -> Expr ([a; Times; c;],
                                            [c])
         | Const (a, _), Var (c,_) -> Expr ([a; Times; c;],
@@ -76,11 +88,10 @@ type Dual =
                                              Lpar :: b @ Rpar :: Times :: [c])
         | Expr (a, b), Expr (c, d) -> Expr (Lpar :: a @ Rpar :: Times :: Lpar :: c @ [Rpar],
                                             Lpar :: a @ Rpar :: Times :: Lpar :: d @ Rpar :: Plus :: Lpar :: b @ Rpar :: Times :: Lpar :: c @ [Rpar])
-        | _ -> failwith "can't add op"
         
     // (a + be)/(c + de) = a/c + ((bc - ad)/c^2)e
-    static member (/) (a : Dual, b : Dual) =
-        match a, b with
+    static member (/) (operand1 : Dual, operand2 : Dual) =
+        match operand1, operand2 with
         | Var (a, _), Const (c,_) -> Expr ([a; Divide; c;],
                                            [c; Divide; c; Exponent; Number 2.0])
         | Const (a, _), Var (c,_) -> Expr ([a; Divide; c;],
@@ -99,11 +110,11 @@ type Dual =
                                              Lpar :: Lpar :: b @ [Rpar; Times; c; Rpar; Divide; c; Exponent; Number 2.0])
         | Expr (a, b), Expr (c, d) -> Expr (Lpar :: a @ Rpar :: Times :: Lpar :: c @ [Rpar],
                                             Lpar :: Lpar :: b @ [Rpar; Times; Lpar] @ c @ [Rpar; Minus; Lpar] @ a @ [Rpar; Times; Lpar] @ d @ [Rpar; Rpar; Divide; Lpar] @ c @ [Rpar; Exponent; Number 2.0])
-        | _ -> failwith "can't add op"
         
     // (a + be)^(c + de) = (a^c) + (c*a^(c-1))e
-    static member Pow (a : Dual, b : Dual) =
-        match a, b with
+    // THIS IS CURRENTLY INCORRECTLY DEFINED, WHEN A VARIABLE IS AN EXPONENT IT SHOULDN'T FOLLOW THE POWER RULE.
+    static member Pow (operand1 : Dual, operand2 : Dual) =
+        match operand1, operand2 with
         | Var (a, _), Const (c,_) -> Expr ([a; Exponent; c],
                                            [c; Times; a; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
         | Const (a, _), Var (c,_) -> Expr ([a; Exponent; c;],
@@ -115,62 +126,168 @@ type Dual =
         | Var (a, _), Expr (c, _) -> Expr (a :: Exponent :: Lpar :: c @ [Rpar],
                                            Lpar :: c @ [Rpar; Times; a; Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])
         | Expr (a, _), Var (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [c],
-                                           c :: Times :: Lpar :: a @ [Rpar; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
+                                           c :: Times :: a @ [Exponent; Lpar; c; Minus; Number 1.0; Rpar])
         | Const (a, _), Expr (c, _) -> Expr (a :: Exponent :: Lpar :: c @ [Rpar],
                                              Lpar :: c @ [Rpar; Times; a; Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])
         | Expr (a, _), Const (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [c],
-                                             c :: Times :: Lpar :: a @ [Rpar; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
+                                             c :: Times :: a @ [Exponent; Lpar; c; Minus; Number 1.0; Rpar])
         | Expr (a, _), Expr (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: Lpar :: c @ [Rpar],
-                                            Lpar :: c @ [Rpar; Times; Lpar] @ a @ [Rpar; Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])
-        | _ -> failwith "can't add op"    
-    
-    
-let rec replaceTerminals terminals out =
-    match terminals with
-    | [] -> List. rev out
-    | Word x :: tail
-    | UnaryPlus :: Word x :: tail ->  replaceTerminals tail (Var ((Word x), 1.0) :: out)
-    | Number f :: tail 
-    | UnaryPlus :: Number f :: tail -> replaceTerminals tail (Const ((Number f), 0.0) :: out)
-    | UnaryMinus :: Word x :: tail ->  replaceTerminals tail (Expr ([UnaryMinus; Word x], [Number 1.0]) :: out)
-    | UnaryMinus :: Number f :: tail -> replaceTerminals tail (Expr ([UnaryMinus; Number f], [Number 0.0]) :: out)
-    | x :: tail -> replaceTerminals tail (Op x :: out)
-    
-// Replace all terminals with Duals
-// Read Duals
-    // Match ops with logic to combine adjacent duals
-        // Does order of operations matter?
-            // Lets find out
-            
-let rec autoDiff (duals : Dual list) =
+                                            Lpar :: c @ [Rpar; Times;] @ a @ [Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])  
+
+/// <summary>
+/// Performs a binary operation given a terminal representing plus, minus, times, divide, or exponent
+/// and two operands as Duals.
+/// </summary>
+///
+/// <param name="operator">A terminal representing an operator.</param>
+/// <param name="op1">A Dual for the left side of the operation.</param>
+/// <param name="op2">A Dual for the right side of the operation.</param>
+///
+/// <returns>A Dual containing the result of the operation.</returns>
+let performBinaryOperation operator op1 op2 =
+    match operator with
+    | Plus -> op1 + op2
+    | Minus -> op1 - op2
+    | Times -> op1 * op2
+    | Divide -> op1 / op2
+    | Exponent -> op1 ** op2
+    | _ -> raise (CalculateError "Calculate Error: Invalid operator passed.")
+
+/// <summary>
+/// Performs a unary arithmetic operation given a terminal a unary operator and an Dual.
+/// </summary>
+/// 
+/// <param name="operator">A terminal representing an operator.</param>
+/// <param name="operand">A Dual containing the operand.</param>
+///
+/// <returns>A Dual containing the result of the operation.</returns>
+let performUnaryOperation operator operand =
+    match operator with
+    | UnaryMinus ->
+        match operand with
+        | Const (a, b)
+        | Var (a, b) -> Expr ([UnaryMinus; Lpar; a; Rpar], [UnaryMinus; Number b;])
+        | Expr (a, b) -> Expr (UnaryMinus :: Lpar :: a @ [Rpar], UnaryMinus :: Lpar :: b @ [Rpar])
+    | UnaryPlus -> operand
+    | _ -> raise (UnaryError "Unary Error: Invalid operator passed.")
+
+/// <summary>
+/// Reads the top of the operator stack and passes said operator and necessary operands from the number stack to
+/// the correct handling method. Prepends the result to the number stack.
+/// </summary>
+/// 
+/// <param name="operator">A terminal representing an operator.</param>
+/// <param name="numStack">A stack of Duals.</param>
+///
+/// <returns>
+/// The number stack with the outcome of the operation prepended.
+/// </returns>
+let performOperation operator numStack =
+    match operator with
+    | Rpar 
+    | Lpar -> raise (ExecError "Execution Error: Parenthesis encountered as an operator.")
+    | UnaryMinus
+    | UnaryPlus ->
+        match numStack with
+        | [] -> raise (ExecError "Execution Error: Unary operation called without any remaining operands.")
+        | [ b; ] ->
+            (performUnaryOperation operator b) :: []
+        | _ ->
+            match numStack.[0] with
+            | b ->
+                (performUnaryOperation operator b) :: numStack.[1 .. ]
+    | _ ->
+        match numStack with
+        | [] -> raise (ExecError "Execution Error: Binary operation called without any operands.")
+        | [ _; ] -> raise (ExecError "Execution Error: Binary operation called with only one operand.")
+        | [ b; c; ] ->
+            (performBinaryOperation operator c b) :: []
+        | _ ->
+            match numStack.[0], numStack.[1] with
+            | b, c ->
+                (performBinaryOperation operator c b) :: numStack.[2 .. ]
+
+/// <summary>
+/// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
+/// </summary>
+/// 
+/// <param name="opStack">A stack of terminals representing operators.</param>
+/// <param name="numStack">A stack of Number terminals.</param>
+///
+/// <returns>
+/// A tuple containing the operator stack with all elements up to and including the next left parenthesis popped and
+/// the number stack with the elements updated to represent the outcome of the bracketed operation.
+/// </returns>
+let rec evaluateBrackets opStack numStack =
+    match opStack with
+    | head :: tail ->
+        match head with
+        | Rpar -> raise (ExecError "Execution Error: Parenthesis encountered as an operator.")
+        | Lpar ->
+            match numStack with
+            | _ :: _ -> tail, numStack
+            | [] -> raise (ExecError "Execution Error: Empty number stack following evaluation of bracketed expression.")
+        | _ ->
+            evaluateBrackets tail (performOperation head numStack)
+    | [] -> failwith "attempting to execute empty opstack"
+
+/// <summary>
+/// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
+/// expression into an operator stack and a number stack. Performs calculations depending on precedence and
+/// associativity rather than producing a reverse Polish notation output.
+/// </summary>
+///
+/// <param name="duals">A queue of terminals representing an expression in infix notation.</param>
+/// <param name="opStack">A stack of operator terminals to compute the result of the infix expression.</param>
+/// <param name="numStack">A stack of Number terminals to compute the result of the infix expression.</param>
+///
+/// <returns>A Number terminal containing the outcome of the expression.</returns>
+let rec autoDifferentiate duals opStack numStack =
     match duals with
-    | [] -> failwith "empty duals"
-    | [ a ] ->
-        match a with
-        | Op _ -> failwith "Loose operator"
-        | Var (_, b)
-        | Const (_, b) -> [Number b]
-        | Expr (_, b) -> b
-    | [_; _;] -> failwith "malformed expression"
-    | a :: b :: c :: tail ->
-        match a, b, c with
-        | Var _ , Op operator, Var _ 
-        | Var _ , Op operator, Const _
-        | Const _ , Op operator, Var _ 
-        | Const _ , Op operator, Const _
-        | Var _ , Op operator, Expr _ 
-        | Expr _ , Op operator, Var _
-        | Const _ , Op operator, Expr _ 
-        | Expr _ , Op operator, Const _
-        | Expr _ , Op operator, Expr _ ->
-            match operator with
-            | Plus -> autoDiff ((a + c) :: tail)
-            | Minus -> autoDiff ((a - c) :: tail)
-            | Times -> autoDiff ((a * c) :: tail)
-            | Divide -> autoDiff ((a / c) :: tail)
-            | Exponent -> autoDiff ((a ** c) :: tail)
-            | _ -> failwith "malformed expression"
-        | _ -> failwith "malformed expression"
-        
-let differentiate terminals = autoDiff (replaceTerminals terminals []) 
+    | terminalHead :: terminalTail ->
+        match terminalHead with
+        | Word _ -> autoDifferentiate terminalTail opStack (Var (terminalHead, 1.0) :: numStack)
+        | Number _ -> autoDifferentiate terminalTail opStack (Const (terminalHead, 0.0) :: numStack)
+        | Lpar ->
+            autoDifferentiate terminalTail (terminalHead :: opStack) numStack
+        | Rpar ->
+            match evaluateBrackets opStack numStack with
+            opStack, numStack ->
+                autoDifferentiate terminalTail opStack numStack
+        | UnaryMinus
+        | UnaryPlus  
+        | Divide
+        | Times
+        | Minus
+        | Plus
+        | Exponent ->
+            match opStack with
+            | [] ->
+                autoDifferentiate terminalTail (terminalHead :: opStack) numStack
+            | opHead :: opTail ->
+                match opHead with
+                | Lpar ->
+                    autoDifferentiate terminalTail (terminalHead :: opStack) numStack
+                | _ ->
+                    if (getPrecedence terminalHead < getPrecedence opHead
+                        || getPrecedence terminalHead = getPrecedence opHead
+                           && getAssociativity terminalHead = "l")
+                    then autoDifferentiate duals opTail (performOperation opHead numStack)
+                    else autoDifferentiate terminalTail (terminalHead :: opStack) numStack
+        | _ -> raise (ExecError "Execution Error: Invalid terminal passed to reduce.")
+    | [] ->
+        match opStack with
+        | [] ->
+            match numStack with
+            | [ a ] ->
+                match a with
+                | Var (_, b)
+                | Const (_, b) -> [Number b]
+                | Expr (_, b) -> b
+            | _ -> raise (ExecError "Execution Error: Reduction did not result in exactly one terminal in the number
+                          stack")
+        | head :: tail ->
+            autoDifferentiate duals tail (performOperation head numStack)
+      
+let differentiate terminals = autoDifferentiate terminals [] []
     
