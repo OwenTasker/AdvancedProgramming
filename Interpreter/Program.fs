@@ -26,7 +26,7 @@ let interpret (input) =
 [<EntryPoint>]
 let main args =
     
-    let rawInput = ["x"; "^"; "2"]
+    let rawInput = ["x"; "^"; "2"; "+"; "x"; "^"; "2"]
     let lexedVal = tokenize rawInput
     let scannedVals = scan lexedVal []
     //let parsed = expression scannedVals
@@ -34,6 +34,6 @@ let main args =
     Console.WriteLine $"%A{rawInput}"
     Console.WriteLine $"%A{lexedVal}"
     Console.WriteLine $"%A{scannedVals}"
-    Console.WriteLine (sprintf $"{differentiate scannedVals}")
+    Console.WriteLine (sprintf "%A" (differentiate scannedVals))
         
     0
