@@ -179,7 +179,10 @@ let rec scan tokens output  =
         | "->" -> scan tokensTail (Assign :: output)
         | "," -> scan tokensTail (Comma :: output)
         | FunctionMatch _ -> scan tokensTail (Function tokenHead :: output)
-        | IntegerOrFloatMatch _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
+        | IntegerOrFloatMatch _ ->
+            match tokensTail.[0] with
+            | AlphabetMatch _ -> scan ("*" :: tokensTail) (Number(Double.Parse tokenHead) :: output)
+            | _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
         | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
         | _ -> raise (ScanError "Scan Error: Malformed Tokens") 
 
