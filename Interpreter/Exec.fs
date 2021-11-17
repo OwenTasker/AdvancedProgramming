@@ -264,15 +264,14 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
 /// <param name="env">The current MyMathsPal execution environment.</param>
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
-let exec terminals (env: Map<string, terminal list>) =
+let rec exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->
-        if closed tail env
-        then
-            let result = [reduce tail env]
-            //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
-            result, (env.Add(x, result) |> Map.toSeq |> dict)
-        else terminals, (env.Add(x, tail) |> Map.toSeq |> dict) 
+        match tail with
+        | Word _ :: Assign :: _ -> failwith "can't assign an assign"
+        | _ ->
+            let result, _ = exec tail env
+            terminals, (env.Add(x, result) |> Map.toSeq |> dict) 
     | Word x :: Lpar :: tail ->
         //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
         let newEnv = setArguments tail Map.empty
@@ -288,8 +287,13 @@ let exec terminals (env: Map<string, terminal list>) =
             | Lpar, Rpar ->
                 let assignment, expression = extractExpression tail.[1..] []
                 if assignment <> [] then
-                    let newEnv = setArguments assignment env
-                    [reduce (differentiate expression ) newEnv], (env |> Map.toSeq |> dict)
+                    if (List.filter (fun x -> x = Comma) assignment).Length = 0
+                    then
+                        let newEnv = setArguments assignment env
+                        if closed expression newEnv
+                        then [reduce (differentiate expression ) newEnv], (env |> Map.toSeq |> dict)
+                        else failwith "variable undefined"
+                    else failwith "too many assignments"
                 else differentiate expression, (env |> Map.toSeq |> dict)
             | _ -> failwith "malformed expression"
         | _ -> failwith "malformed expression"
