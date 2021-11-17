@@ -216,7 +216,13 @@ let rec createTerminalListUpToComma inList outList =
     | Comma :: inTail -> (inTail, List.rev outList)
     | any :: inTail -> createTerminalListUpToComma inTail (any :: outList)
     | [] -> raise (ExecError "Execution Error: Function call missing right parenthesis.")
-
+    
+let rec extractExpression inList outList =
+    match inList with
+    | [ Rpar ] -> ([], List.rev outList)
+    | Comma :: inTail -> (inTail, List.rev outList)
+    | any :: inTail -> extractExpression inTail (any :: outList)
+    | [] -> raise (ExecError "Execution Error: Function call missing right parenthesis.")
 /// <summary>
 /// Creates an environment from a list of terminals representing Comma separate assignments.
 /// </summary>
@@ -265,7 +271,12 @@ let exec terminals (env: Map<string, terminal list>) =
         match a with
         | "differentiate" ->
             match tail.[0], tail.[tail.Length-1] with
-            | Lpar, Rpar -> differentiate tail.[1..(tail.Length-2)], (env |> Map.toSeq |> dict)
+            | Lpar, Rpar ->
+                let assignment, expression = extractExpression tail.[1..] []
+                if assignment <> [] then
+                    let newEnv = setArguments assignment env
+                    [reduce (differentiate expression ) newEnv], (env |> Map.toSeq |> dict)
+                else differentiate expression, (env |> Map.toSeq |> dict)
             | _ -> failwith "malformed expression"
         | _ -> failwith "malformed expression"
     | _ ->
