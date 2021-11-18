@@ -52,7 +52,8 @@
             <Label x:Name="consoleLabel" Content="Console" Margin="25,0,0,0" Height="35" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" FontFamily="Courier New" FontWeight="Bold" FontSize="16" Foreground="Black"/>
             <TextBox x:Name="consoleText" Text=">>" TextWrapping="NoWrap" Margin="25,25,250,80" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="true" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
 
-            <TextBox x:Name="inputText" Text="Enter query here..." Height="30" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalAlignment="Bottom" Margin="25,0,346,25" GotFocus="InputTextBoxRemovePrompt" LostFocus="InputTextBoxAddPrompt" KeyDown="EnterKeyClick" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
+            <TextBox x:Name="inputText" Height="30" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalAlignment="Bottom" Margin="25,0,346,25" GotFocus="InputTextBoxRemovePrompt" LostFocus="InputTextBoxAddPrompt" KeyDown="EnterKeyClick" TextChanged="inputText_TextChanged" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
+            <ListBox x:Name="suggestionDropDown" SelectionChanged="suggestionDropDown_SelectionChanged" MinHeight="25" MaxHeight="150" Background="AliceBlue" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25, 0, 346, 55" FontFamily="Courier New"/>
             <Button x:Name="enterButton" Content="Enter" Height="30" Width="86" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,250,25" Click="EnterButtonPress" FontSize="16" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" FontFamily="Courier New" FontWeight="Bold" >
                 <Button.Resources>
                     <Style TargetType="Border">

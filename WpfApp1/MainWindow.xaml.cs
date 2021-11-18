@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Interpreter;
 using Microsoft.FSharp.Collections;
@@ -27,6 +28,8 @@ namespace WpfApp1
         private IDictionary<string, FSharpList<Util.terminal>> _environment =
             new Dictionary<string, FSharpList<Util.terminal>>();
 
+        private Trie functions;
+        
         /// <summary>
         /// Class to represent a user defined variable.
         /// </summary>
@@ -47,7 +50,11 @@ namespace WpfApp1
         /// </summary>
         public MainWindow()
         {
+            functions = new Trie();
+
             InitializeComponent();
+            
+            inputText.Text = "Enter query here...";
         }
 
         /// <summary>
@@ -332,6 +339,49 @@ namespace WpfApp1
             consoleText.Text = ">>";
             _environment = new Dictionary<string, FSharpList<Util.terminal>>();
             UpdateVariableWindow();
+        }
+        
+        // https://www.c-sharpcorner.com/uploadfile/dpatra/autocomplete-textbox-in-wpf/
+        private void inputText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string input = inputText.Text;
+            HashSet<string> matches = functions.Contains(input);
+
+            if (input.Equals("Enter query here...") || input.Equals(""))
+            {
+                suggestionDropDown.Visibility = Visibility.Collapsed;
+                suggestionDropDown.ItemsSource = new List<string>(); 
+            }
+            else if(matches != null)
+            {
+                foreach (string s in matches)
+                {
+                    suggestionDropDown.ItemsSource = matches.ToList();
+                    suggestionDropDown.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                suggestionDropDown.Visibility = Visibility.Collapsed;
+                suggestionDropDown.ItemsSource = new List<string>();;
+            }
+        }
+
+        //https://www.c-sharpcorner.com/uploadfile/dpatra/autocomplete-textbox-in-wpf/
+        private void suggestionDropDown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (suggestionDropDown.ItemsSource != null)
+            {
+                suggestionDropDown.Visibility = Visibility.Collapsed;
+                inputText.TextChanged -= new TextChangedEventHandler(inputText_TextChanged);
+
+                if (suggestionDropDown.SelectedIndex != -1)
+                {
+                    inputText.Text = suggestionDropDown.SelectedItem.ToString();
+                }
+
+                inputText.TextChanged += new TextChangedEventHandler(inputText_TextChanged);
+            }
         }
     }
 }
