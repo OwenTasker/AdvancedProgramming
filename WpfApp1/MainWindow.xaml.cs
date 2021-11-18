@@ -19,6 +19,7 @@ namespace WpfApp1
     /// https://stackoverflow.com/questions/19975617/press-enter-in-textbox-to-and-execute-button-command
     /// https://stackoverflow.com/questions/14598024/make-textbox-uneditable
     /// https://stackoverflow.com/questions/18260702/textbox-appendtext-not-autoscrolling
+    /// https://www.c-sharpcorner.com/uploadfile/dpatra/autocomplete-textbox-in-wpf/
     /// </summary>
     public partial class MainWindow
     {
@@ -28,6 +29,9 @@ namespace WpfApp1
         private IDictionary<string, FSharpList<Util.terminal>> _environment =
             new Dictionary<string, FSharpList<Util.terminal>>();
 
+        /// <summary>
+        /// Collection of mathematical functions.
+        /// </summary>
         private Trie functions;
         
         /// <summary>
@@ -50,11 +54,11 @@ namespace WpfApp1
         /// </summary>
         public MainWindow()
         {
-            functions = new Trie();
+            functions = new Trie(); // initialise function collection
 
             InitializeComponent();
             
-            inputText.Text = "Enter query here...";
+            inputText.Text = "Enter query here..."; // initialise prompt text for input terminal
         }
 
         /// <summary>
@@ -341,7 +345,9 @@ namespace WpfApp1
             UpdateVariableWindow();
         }
         
-        // https://www.c-sharpcorner.com/uploadfile/dpatra/autocomplete-textbox-in-wpf/
+        /// <summary>
+        /// Method to update function suggestion dropdown in response to user input.
+        /// </summary>
         private void inputText_TextChanged(object sender, TextChangedEventArgs e)
         {
             string input = inputText.Text;
@@ -366,13 +372,16 @@ namespace WpfApp1
                 suggestionDropDown.ItemsSource = new List<string>();;
             }
         }
-
-        //https://www.c-sharpcorner.com/uploadfile/dpatra/autocomplete-textbox-in-wpf/
+        
+        /// <summary>
+        /// Method to update input terminal with selection from function suggestion dropdown.
+        /// </summary>
         private void suggestionDropDown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (suggestionDropDown.ItemsSource != null)
             {
                 suggestionDropDown.Visibility = Visibility.Collapsed;
+                // remove event handler for updating suggestions
                 inputText.TextChanged -= new TextChangedEventHandler(inputText_TextChanged);
 
                 if (suggestionDropDown.SelectedIndex != -1)
@@ -380,6 +389,7 @@ namespace WpfApp1
                     inputText.Text = suggestionDropDown.SelectedItem.ToString();
                 }
 
+                // readd event handler for updating suggestions
                 inputText.TextChanged += new TextChangedEventHandler(inputText_TextChanged);
             }
         }
