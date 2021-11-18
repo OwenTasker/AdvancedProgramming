@@ -1,13 +1,13 @@
-// Learn more about F# at http://docs.microsoft.com/dotnet/fsharp
-
 open System
 
-// Define a function to construct a message to print
-let from whom =
-    sprintf "from %s" whom
+exception InvalidArgumentException of string
+exception DomainException of string
 
-[<EntryPoint>]
-let main argv =
-    let message = from "F#" // Call the function
-    printfn "Hello world %s" message
-    0 // return an integer exit code
+//Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
+let rec LogErecursive (input:float) (increment:float) (sum:float) =
+    match increment with
+    | 200.0 -> sum
+    | _  -> LogErecursive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
+
+let LogE input = 
+    LogErecursive input 1.0 0.0
