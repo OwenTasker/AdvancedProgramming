@@ -56,7 +56,18 @@ namespace WpfApp1
         /// </summary>
         public MainWindow()
         {
-            // initialise function collection
+            InitialiseFunctionTrie();
+            
+            InitializeComponent();
+            
+            inputText.Text = "Enter query here..."; // initialise prompt text for input terminal
+        }
+
+        /// <summary>
+        /// Method to initialise trie used for function suggestion dropdown.
+        /// </summary>
+        private void InitialiseFunctionTrie()
+        {
             functions = new Trie();
 
             Dictionary<string, string> fsfunctions = Util.functions.ToDictionary(t => t.Item1, t => t.Item2);
@@ -66,10 +77,6 @@ namespace WpfApp1
                 string s = p.Key + " : " + p.Value;
                 functions.Add(s);
             }
-            
-            InitializeComponent();
-            
-            inputText.Text = "Enter query here..."; // initialise prompt text for input terminal
         }
 
         /// <summary>
