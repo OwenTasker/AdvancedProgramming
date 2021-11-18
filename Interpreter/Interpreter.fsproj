@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="MathematicalFunctions.fs" />
     <Compile Include="Util.fs" />
     <Compile Include="Lexer.fs" />
     <Compile Include="Parser.fs" />

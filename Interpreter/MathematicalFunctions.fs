@@ -1,4 +1,4 @@
-open System
+﻿module Interpreter.MathematicalFunctions
 
 exception InvalidArgumentException of string
 exception DomainException of string
@@ -9,8 +9,11 @@ let rec LogE (input:float) (increment:float) (sum:float) =
     | 200.0 -> sum
     | _  -> LogE input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
 
-let LogE' input = 
-    LogE input 1.0 0.0
+let LogE' input =
+    if input = 0.0 then
+        raise (InvalidArgumentException "")
+    else
+        LogE input 1.0 0.0
     
 let formNewBaseRuleFraction numerator denominator =
     LogE' numerator / LogE' denominator
@@ -23,8 +26,3 @@ let Log10 input =
     
 let LogX newBase input =
     formNewBaseRuleFraction input newBase
-    
-Console.WriteLine (LogE' 10.0)
-Console.WriteLine (Log2 10.0)
-Console.WriteLine (Log10 10.0)
-Console.WriteLine (LogX 3.0 10.0)
