@@ -147,18 +147,23 @@ namespace WpfApp1
             {
                 for (var i = 0; i < 750; i++)
                 {
+                    Console.WriteLine(yArray[i]);
                     //if y=0 exists exactly
                     if (yArray[i] == 0.0)
                     {
+                        Console.WriteLine("0 found");
                         yZero = i;
                         break;
                     }
                     //if y=0 is skipped, set to line below
                     if (!(yArray[i] > 0.0)) continue;
+                    //Console.WriteLine("0 skipped");
                     yZero = i - 1;
                     break;
                 }
             }
+            
+            Console.WriteLine("yZero: " + yZero);
             
             //Scale y=0 line to image size
             var temp = yZero / 750.0;
