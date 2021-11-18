@@ -20,6 +20,8 @@ namespace WpfApp1
     /// https://stackoverflow.com/questions/14598024/make-textbox-uneditable
     /// https://stackoverflow.com/questions/18260702/textbox-appendtext-not-autoscrolling
     /// https://www.c-sharpcorner.com/uploadfile/dpatra/autocomplete-textbox-in-wpf/
+    /// https://stackoverflow.com/questions/13180486/convert-list-of-tuples-to-dictionary
+    /// https://stackoverflow.com/questions/141088/what-is-the-best-way-to-iterate-over-a-dictionary
     /// </summary>
     public partial class MainWindow
     {
@@ -54,8 +56,17 @@ namespace WpfApp1
         /// </summary>
         public MainWindow()
         {
-            functions = new Trie(); // initialise function collection
+            // initialise function collection
+            functions = new Trie();
 
+            Dictionary<string, string> fsfunctions = Util.functions.ToDictionary(t => t.Item1, t => t.Item2);
+
+            foreach (KeyValuePair<string, string> p in fsfunctions)
+            {
+                string s = p.Key + " : " + p.Value;
+                functions.Add(s);
+            }
+            
             InitializeComponent();
             
             inputText.Text = "Enter query here..."; // initialise prompt text for input terminal
@@ -386,7 +397,9 @@ namespace WpfApp1
 
                 if (suggestionDropDown.SelectedIndex != -1)
                 {
-                    inputText.Text = suggestionDropDown.SelectedItem.ToString();
+                    inputText.Text = suggestionDropDown.SelectedItem.ToString().Split(" ")[0] + "()";
+                    inputText.Focus();
+                    inputText.CaretIndex = inputText.Text.Length - 1;
                 }
 
                 // readd event handler for updating suggestions
