@@ -10,13 +10,7 @@ namespace WpfApp1
     public class Grapher
     {
         
-        /// <summary>
-        /// Execution environment for this session.
-        /// </summary>
-        private static IDictionary<string, FSharpList<Util.terminal>> _environment =
-            new Dictionary<string, FSharpList<Util.terminal>>();
-        
-        private static IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function)
+        private static IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function, IDictionary<string, FSharpList<Util.terminal>> _environment)
         {
             var funcStrings = function.Select(s => s.ToString()).ToList();
             
@@ -38,14 +32,14 @@ namespace WpfApp1
             return tempDict;
         }
 
-        public static double[] ComputeYArray(IReadOnlyList<string> trimmedArgsArray, IReadOnlyList<double> xArray)
+        public static double[] ComputeYArray(IReadOnlyList<string> trimmedArgsArray, IReadOnlyList<double> xArray, IDictionary<string, FSharpList<Util.terminal>> _environment)
         {
             var yArray = new double[750];
 
             // Get variables from function
-            var openVars = GetOpenVariables(trimmedArgsArray[0]);
+            var openVars = GetOpenVariables(trimmedArgsArray[0], _environment);
 
-            var environment = CreateExecutionEnvironment(trimmedArgsArray[0]);
+            var environment = CreateExecutionEnvironment(trimmedArgsArray[0], _environment);
 
             for (var i = 0; i < 750; i++)
             {
@@ -92,7 +86,7 @@ namespace WpfApp1
             return xArray;
         }
 
-        private static List<string> GetOpenVariables(string function)
+        private static List<string> GetOpenVariables(string function, IDictionary<string, FSharpList<Util.terminal>> _environment)
         {
             var variables = Regex.Replace(
                 function, "[^a-zA-Z]", "|").Split("|").Where(

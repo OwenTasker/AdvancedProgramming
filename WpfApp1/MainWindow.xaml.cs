@@ -77,7 +77,7 @@ namespace WpfApp1
                     var trimmedArgsArray = Grapher.TrimmedArgsArray(inputText.Text);
 
                     var xArray = Grapher.ComputeXArray(trimmedArgsArray);
-                    var yArray = Grapher.ComputeYArray(trimmedArgsArray, xArray);
+                    var yArray = Grapher.ComputeYArray(trimmedArgsArray, xArray, _environment);
                     
                     var graphPopUp = new GraphPopUp(xArray, yArray);
                     graphPopUp.Show();
