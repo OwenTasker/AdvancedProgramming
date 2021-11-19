@@ -19,6 +19,9 @@ exception CalculateError of string
 exception UnaryError of string
 /// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
 exception ExecError of string
+/// <summary>Exception thrown when an error is encountered while executing a function, used specifically for enforcing
+/// more stringent parameters</summary>
+exception InvalidArgumentError of string
 
 /// <summary>A type representing terminal characters accepted by the Interpreter.</summary>
 type terminal =
