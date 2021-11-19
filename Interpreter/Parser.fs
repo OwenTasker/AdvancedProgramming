@@ -73,7 +73,15 @@ and factor terminals =
         | Number _ :: _
         | Word _ :: _ -> raise (ParseError "Parse Error: Word Then Word not allowed")
         | _ -> terminalsTail
-    | Function _ :: Lpar :: terminalsTail
+    | Function _ :: Lpar :: terminalsTail ->
+        match expression terminalsTail with
+        | Rpar :: terminalsTail ->
+            match terminalsTail with
+            | Number _ :: _
+            | Word _ :: _ -> raise (ParseError "Parse Error: Missing Operator")
+            | _ -> terminalsTail
+        | Comma :: terminalsTailTail -> arguments terminalsTailTail
+        | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
@@ -87,8 +95,7 @@ and factor terminals =
 and arguments terminals =
     match terminals with
     | Word _ :: Assign :: tail ->
-        let result = expression tail
-        arguments result
+        expression tail |> arguments 
     | Comma :: tail ->
         arguments tail
     | Rpar :: tail -> tail

@@ -122,9 +122,9 @@ namespace WpfApp1
                 {
                     consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    consoleText.AppendText("Expression cannot be executed\n");
+                    consoleText.AppendText("Expression cannot be executed\n" + ex.Message);
                 }
             }
         }

@@ -8,6 +8,7 @@
 module Interpreter.Exec
 
 open Interpreter.Util
+open Interpreter.Differentiate
 
 // http://mathcenter.oxford.emory.edu/site/cs171/shuntingYardAlgorithm/
 
@@ -28,10 +29,10 @@ let performBinaryOperation operator op1 op2 =
     | Times -> Number (op1 * op2)
     | Divide ->
         match op2 with
-        | 0.0 -> raise (CalculateError "Calculate Error: Divide by zero, this operation is undefined.")
+        | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero, this operation is undefined." |> raise
         | _ -> Number (op1 / op2)
     | Exponent -> Number (op1 ** op2)
-    | _ -> raise (CalculateError "Calculate Error: Invalid operator passed.")
+    | _ -> CalculateError "Calculate Error: Invalid operator passed." |> raise
 
 /// <summary>
 /// Performs a unary arithmetic operation given terminals representing a unary operator and an operand.
@@ -45,7 +46,7 @@ let performUnaryOperation operator operand =
     match operator with
     | UnaryMinus -> Number -operand
     | UnaryPlus -> Number operand
-    | _ -> raise (UnaryError "Unary Error: Invalid operator passed.")
+    | _ -> UnaryError "Unary Error: Invalid operator passed." |> raise
 
 /// <summary>
 /// Reads the top of the operator stack and passes said operator and necessary operands from the number stack to
@@ -61,29 +62,25 @@ let performUnaryOperation operator operand =
 let performOperation operator numStack =
     match operator with
     | Rpar 
-    | Lpar -> raise (ExecError "Execution Error: Parenthesis encountered as an operator.")
+    | Lpar -> ExecError "Execution Error: Parenthesis encountered as an operator." |> raise
     | UnaryMinus
     | UnaryPlus ->
         match numStack with
-        | [] -> raise (ExecError "Execution Error: Unary operation called without any remaining operands.")
-        | [ Number f; ] ->
-            (performUnaryOperation operator f) :: []
+        | [] -> ExecError "Execution Error: Unary operation called without any remaining operands." |> raise
+        | [ Number f; ] -> (performUnaryOperation operator f) :: []
         | _ ->
             match numStack.[0] with
-            | Number f ->
-                (performUnaryOperation operator f) :: numStack.[1 .. ]
-            | _ -> raise (ExecError "Execution Error: Number stack contains non-number tokens.")
+            | Number f -> (performUnaryOperation operator f) :: numStack.[1 .. ]
+            | _ -> ExecError "Execution Error: Number stack contains non-number tokens." |> raise
     | _ ->
         match numStack with
-        | [] -> raise (ExecError "Execution Error: Binary operation called without any operands.")
-        | [ Number _; ] -> raise (ExecError "Execution Error: Binary operation called with only one operand.")
-        | [ Number f; Number g; ] ->
-            (performBinaryOperation operator g f) :: []
+        | [] -> ExecError "Execution Error: Binary operation called without any operands." |> raise
+        | [ Number _; ] -> ExecError "Execution Error: Binary operation called with only one operand." |> raise
+        | [ Number f; Number g; ] -> (performBinaryOperation operator g f) :: []
         | _ ->
             match numStack.[0], numStack.[1] with
-            | Number f, Number g ->
-                (performBinaryOperation operator g f) :: numStack.[2 .. ]
-            | _ -> raise (ExecError "Execution Error: Number stack contains non-number tokens.")
+            | Number f, Number g -> (performBinaryOperation operator g f) :: numStack.[2 .. ]
+            | _ -> ExecError "Execution Error: Number stack contains non-number tokens." |> raise
 
 /// <summary>
 /// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
@@ -99,46 +96,12 @@ let performOperation operator numStack =
 let rec evaluateBrackets opStack numStack =
     match opStack with
     | []
-    | Rpar :: _ -> raise (ExecError "Execution Error: Parenthesis encountered as an operator.")
+    | Rpar :: _ -> ExecError "Execution Error: Parenthesis encountered as an operator." |> raise
     | Lpar :: tail ->
         match numStack with
         | _ :: _ -> tail, numStack
-        | [] -> raise (ExecError "Execution Error: Empty number stack following evaluation of bracketed expression.")
-    | head :: tail ->
-        evaluateBrackets tail (performOperation head numStack)
-
-/// <summary>
-/// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
-/// performBinaryOperation functions.
-/// </summary>
-let precedenceAssociativityMap =
-    Map [(UnaryMinus, (4, "r"))
-         (UnaryPlus, (4, "r"))
-         (Exponent, (3, "r"))
-         (Times, (2, "l"))
-         (Divide, (2, "l"))
-         (Plus, (1, "l"))
-         (Minus, (1, "l"))]
-
-/// <summary>
-/// Retrieves the precedence for an operator from the map.
-/// </summary>
-/// 
-/// <param name="operator">A terminal representing an operator.</param>
-///
-/// <returns>The precedence value of the operator.</returns>
-let getPrecedence operator =
-    (Map.find operator precedenceAssociativityMap) |> fst
-
-/// <summary>
-/// Retrieves the associativity for an operator from the map.
-/// </summary>
-///
-/// <param name="operator">A terminal representing an operator.</param>
-///
-/// <returns>The associativity value of the operator.</returns>
-let getAssociativity operator =
-    (Map.find operator precedenceAssociativityMap) |> snd
+        | [] -> ExecError "Execution Error: Empty number stack following evaluation of bracketed expression." |> raise
+    | head :: tail -> evaluateBrackets tail (performOperation head numStack)
 
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
@@ -156,18 +119,15 @@ let rec reduceRecursive terminals opStack numStack (env: Map<string, terminal li
     match terminals with
     | terminalHead :: terminalTail ->
         match terminalHead with
-        | Number _ ->
-            reduceRecursive terminalTail opStack (terminalHead :: numStack) env
+        | Number _ -> reduceRecursive terminalTail opStack (terminalHead :: numStack) env
         | Word x ->
             if env.ContainsKey x
             then reduceRecursive terminalTail opStack (reduce env.[x] env :: numStack) env
-            else raise (ExecError "Execution Error: Expression with unbound variables passed to reduce.")
-        | Lpar ->
-            reduceRecursive terminalTail (terminalHead :: opStack) numStack env
+            else ExecError "Execution Error: Expression with unbound variables passed to reduce." |> raise
+        | Lpar -> reduceRecursive terminalTail (terminalHead :: opStack) numStack env
         | Rpar ->
             match evaluateBrackets opStack numStack with
-            opStack, numStack ->
-                reduceRecursive terminalTail opStack numStack env
+            | opStack, numStack -> reduceRecursive terminalTail opStack numStack env
         | UnaryMinus
         | UnaryPlus  
         | Divide
@@ -176,30 +136,26 @@ let rec reduceRecursive terminals opStack numStack (env: Map<string, terminal li
         | Plus
         | Exponent ->
             match opStack with
-            | [] ->
-                reduceRecursive terminalTail (terminalHead :: opStack) numStack env
+            | [] -> reduceRecursive terminalTail (terminalHead :: opStack) numStack env
             | opHead :: opTail ->
                 match opHead with
-                | Lpar ->
-                    reduceRecursive terminalTail (terminalHead :: opStack) numStack env
+                | Lpar -> reduceRecursive terminalTail (terminalHead :: opStack) numStack env
                 | _ ->
                     if (getPrecedence terminalHead < getPrecedence opHead
                         || getPrecedence terminalHead = getPrecedence opHead
                            && getAssociativity terminalHead = "l")
                     then reduceRecursive terminals opTail (performOperation opHead numStack) env
                     else reduceRecursive terminalTail (terminalHead :: opStack) numStack env
-        | _ -> raise (ExecError "Execution Error: Invalid terminal passed to reduce.")
+        | _ -> ExecError "Execution Error: Invalid terminal passed to reduce." |> raise
     | [] ->
         match opStack with
         | [] ->
             match numStack with
             | [ _ ] -> numStack.[0]
-            | _ -> raise (ExecError "Execution Error: Reduction did not result in exactly one terminal in the number
-                          stack")
-        | Lpar :: _ ->
-            raise (ExecError "Execution Error: Unmatched left parenthesis.")
-        | head :: tail ->
-            reduceRecursive terminals tail (performOperation head numStack) env
+            | _ -> ExecError "Execution Error: Reduction did not result in exactly one terminal in the number
+                              stack" |> raise
+        | Lpar :: _ -> ExecError "Execution Error: Unmatched left parenthesis." |> raise
+        | head :: tail -> reduceRecursive terminals tail (performOperation head numStack) env
 
 /// <summary>
 /// Wrapper for reduceRecursive to call it with empty operator and number stacks.
@@ -242,13 +198,33 @@ let rec closed terminals (env: Map<string, terminal list>) =
 /// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
 /// the output list.
 /// </returns>
-let rec createTerminalListUpToComma inList outList =
+let rec extractAssignment inList outList =
     match inList with
     | Rpar :: _ -> (inList, List.rev outList)
     | Comma :: inTail -> (inTail, List.rev outList)
-    | any :: inTail -> createTerminalListUpToComma inTail (any :: outList)
-    | [] -> raise (ExecError "Execution Error: Function call missing right parenthesis.")
+    | any :: inTail -> extractAssignment inTail (any :: outList)
+    | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
 
+/// <summary>
+/// Reads a list of terminals, prepending them to an output list, up to a Comma or final Rpar terminal
+/// </summary>
+///
+/// <param name="inList">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="outList">A list to contain a single expression taken from the input list.</param>
+///
+/// <returns>
+/// A tuple containing the input list and the output list with the leftmost expression moved from the input list to
+/// the output list.
+/// </returns>
+let rec extractExpression inList outList =
+    match inList with
+    | [ Rpar ] -> ([], List.rev outList)
+    | Comma :: inTail -> (inTail, List.rev outList)
+    | any :: inTail -> extractExpression inTail (any :: outList)
+    | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
+    
 /// <summary>
 /// Creates an environment from a list of terminals representing Comma separate assignments.
 /// </summary>
@@ -263,9 +239,9 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
     match terminals with
     | Rpar :: _ -> env
     | Word x :: Assign :: tail ->
-        match createTerminalListUpToComma tail [] with
+        match extractAssignment tail [] with
         | a, b -> setArguments a (env.Add(x, [reduce b env] ))
-    | _ -> raise (ExecError "Execution Error: Function call contains non-assignment expression.")
+    | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
 
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
@@ -276,15 +252,14 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
 /// <param name="env">The current MyMathsPal execution environment.</param>
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
-let exec terminals (env: Map<string, terminal list>) =
+let rec exec terminals (env: Map<string, terminal list>) =
     match terminals with
     | Word x :: Assign :: tail ->
-        if closed tail env
-        then
-            let result = [reduce tail env]
-            //https://stackoverflow.com/questions/27109142/f-map-to-c-sharp-dictionary/27109303
-            result, (env.Add(x, result) |> Map.toSeq |> dict)
-        else terminals, (env.Add(x, tail) |> Map.toSeq |> dict) 
+        match tail with
+        | Word _ :: Assign :: _ -> ExecError "Execution Error: Malformed expression; an assignment may not be assigned to an assignment" |> raise
+        | _ ->
+            let result, _ = exec tail env
+            terminals, (env.Add(x, result) |> Map.toSeq |> dict) 
     | Word x :: Lpar :: tail ->
         //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
         let newEnv = setArguments tail Map.empty
@@ -292,7 +267,24 @@ let exec terminals (env: Map<string, terminal list>) =
         
         if closed [Word x] combinedEnv
         then [reduce [Word x] combinedEnv], (env |> Map.toSeq |> dict)
-        else raise (ExecError "Execution Error: Assignments given in function call do not close expression.")
+        else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
+    | Function a :: tail ->
+        match a with
+        | "differentiate" ->
+            match tail.[0], tail.[tail.Length-1] with
+            | Lpar, Rpar ->
+                let assignment, expression = extractExpression tail.[1..] []
+                if assignment <> [] then
+                    if (List.filter (fun x -> x = Comma) assignment).Length = 0
+                    then
+                        let newEnv = setArguments assignment env
+                        if closed expression newEnv
+                        then [reduce (differentiate expression) newEnv], (env |> Map.toSeq |> dict)
+                        else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
+                    else ExecError "" |> raise
+                else differentiate expression, (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Malformed expression; missing parenthesis enclosing expression" |> raise
+        | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->
         if closed terminals env
         then [reduce terminals env], (env |> Map.toSeq |> dict)
