@@ -6,12 +6,12 @@ open Interpreter.Util
 //Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
 let rec LogEGreaterThanZeroPointFive (input:float) (increment:float) (sum:float) =
     match increment with
-    | 200.0 -> sum
+    | 2000.0 -> sum
     | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
 
 let rec LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:float) =
     match increment with
-    | 200.0 -> sum
+    | 2000.0 -> sum
     | _ ->
         match (increment%2.0) with
         | 0.0 -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum-(((input-1.0)**increment)/increment)
