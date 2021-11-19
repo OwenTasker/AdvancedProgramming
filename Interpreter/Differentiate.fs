@@ -185,7 +185,7 @@ let performBinaryOperation operator op1 op2 =
     | Times -> op1 * op2
     | Divide -> op1 / op2
     | Exponent -> op1 ** op2
-    | _ -> raise (CalculateError "Calculate Error: Invalid operator passed.")
+    | _ -> CalculateError "Calculate Error: Invalid operator passed." |> raise
 
 /// <summary>
 /// Performs a unary arithmetic operation given a terminal a unary operator and an Dual.
@@ -203,7 +203,7 @@ let performUnaryOperation operator operand =
         | Var (a, b) -> Expr ([UnaryMinus; Lpar; a; Rpar], [UnaryMinus; Number b;])
         | Expr (a, b) -> Expr (UnaryMinus :: Lpar :: a @ [Rpar], UnaryMinus :: Lpar :: b @ [Rpar])
     | UnaryPlus -> operand
-    | _ -> raise (UnaryError "Unary Error: Invalid operator passed.")
+    | _ -> UnaryError "Unary Error: Invalid operator passed." |> raise
 
 /// <summary>
 /// Reads the top of the operator stack and passes said operator and necessary operands from the number stack to
@@ -217,27 +217,19 @@ let performUnaryOperation operator operand =
 let performOperation operator numStack =
     match operator with
     | Rpar 
-    | Lpar -> raise (ExecError "Execution Error: Parenthesis encountered as an operator.")
+    | Lpar -> ExecError "Execution Error: Parenthesis encountered as an operator." |> raise
     | UnaryMinus
     | UnaryPlus ->
         match numStack with
-        | [] -> raise (ExecError "Execution Error: Unary operation called without any remaining operands.")
-        | [ b; ] ->
-            (performUnaryOperation operator b) :: []
-        | _ ->
-            match numStack.[0] with
-            | b ->
-                (performUnaryOperation operator b) :: numStack.[1 .. ]
+        | [] -> ExecError "Execution Error: Unary operation called without any remaining operands." |> raise
+        | [ operand; ] -> (performUnaryOperation operator operand) :: []
+        | operand :: _ -> (performUnaryOperation operator operand) :: numStack.[1 .. ]
     | _ ->
         match numStack with
-        | [] -> raise (ExecError "Execution Error: Binary operation called without any operands.")
-        | [ _; ] -> raise (ExecError "Execution Error: Binary operation called with only one operand.")
-        | [ b; c; ] ->
-            (performBinaryOperation operator c b) :: []
-        | _ ->
-            match numStack.[0], numStack.[1] with
-            | b, c ->
-                (performBinaryOperation operator c b) :: numStack.[2 .. ]
+        | [] -> ExecError "Execution Error: Binary operation called without any operands." |> raise
+        | [ _; ] -> ExecError "Execution Error: Binary operation called with only one operand." |> raise
+        | [ operand2; operand1; ] -> (performBinaryOperation operator operand1 operand2) :: []
+        | operand2 :: operand1 :: _ -> (performBinaryOperation operator operand1 operand2) :: numStack.[2 .. ]
 
 /// <summary>
 /// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
@@ -252,16 +244,13 @@ let performOperation operator numStack =
 /// </returns>
 let rec evaluateBrackets opStack numStack =
     match opStack with
-    | head :: tail ->
-        match head with
-        | Rpar -> raise (ExecError "Execution Error: Parenthesis encountered as an operator.")
-        | Lpar ->
-            match numStack with
-            | _ :: _ -> tail, numStack
-            | [] -> raise (ExecError "Execution Error: Empty number stack following evaluation of bracketed expression.")
-        | _ ->
-            evaluateBrackets tail (performOperation head numStack)
-    | [] -> failwith "attempting to execute empty opstack"
+    | []
+    | Rpar :: _ -> ExecError "Execution Error: Parenthesis encountered as an operator." |> raise
+    | Lpar :: tail ->
+        match numStack with
+        | _ :: _ -> tail, numStack
+        | [] -> ExecError "Execution Error: Empty number stack following evaluation of bracketed expression." |> raise
+    | head :: tail -> evaluateBrackets tail (performOperation head numStack)
 
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
@@ -269,23 +258,21 @@ let rec evaluateBrackets opStack numStack =
 /// associativity rather than producing a reverse Polish notation output.
 /// </summary>
 ///
-/// <param name="duals">A queue of terminals representing an expression in infix notation.</param>
+/// <param name="terminals">A queue of terminals representing an expression in infix notation.</param>
 /// <param name="opStack">A stack of operator terminals to compute the result of the infix expression.</param>
 /// <param name="numStack">A stack of Number terminals to compute the result of the infix expression.</param>
 ///
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
-let rec autoDifferentiate duals opStack numStack =
-    match duals with
+let rec autoDifferentiate terminals opStack numStack =
+    match terminals with
     | terminalHead :: terminalTail ->
         match terminalHead with
         | Word _ -> autoDifferentiate terminalTail opStack (Var (terminalHead, 1.0) :: numStack)
         | Number _ -> autoDifferentiate terminalTail opStack (Const (terminalHead, 0.0) :: numStack)
-        | Lpar ->
-            autoDifferentiate terminalTail (terminalHead :: opStack) numStack
+        | Lpar -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
         | Rpar ->
             match evaluateBrackets opStack numStack with
-            opStack, numStack ->
-                autoDifferentiate terminalTail opStack numStack
+            opStack, numStack -> autoDifferentiate terminalTail opStack numStack
         | UnaryMinus
         | UnaryPlus  
         | Divide
@@ -294,32 +281,29 @@ let rec autoDifferentiate duals opStack numStack =
         | Plus
         | Exponent ->
             match opStack with
-            | [] ->
-                autoDifferentiate terminalTail (terminalHead :: opStack) numStack
+            | [] -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
             | opHead :: opTail ->
                 match opHead with
-                | Lpar ->
-                    autoDifferentiate terminalTail (terminalHead :: opStack) numStack
+                | Lpar -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
                 | _ ->
                     if (getPrecedence terminalHead < getPrecedence opHead
                         || getPrecedence terminalHead = getPrecedence opHead
                            && getAssociativity terminalHead = "l")
-                    then autoDifferentiate duals opTail (performOperation opHead numStack)
+                    then autoDifferentiate terminals opTail (performOperation opHead numStack)
                     else autoDifferentiate terminalTail (terminalHead :: opStack) numStack
-        | _ -> raise (ExecError "Execution Error: Invalid terminal passed to reduce.")
+        | _ -> ExecError "Execution Error: Invalid terminal passed to differentiate." |> raise
     | [] ->
         match opStack with
         | [] ->
             match numStack with
-            | [ a ] ->
-                match a with
-                | Var (_, b)
-                | Const (_, b) -> [Number b]
-                | Expr (_, b) -> b
-            | _ -> raise (ExecError "Execution Error: Reduction did not result in exactly one terminal in the number
-                          stack")
-        | head :: tail ->
-            autoDifferentiate duals tail (performOperation head numStack)
-      
+            | [ Var (_, b) ]
+            | [ Const (_, b) ] -> [Number b]
+            | [ Expr (_, b) ] -> b
+            | _ -> ExecError "Execution Error: Differentiation did not result in exactly one terminal in the number
+                              stack" |> raise
+        | head :: tail -> autoDifferentiate terminals tail (performOperation head numStack)
+
+/// <summary>Wrapper for autoDifferentiate that calls it with empty number and operator stacks</summary>
+///
+/// <param name="terminals">A list of terminals representing a valid expression for differentiation.</param> 
 let differentiate terminals = autoDifferentiate terminals [] []
-    
