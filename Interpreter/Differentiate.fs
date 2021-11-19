@@ -21,7 +21,7 @@ open Interpreter.Util
 /// </remarks>
 /// 
 type Dual =
-    | Const of real : terminal * epsilon : float
+    | Const of real : float * epsilon : float
     | Var of real : terminal * epsilon : float
     | Expr of real : terminal list *  epsilon : terminal list
     
@@ -33,20 +33,21 @@ type Dual =
     /// <returns>The result of addition of two Duals (a + c) + (b + d)e</returns>
     static member (+) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
-        | Var (a, _), Const (c, _)
-        | Const (a, _), Var (c, _) -> Expr ([a; Plus; c;],
+        | Var (a, _), Const (c, _) -> Expr ([a; Plus; Number c;],
+                                           [Number 1.0])
+        | Const (a, _), Var (c, _) -> Expr ([Number a; Plus; c;],
                                            [Number 1.0])
         | Var (a, _), Var (c, _) -> Expr ([a; Plus; c;],
                                           [Number 2.0])
-        | Const (a, _), Const (c, _) -> Expr ([a; Plus; c;],
-                                              [Number 0.0])
+        | Const (a, _), Const (c, _) -> Const (a + c,
+                                               0.0)
         | Var (a, b), Expr (c, d) -> Expr (a :: Plus :: c,
                                            Number b :: Plus :: d)
         | Expr (a, b), Var (c, d) -> Expr (a @ Plus :: [c],
                                            b @ Plus :: [Number d])
-        | Const (a, _), Expr (c, d) -> Expr (a :: Plus :: c,
+        | Const (a, _), Expr (c, d) -> Expr (Number a :: Plus :: c,
                                              d)
-        | Expr (a, b), Const (c, _) -> Expr (a @ Plus :: [c],
+        | Expr (a, b), Const (c, _) -> Expr (a @ Plus :: [Number c],
                                              b)
         | Expr (a, b), Expr (c, d) -> Expr (a @ Plus :: c,
                                             b @ Plus :: d)
@@ -61,25 +62,25 @@ type Dual =
     /// <returns>The result of subtraction of two Duals (a - c) + (b - d)e</returns>
     static member (-) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
-        | Var (a, _), Const (c,_)
-        | Const (a, _), Var (c,_) -> Expr ([a; Minus; c;],
+        | Var (a, _), Const (c,_) -> Expr ([a; Minus; Number c;],
+                                           [Number 1.0])
+        | Const (a, _), Var (c,_) -> Expr ([Number a; Minus; c;],
                                            [Number 1.0])
         | Var (a, _), Var (c, _) -> Expr ([a; Minus; c;],
                                           [Number 2.0])
-        | Const (a, _), Const (c, _) -> Expr ([a; Minus; c;],
-                                              [Number 0.0])
+        | Const (a, _), Const (c, _) -> Const (a - c,
+                                               0.0)
         | Var (a, b), Expr (c, d) -> Expr (a :: Minus :: c,
                                            Number b :: Minus :: d)
         | Expr (a, b), Var (c, d) -> Expr (a @ Minus :: [c],
                                            b @ Minus :: [Number d])
-        | Const (a, _), Expr (c, d) -> Expr (a :: Minus :: c,
+        | Const (a, _), Expr (c, d) -> Expr (Number a :: Minus :: c,
                                              d)
-        | Expr (a, b), Const (c, _) -> Expr (a @ Minus :: [c],
+        | Expr (a, b), Const (c, _) -> Expr (a @ Minus :: [Number c],
                                              b)
         | Expr (a, b), Expr (c, d) -> Expr (a @ Minus :: c,
                                             b @ Minus :: d)
         
-    // (a + be)(c + de) = ac + (ad + bc)e
     /// <summary>Multiplies two Duals according to the identity (a + be)(c + de) = ac + (ad + bc)e</summary>
     /// 
     /// <param name="operand1">The left hand operand, corresponding to a + be</param>
@@ -88,26 +89,25 @@ type Dual =
     /// <returns>The result of multiplication of two Duals ac + (ad + bc)e</returns>
     static member (*) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
-        | Var (a, _), Const (c,_) -> Expr ([a; Times; c;],
-                                           [c])
-        | Const (a, _), Var (c,_) -> Expr ([a; Times; c;],
-                                           [a])
+        | Var (a, _), Const (c,_) -> Expr ([a; Times; Number c;],
+                                           [Number c])
+        | Const (a, _), Var (c,_) -> Expr ([Number a; Times; c;],
+                                           [Number a])
         | Var (a, _), Var (c, _) -> Expr ([a; Times; c;],
                                           [a; Plus; c])
-        | Const (a, _), Const (c, _) -> Expr ([a; Times; c;],
-                                              [Number 0.0])
+        | Const (a, _), Const (c, _) -> Const (a * c,
+                                              0.0)
         | Var (a, _), Expr (c, d) -> Expr (a :: Times :: Lpar :: c @ [Rpar],
                                            a :: Times :: Lpar ::  d @ Rpar :: Plus :: c)
         | Expr (a, b), Var (c, _) -> Expr (Lpar :: a @ Rpar :: Times :: [c],
                                            a @ Plus :: Lpar :: b @ Rpar :: Times :: [c])
-        | Const (a, _), Expr (c, d) -> Expr (a :: Times :: Lpar :: c @ [Rpar],
-                                             a :: Times :: Lpar :: d @ [Rpar])
-        | Expr (a, b), Const (c, _) -> Expr (Lpar :: a @ Rpar :: Times :: [c],
-                                             Lpar :: b @ Rpar :: Times :: [c])
+        | Const (a, _), Expr (c, d) -> Expr (Number a :: Times :: Lpar :: c @ [Rpar],
+                                             Number a :: Times :: Lpar :: d @ [Rpar])
+        | Expr (a, b), Const (c, _) -> Expr (Lpar :: a @ Rpar :: Times :: [Number c],
+                                             Lpar :: b @ Rpar :: Times :: [Number c])
         | Expr (a, b), Expr (c, d) -> Expr (Lpar :: a @ Rpar :: Times :: Lpar :: c @ [Rpar],
                                             Lpar :: a @ Rpar :: Times :: Lpar :: d @ Rpar :: Plus :: Lpar :: b @ Rpar :: Times :: Lpar :: c @ [Rpar])
         
-    // (a + be)/(c + de) = a/c + ((bc - ad)/c^2)e
     /// <summary>
     /// Divides one Dual by another according to the identity (a + be)/(c + de) = a/c + ((bc - ad)/c^2)e
     /// </summary>
@@ -118,26 +118,25 @@ type Dual =
     /// <returns>The result of division of two Duals (a + be)/(c + de) = a/c + ((bc - ad)/c^2)e</returns>
     static member (/) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
-        | Var (a, _), Const (c,_) -> Expr ([a; Divide; c;],
-                                           [c; Divide; c; Exponent; Number 2.0])
-        | Const (a, _), Var (c,_) -> Expr ([a; Divide; c;],
-                                           [UnaryMinus; a; Divide; c; Exponent; Number 2.0])
+        | Var (a, _), Const (c,_) -> Expr ([a; Divide; Number c;],
+                                           [Number c; Divide; Number c; Exponent; Number 2.0])
+        | Const (a, _), Var (c,_) -> Expr ([Number a; Divide; c;],
+                                           [UnaryMinus; Number a; Divide; c; Exponent; Number 2.0])
         | Var (a, _), Var (c, _) -> Expr ([a; Divide; c;],
                                           [Lpar; c; Minus; a; Rpar; Divide; c; Exponent; Number 2.0])
-        | Const (a, _), Const (c, _) -> Expr ([a; Divide; c;],
-                                              [Number 0.0])
+        | Const (a, _), Const (c, _) -> Const (a / c,
+                                              0.0)
         | Var (a, _), Expr (c, d) -> Expr (a :: Divide :: Lpar :: c @ [Rpar],
                                            Lpar :: c @ Minus :: a :: Times :: Lpar :: d @ [Rpar] @ Rpar :: Divide :: Lpar :: c @ [Rpar; Exponent; Number 2.0])
         | Expr (a, b), Var (c, _) -> Expr (Lpar :: a @ [Rpar; Divide; c;],
                                            Lpar :: Lpar :: b @ Rpar :: Times :: c :: Minus :: Lpar :: a @ [Rpar; Rpar; Divide; c; Exponent; Number 2.0])
-        | Const (a, _), Expr (c, d) -> Expr (a :: Divide :: Lpar :: c @ [Rpar],
-                                             Lpar :: UnaryMinus :: a :: Times :: Lpar :: d @ [Rpar; Rpar; Divide; Lpar;] @ c @ [Rpar; Exponent; Number 2.0])
-        | Expr (a, b), Const (c, _) -> Expr (Lpar :: a @ [Rpar; Divide; c;] ,
-                                             Lpar :: Lpar :: b @ [Rpar; Times; c; Rpar; Divide; c; Exponent; Number 2.0])
+        | Const (a, _), Expr (c, d) -> Expr (Number a :: Divide :: Lpar :: c @ [Rpar],
+                                             Lpar :: UnaryMinus :: Number a :: Times :: Lpar :: d @ [Rpar; Rpar; Divide; Lpar;] @ c @ [Rpar; Exponent; Number 2.0])
+        | Expr (a, b), Const (c, _) -> Expr (Lpar :: a @ [Rpar; Divide; Number c;] ,
+                                             Lpar :: Lpar :: b @ [Rpar; Times; Number c; Rpar; Divide; Number c; Exponent; Number 2.0])
         | Expr (a, b), Expr (c, d) -> Expr (Lpar :: a @ Rpar :: Times :: Lpar :: c @ [Rpar],
                                             Lpar :: Lpar :: b @ [Rpar; Times; Lpar] @ c @ [Rpar; Minus; Lpar] @ a @ [Rpar; Times; Lpar] @ d @ [Rpar; Rpar; Divide; Lpar] @ c @ [Rpar; Exponent; Number 2.0])
         
-    // (a + be)^(c + de) = (a^c) + (c*a^(c-1))e
     // THIS IS CURRENTLY INCORRECTLY DEFINED, WHEN A VARIABLE IS AN EXPONENT IT SHOULDN'T FOLLOW THE POWER RULE.
     /// <summary>
     /// Raises one Dual to the power of another according to the identity (a + be) + (c + de) = (a + c) + (b + d)e
@@ -149,22 +148,22 @@ type Dual =
     /// <returns>The result of exponentiation of two Duals (a + be)^(c + de) = (a^c) + (c*a^(c-1))e</returns>
     static member Pow (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
-        | Var (a, _), Const (c,_) -> Expr ([a; Exponent; c],
-                                           [c; Times; a; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
-        | Const (a, _), Var (c,_) -> Expr ([a; Exponent; c;],
-                                           [c; Times; a; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
+        | Var (a, _), Const (c,_) -> Expr ([a; Exponent; Number c],
+                                           [Number c; Times; a; Exponent; Lpar; Number c; Minus; Number 1.0; Rpar])
+        | Const (a, _), Var (c,_) -> Expr ([Number a; Exponent; c;],
+                                           [c; Times; Number a; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
         | Var (a, _), Var (c, _) -> Expr ([a; Exponent; c;],
                                           [c; Times; a; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
-        | Const (a, _), Const (c, _) -> Expr ([a; Exponent; c;],
-                                              [Number 0.0])
+        | Const (a, _), Const (c, _) -> Const (a ** c,
+                                              0.0)
         | Var (a, _), Expr (c, _) -> Expr (a :: Exponent :: Lpar :: c @ [Rpar],
                                            Lpar :: c @ [Rpar; Times; a; Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])
         | Expr (a, _), Var (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [c],
                                            c :: Times :: a @ [Exponent; Lpar; c; Minus; Number 1.0; Rpar])
-        | Const (a, _), Expr (c, _) -> Expr (a :: Exponent :: Lpar :: c @ [Rpar],
-                                             Lpar :: c @ [Rpar; Times; a; Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])
-        | Expr (a, _), Const (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [c],
-                                             c :: Times :: a @ [Exponent; Lpar; c; Minus; Number 1.0; Rpar])
+        | Const (a, _), Expr (c, _) -> Expr (Number a :: Exponent :: Lpar :: c @ [Rpar],
+                                             Lpar :: c @ [Rpar; Times; Number a; Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])
+        | Expr (a, _), Const (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [Number c],
+                                             Number c :: Times :: a @ [Exponent; Lpar; Number c; Minus; Number 1.0; Rpar])
         | Expr (a, _), Expr (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: Lpar :: c @ [Rpar],
                                             Lpar :: c @ [Rpar; Times;] @ a @ [Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])  
 
@@ -199,7 +198,7 @@ let performUnaryOperation operator operand =
     match operator with
     | UnaryMinus ->
         match operand with
-        | Const (a, b)
+        | Const (a, b) -> Const (-a, b)
         | Var (a, b) -> Expr ([UnaryMinus; Lpar; a; Rpar], [UnaryMinus; Number b;])
         | Expr (a, b) -> Expr (UnaryMinus :: Lpar :: a @ [Rpar], UnaryMinus :: Lpar :: b @ [Rpar])
     | UnaryPlus -> operand
@@ -268,7 +267,7 @@ let rec autoDifferentiate terminals opStack numStack =
     | terminalHead :: terminalTail ->
         match terminalHead with
         | Word _ -> autoDifferentiate terminalTail opStack (Var (terminalHead, 1.0) :: numStack)
-        | Number _ -> autoDifferentiate terminalTail opStack (Const (terminalHead, 0.0) :: numStack)
+        | Number a -> autoDifferentiate terminalTail opStack (Const (a, 0.0) :: numStack)
         | Lpar -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
         | Rpar ->
             match evaluateBrackets opStack numStack with
