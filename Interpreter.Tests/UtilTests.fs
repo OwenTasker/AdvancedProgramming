@@ -1,29 +1,16 @@
-﻿module Interpreter.Tests.UtilTests
+﻿/// <summary>
+/// Module containing tests for the functions defined in Interpreter.Util.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter.Tests</summary>
+/// </namespacedoc>
+module Interpreter.Tests.UtilTests
 
 open NUnit.Framework
 open Interpreter.Util
-    
-let validStrContainsOnlyNumberInputs = [
-    TestCaseData(".7")
-    TestCaseData("1")
-    TestCaseData("1.0")
-    TestCaseData("1.7")
-]
 
-[<TestCaseSource("validStrContainsOnlyNumberInputs")>]
-let givenStrContainsOnlyNumberInputs_WhenPassedValidInput_ReturnTrue (input:string) =
-    Assert.True(strContainsOnlyNumber input)
-
-let invalidStrContainsOnlyNumberInputs = [
-    TestCaseData("a")
-    TestCaseData(",")
-    TestCaseData(".")
-    TestCaseData("")
-]
-[<TestCaseSource("invalidStrContainsOnlyNumberInputs")>]
-let givenStrContainsOnlyNumberInputs_WhenPassedInvalidInput_ReturnFalse (input:string) =
-    Assert.False(strContainsOnlyNumber input)
-    
+/// <summary>List of test cases for converting terminals to strings.</summary>
 let terminalsToStringInputAndOutput = [
     TestCaseData(Plus, "+")
     TestCaseData(UnaryPlus, "+")
@@ -41,6 +28,7 @@ let terminalsToStringInputAndOutput = [
     TestCaseData(Number 5.5, "5.5")
 ]
 
+/// <summary>Test to ensure that individualTerminalToString returns the correct string.</summary>
 [<TestCaseSource("terminalsToStringInputAndOutput")>]
 let givenIndividualTerminalToString_WhenProvidedTerminal_ReturnCorrectString(input:terminal, output:string) =
     Assert.That(individualTerminalToString(input), Is.EqualTo(output))
