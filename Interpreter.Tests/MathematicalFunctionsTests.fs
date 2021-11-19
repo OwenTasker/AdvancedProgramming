@@ -56,3 +56,25 @@ let givenLog2_ProvidedValidInput_ReturnCorrectApproximation input output =
     let b = logRes < (output+0.000001)
     Assert.True(a && b)
     
+let Log10Inputs = [
+    TestCaseData(0.25, -0.602059)
+    TestCaseData(0.5, -0.301029)
+    TestCaseData(0.6, -0.221848)
+    TestCaseData(0.75, -0.124938)
+    TestCaseData(0.9, -0.045757)
+    TestCaseData(1.0, 0.0)
+    TestCaseData(1.5, 0.176091)
+    TestCaseData(2.0, 0.301029)
+    TestCaseData(2.718281, 0.434294)
+    TestCaseData(3.0, 0.477121)
+    TestCaseData(5.0, 0.698970)
+    TestCaseData(10.0, 1.0)
+    TestCaseData(100.0, 2.0)
+]
+
+[<TestCaseSource("Log10Inputs")>]
+let givenLog10_ProvidedValidInput_ReturnCorrectApproximation input output =
+    let logRes = Log10 input
+    let a = logRes > (output-0.000001)
+    let b = logRes < (output+0.000001)
+    Assert.True(a && b)
