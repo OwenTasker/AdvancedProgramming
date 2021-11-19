@@ -7,6 +7,7 @@ using System.Windows;
 using System.IO;
 using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace WpfApp1
 {
@@ -72,8 +73,9 @@ namespace WpfApp1
         private void PlotPixel(int x, int y)
         {
             //Calculate starting byte of pixel
-            Console.WriteLine(ImageWidth + " * " + BytesPerPixel + " * " + y + " + " + x + " * " + BytesPerPixel);
+            Console.WriteLine("((" + ImageWidth + " * " + BytesPerPixel + ") * " + y + ") + (" + x + " * " + BytesPerPixel + ")");
             var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
+            
             //Set BGR to black
             Console.WriteLine(offset);
             _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
@@ -133,66 +135,68 @@ namespace WpfApp1
             
         }
 
-        private void DrawAxis([NotNull] double[] xArray, [NotNull] double[] yArray)
+        private void DrawAxis(double[] xArray, double[] yArray)
         {
             //Find yArray index of y=0, default to below graph
             var yZero = 0;
-            //y=0 is above graph
-            if (yArray[749] < 0.0)
+            if (yArray.Min() > 0.0)
             {
-                yZero = 479;
+                //nothing
+            }
+            //y=0 is above graph
+            else if (yArray.Max() < 0.0)
+            {
+                yZero = yArray.Length - 1;
             }
             //y=0 is within graph
             else
             {
-                for (var i = 0; i < 750; i++)
+                for (var i = 0; i < yArray.Length; i++)
                 {
-                    Console.WriteLine(yArray[i]);
                     //if y=0 exists exactly
                     if (yArray[i] == 0.0)
                     {
-                        Console.WriteLine("0 found");
                         yZero = i;
                         break;
                     }
                     //if y=0 is skipped, set to line below
-                    if (!(yArray[i] > 0.0)) continue;
-                    //Console.WriteLine("0 skipped");
-                    yZero = i - 1;
-                    break;
+                    if (!(yArray[i] > 0.0))
+                    {
+                        yZero = i - 1;
+                    }
                 }
             }
-            
-            Console.WriteLine("yZero: " + yZero);
-            
+
             //Scale y=0 line to image size
-            var temp = yZero / 750.0;
+            Console.WriteLine("Unscaled yZero: " + yZero);
+            var temp = yZero / (double)yArray.Length;
             temp *= ImageHeight;
             yZero = (int)temp;
+            Console.WriteLine("Scaled yZero: " + yZero);
 
             //Draw y=0 line
-            var offset = yZero * ImageWidth * BytesPerPixel;
-            for (var i = 0; i < ImageWidth * BytesPerPixel; i += 4)
+            Console.WriteLine("Plotting y=0");
+            for (var i = 0; i < ImageWidth; i++)
             {
-                _imageBuffer[i + offset] = _imageBuffer[i + 1 + offset] = _imageBuffer[i + 2 + offset] = 0;
+                Console.WriteLine(i + "/" + ImageWidth);
+                PlotPixel(i, yZero);
             }
             
             //Find xArray index of x=0, default to left of graph
             var xZero = 0;
-            
-            if (xArray[0] > 0.0)
+            if (xArray.Min() > 0.0)
             {
                 //nothing
             }
             //x=0 is to right of graph
-            else if (xArray[749] < 0.0)
+            else if (xArray.Max() < 0.0)
             {
-                xZero = 479;
+                xZero = xArray.Length - 1;
             }
             //x=0 is within graph
             else
             {
-                for (var i = 0; i < 750; i++)
+                for (var i = 0; i < xArray.Length; i++)
                 {
                     //if x=0 exists exactly
                     if (xArray[i] == 0.0)
@@ -201,20 +205,22 @@ namespace WpfApp1
                         break;
                     }
                     //if x=0 is skipped, set to line to left
-                    if (!(xArray[i] > 0.0)) continue;
-                    xZero = i - 1;
-                    break;
+                    if (xArray[i] > 0.0)
+                    {
+                        xZero = i - 1;
+                    }
                 }
             }
             
-            Console.WriteLine("xZero: " + xZero);
-            
             //Scale x=0 line to image size
-            temp = xZero / 750.0;
+            Console.WriteLine("Unscaled xZero: " + xZero);
+            temp = xZero / (double)xArray.Length;
             temp *= ImageWidth;
             xZero = (int)temp;
+            Console.WriteLine("Scaled xZero: " + xZero);
 
             //Draw x=0 line
+            Console.WriteLine("Plotting x=0");
             for (var i = 0; i < ImageHeight; i ++)
             {
                 PlotPixel(xZero, i);
