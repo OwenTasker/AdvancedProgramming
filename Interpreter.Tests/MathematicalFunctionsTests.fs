@@ -7,6 +7,7 @@
 /// </namespacedoc>
 module Interpreter.Tests.MathematicalFunctionsTests
 
+open Interpreter.Util
 open NUnit.Framework
 open Interpreter.MathematicalFunctions
 
@@ -78,3 +79,52 @@ let givenLog10_ProvidedValidInput_ReturnCorrectApproximation input output =
     let a = logRes > (output-0.000001)
     let b = logRes < (output+0.000001)
     Assert.True(a && b)
+    
+let LogXInputs = [
+    TestCaseData(3.0, 0.25, -1.261859)
+    TestCaseData(3.0, 0.5, -0.630929)
+    TestCaseData(3.0, 0.6, -0.464973)
+    TestCaseData(3.0, 0.75, -0.261859)
+    TestCaseData(3.0, 0.9, -0.095903)
+    TestCaseData(3.0, 1.0, 0.0)
+    TestCaseData(3.0, 1.5, 0.369070)
+    TestCaseData(3.0, 2.0, 0.630929)
+    TestCaseData(3.0, 2.718281, 0.910239)
+    TestCaseData(3.0, 3.0, 1.0)
+    TestCaseData(3.0, 5.0, 1.464973)
+    TestCaseData(3.0, 10.0, 2.095903)
+    TestCaseData(3.0, 100.0, 4.191806)
+    
+    TestCaseData(5, 0.25, -0.861353)
+    TestCaseData(5, 0.5, -0.430676)
+    TestCaseData(5, 0.6, -0.317393)
+    TestCaseData(5, 0.75, -0.178746)
+    TestCaseData(5, 0.9, -0.065464)
+    TestCaseData(5, 1.0, 0.0)
+    TestCaseData(5, 1.5, 0.251929)
+    TestCaseData(5, 2.0, 0.430676)
+    TestCaseData(5, 2.718281, 0.621334)
+    TestCaseData(5, 3.0, 0.682606)
+    TestCaseData(5, 5.0, 1.0)
+    TestCaseData(5, 10.0, 1.430676)
+    TestCaseData(5, 100.0, 2.861353)
+]
+
+[<TestCaseSource("LogXInputs")>]
+let givenLogX_ProvidedValidInput_ReturnCorrectApproximation logBase input output=
+    let logRes = LogX logBase input
+    let a = logRes > (output-0.000001)
+    let b = logRes < (output+0.000001)
+    Assert.True(a && b)
+    
+    
+let InvalidLogInputs = [
+    TestCaseData(0.0)
+    TestCaseData(-0.5)
+    TestCaseData(-1)
+    TestCaseData(-10)
+]
+
+[<TestCaseSource("InvalidLogInputs")>]
+let GivenLogE_ProvidedInvalidInput_ThrowInvalidArgumentError input =
+    Assert.Throws<InvalidArgumentError>(fun () -> LogE' input |> ignore) |> ignore

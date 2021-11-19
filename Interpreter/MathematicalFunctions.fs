@@ -15,8 +15,7 @@ let rec LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:
     | _ ->
         match (increment%2.0) with
         | 0.0 -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum-(((input-1.0)**increment)/increment)
-        | 1.0 -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum+(((input-1.0)**increment)/increment)
-        | _ -> raise (InvalidArgumentError "Invalid Argument Error: Increment Not A Whole Number")
+        | _ -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum+(((input-1.0)**increment)/increment)
 
 let LogE' input =
     if input <= 0.0 then
@@ -27,7 +26,10 @@ let LogE' input =
         LogEGreaterThanZeroPointFive input 1.0 0.0
         
 let formNewBaseRuleFraction numerator denominator =
-    LogE' numerator / LogE' denominator
+    try
+        LogE' numerator / LogE' denominator
+    with
+        | :? InvalidArgumentError -> raise (InvalidArgumentError "Input to Logarithmic Function Cannot Be Less Than 0")
 
 let Log2 input =
     formNewBaseRuleFraction input 2.0
