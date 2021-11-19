@@ -65,9 +65,9 @@ type Dual =
         | Var (a, _), Const (c,_) -> Expr ([a; Minus; Number c;],
                                            [Number 1.0])
         | Const (a, _), Var (c,_) -> Expr ([Number a; Minus; c;],
-                                           [Number 1.0])
+                                           [Number -1.0])
         | Var (a, _), Var (c, _) -> Expr ([a; Minus; c;],
-                                          [Number 2.0])
+                                          [Number 0.0])
         | Const (a, _), Const (c, _) -> Const (a - c,
                                                0.0)
         | Var (a, b), Expr (c, d) -> Expr (a :: Minus :: c,
@@ -75,7 +75,7 @@ type Dual =
         | Expr (a, b), Var (c, d) -> Expr (a @ Minus :: [c],
                                            b @ Minus :: [Number d])
         | Const (a, _), Expr (c, d) -> Expr (Number a :: Minus :: c,
-                                             d)
+                                             UnaryMinus :: d)
         | Expr (a, b), Const (c, _) -> Expr (a @ Minus :: [Number c],
                                              b)
         | Expr (a, b), Expr (c, d) -> Expr (a @ Minus :: c,
@@ -119,11 +119,11 @@ type Dual =
     static member (/) (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
         | Var (a, _), Const (c,_) -> Expr ([a; Divide; Number c;],
-                                           [Number c; Divide; Number c; Exponent; Number 2.0])
+                                           [Number (1.0 / c )])
         | Const (a, _), Var (c,_) -> Expr ([Number a; Divide; c;],
                                            [UnaryMinus; Number a; Divide; c; Exponent; Number 2.0])
-        | Var (a, _), Var (c, _) -> Expr ([a; Divide; c;],
-                                          [Lpar; c; Minus; a; Rpar; Divide; c; Exponent; Number 2.0])
+        | Var _, Var _ -> Expr ([Number 1.0],
+                                [Number 0.0])
         | Const (a, _), Const (c, _) -> Const (a / c,
                                               0.0)
         | Var (a, _), Expr (c, d) -> Expr (a :: Divide :: Lpar :: c @ [Rpar],
@@ -134,12 +134,12 @@ type Dual =
                                              Lpar :: UnaryMinus :: Number a :: Times :: Lpar :: d @ [Rpar; Rpar; Divide; Lpar;] @ c @ [Rpar; Exponent; Number 2.0])
         | Expr (a, b), Const (c, _) -> Expr (Lpar :: a @ [Rpar; Divide; Number c;] ,
                                              Lpar :: Lpar :: b @ [Rpar; Times; Number c; Rpar; Divide; Number c; Exponent; Number 2.0])
-        | Expr (a, b), Expr (c, d) -> Expr (Lpar :: a @ Rpar :: Times :: Lpar :: c @ [Rpar],
+        | Expr (a, b), Expr (c, d) -> Expr (Lpar :: a @ Rpar :: Divide :: Lpar :: c @ [Rpar],
                                             Lpar :: Lpar :: b @ [Rpar; Times; Lpar] @ c @ [Rpar; Minus; Lpar] @ a @ [Rpar; Times; Lpar] @ d @ [Rpar; Rpar; Divide; Lpar] @ c @ [Rpar; Exponent; Number 2.0])
         
     // THIS IS CURRENTLY INCORRECTLY DEFINED, WHEN A VARIABLE IS AN EXPONENT IT SHOULDN'T FOLLOW THE POWER RULE.
     /// <summary>
-    /// Raises one Dual to the power of another according to the identity (a + be) + (c + de) = (a + c) + (b + d)e
+    /// Raises one Dual to the power of another according to the identity (a + be)^(c + de) = (a^c) + (c*a^(c-1))e
     /// </summary>
     /// 
     /// <param name="operand1">The left hand operand, corresponding to a + be</param>
@@ -149,23 +149,23 @@ type Dual =
     static member Pow (operand1 : Dual, operand2 : Dual) =
         match operand1, operand2 with
         | Var (a, _), Const (c,_) -> Expr ([a; Exponent; Number c],
-                                           [Number c; Times; a; Exponent; Lpar; Number c; Minus; Number 1.0; Rpar])
+                                           [Number c; Times; a; Exponent; Number (c - 1.0);])
         | Const (a, _), Var (c,_) -> Expr ([Number a; Exponent; c;],
-                                           [c; Times; Number a; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
+                                           [Function "ln"; Lpar; Number a; Rpar; Times; Number a; Exponent; c])
         | Var (a, _), Var (c, _) -> Expr ([a; Exponent; c;],
-                                          [c; Times; a; Exponent; Lpar; c; Minus; Number 1.0; Rpar])
+                                          [a; Exponent; c; Times; Lpar; Function "ln"; Lpar; a; Rpar; Plus; Number 1.0; Rpar])
         | Const (a, _), Const (c, _) -> Const (a ** c,
                                               0.0)
-        | Var (a, _), Expr (c, _) -> Expr (a :: Exponent :: Lpar :: c @ [Rpar],
-                                           Lpar :: c @ [Rpar; Times; a; Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])
-        | Expr (a, _), Var (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [c],
-                                           c :: Times :: a @ [Exponent; Lpar; c; Minus; Number 1.0; Rpar])
-        | Const (a, _), Expr (c, _) -> Expr (Number a :: Exponent :: Lpar :: c @ [Rpar],
-                                             Lpar :: c @ [Rpar; Times; Number a; Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])
-        | Expr (a, _), Const (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [Number c],
-                                             Number c :: Times :: a @ [Exponent; Lpar; Number c; Minus; Number 1.0; Rpar])
-        | Expr (a, _), Expr (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: Lpar :: c @ [Rpar],
-                                            Lpar :: c @ [Rpar; Times;] @ a @ [Exponent; Lpar] @ c @ [Minus; Number 1.0; Rpar])  
+        | Var (a, _), Expr (c, d) -> Expr (a :: Exponent :: Lpar :: c @ [Rpar],
+                                           a :: Exponent :: Lpar :: c @ [Rpar; Times; Lpar; Lpar] @ d @ [Rpar; Times; Function "ln"; Lpar; a; Rpar; Plus; Lpar;] @ c @ [Rpar; Divide; a; Rpar; ])
+        | Expr (a, b), Var (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [c],
+                                           Lpar :: a @ [Rpar; Exponent; c; Times; Lpar; Function "ln"; Lpar;] @ a @ [Rpar; Plus; Lpar; c; Times; Lpar] @ b @ [Rpar; Divide; Lpar;] @ a @ [Rpar; Rpar])
+        | Const (a, _), Expr (c, d) -> Expr (Number a :: Exponent :: Lpar :: c @ [Rpar],
+                                             Function "ln" :: Lpar :: Number a :: Rpar :: Times :: Lpar :: d @ [Rpar; Times; Number a; Exponent; Lpar] @ c @ [Rpar])
+        | Expr (a, b), Const (c, _) -> Expr (Lpar :: a @ Rpar :: Exponent :: [Number c],
+                                             Number c :: Times :: Lpar :: b @ [Rpar; Times; Lpar] @ a @ [Rpar; Exponent; Number (c - 1.0)])
+        | Expr (a, b), Expr (c, d) -> Expr (Lpar :: a @ Rpar :: Exponent :: Lpar :: c @ [Rpar],
+                                            Lpar :: a @ [Rpar; Exponent; Lpar] @ c @ [Rpar; Times; Lpar; Lpar;] @ d @ [Rpar; Times; Function "ln"; Lpar;] @ a @ [Rpar; Plus; Lpar; Lpar;] @ b @ [Rpar; Times; Lpar;] @ c @ [Rpar; Rpar; Divide; Lpar;] @ a @ [Rpar; Rpar])  
 
 /// <summary>
 /// Performs a binary operation given a terminal representing plus, minus, times, divide, or exponent
@@ -251,6 +251,16 @@ let rec evaluateBrackets opStack numStack =
         | [] -> ExecError "Execution Error: Empty number stack following evaluation of bracketed expression." |> raise
     | head :: tail -> evaluateBrackets tail (performOperation head numStack)
 
+let rec extractExpression terminals lparCount output =
+    match lparCount with
+    | 0 -> List.rev output, terminals
+    | _ ->
+        match terminals with
+        | Rpar :: tail -> extractExpression tail (lparCount - 1) (Rpar :: output)
+        | Lpar :: tail -> extractExpression tail (lparCount + 1) (Lpar :: output)
+        | head :: tail -> extractExpression tail lparCount (head :: output)
+        | [] -> ExecError "Execution Error: Unmatched parenthesis" |> raise
+            
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
 /// expression into an operator stack and a number stack. Performs calculations depending on precedence and
@@ -268,6 +278,9 @@ let rec autoDifferentiate terminals opStack numStack =
         match terminalHead with
         | Word _ -> autoDifferentiate terminalTail opStack (Var (terminalHead, 1.0) :: numStack)
         | Number a -> autoDifferentiate terminalTail opStack (Const (a, 0.0) :: numStack)
+        | Function "ln" ->
+            let expression, remainingTerminals = extractExpression terminalTail 0 []
+            autoDifferentiate remainingTerminals opStack (Expr ((Function "ln" :: expression), (Number 1.0 :: Divide :: expression)) :: numStack)
         | Lpar -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
         | Rpar ->
             match evaluateBrackets opStack numStack with
