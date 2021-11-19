@@ -252,14 +252,14 @@ let rec evaluateBrackets opStack numStack =
     | head :: tail -> evaluateBrackets tail (performOperation head numStack)
 
 let rec extractExpression terminals lparCount output =
-    match lparCount with
-    | 0 -> List.rev output, terminals
-    | _ ->
-        match terminals with
-        | Rpar :: tail -> extractExpression tail (lparCount - 1) (Rpar :: output)
-        | Lpar :: tail -> extractExpression tail (lparCount + 1) (Lpar :: output)
-        | head :: tail -> extractExpression tail lparCount (head :: output)
-        | [] -> ExecError "Execution Error: Unmatched parenthesis" |> raise
+    match terminals with
+    | Rpar :: tail ->
+        match lparCount with
+        | 1 -> List.rev (Rpar :: output), tail
+        | _ -> extractExpression tail (lparCount - 1) (Rpar :: output)
+    | Lpar :: tail -> extractExpression tail (lparCount + 1) (Lpar :: output)
+    | head :: tail -> extractExpression tail lparCount (head :: output)
+    | [] -> ExecError "Execution Error: Unmatched parenthesis" |> raise
             
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix

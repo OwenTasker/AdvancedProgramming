@@ -49,6 +49,7 @@ let functions = [
                  ("round", "One Argument; A function to determine the rounded value of the provided argument, given a value of 2.5, will return 3")
                  ("plot", "")
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
+                 ("ln", "")
                  ]
 
 //https://gist.github.com/theburningmonk/3363893
