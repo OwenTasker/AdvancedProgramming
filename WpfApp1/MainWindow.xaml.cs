@@ -433,19 +433,22 @@ namespace WpfApp1
                             break;
                         }
                     }
-
-                    // TODO: add substring at cursor pos, not +=
+                    
                     string s = suggestionDropDown.SelectedItem.ToString().Substring(partialMatch.Length);
-                    inputText.Text += s.Split(" ")[0];
-                    inputText.Focus();
+
+                    int caretPos = inputText.CaretIndex;
+
                     if (suggestionDropDown.SelectedItem.ToString().Contains(":"))
                     {
-                        inputText.Text += "()";
-                        inputText.CaretIndex = inputText.Text.Length - 1;
+                        inputText.Text = inputText.Text.Insert(caretPos, s.Split(" ")[0] + "()");
+                        inputText.CaretIndex = caretPos + s.Split(" ")[0].Length + 1;
+                        inputText.Focus();
                     }
                     else
                     {
-                        inputText.CaretIndex = inputText.Text.Length;
+                        inputText.Text = inputText.Text.Insert(inputText.CaretIndex, s.Split(" ")[0]);
+                        inputText.CaretIndex = caretPos + s.Split(" ")[0].Length;
+                        inputText.Focus();
                     }
                 }
 
