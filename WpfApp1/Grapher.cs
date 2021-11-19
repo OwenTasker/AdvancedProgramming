@@ -10,6 +10,9 @@ namespace WpfApp1
     public class Grapher
     {
         
+        /// <summary>
+        /// Method to create execution environment including variables held in f sharp.
+        /// </summary>
         private static IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function, IDictionary<string, FSharpList<Util.terminal>> _environment)
         {
             var funcStrings = function.Select(s => s.ToString()).ToList();
@@ -19,8 +22,6 @@ namespace WpfApp1
             
             Parser.expression(lexerOutput);
 
-            
-            
             var (_, item2) = Exec.exec(lexerOutput,
                 Util.toMap(new Dictionary<string, FSharpList<Util.terminal>>()));
 
@@ -32,6 +33,9 @@ namespace WpfApp1
             return tempDict;
         }
 
+        /// <summary>
+        /// Method to compute all y values based on function and calculated x values.
+        /// </summary>
         public static double[] ComputeYArray(IReadOnlyList<string> trimmedArgsArray, IReadOnlyList<double> xArray, IDictionary<string, FSharpList<Util.terminal>> _environment)
         {
             var yArray = new double[750];
@@ -65,6 +69,9 @@ namespace WpfApp1
             return yArray;
         }
 
+        /// <summary>
+        /// Method to calculate x values evenly spaced between min and max.
+        /// </summary>
         public static double[] ComputeXArray(IReadOnlyList<string> trimmedArgsArray)
         {
             var min = double.Parse(trimmedArgsArray[1]);
@@ -86,6 +93,9 @@ namespace WpfApp1
             return xArray;
         }
 
+        /// <summary>
+        /// Method to check if used variables are free.
+        /// </summary>
         private static List<string> GetOpenVariables(string function, IDictionary<string, FSharpList<Util.terminal>> _environment)
         {
             var variables = Regex.Replace(
@@ -119,6 +129,9 @@ namespace WpfApp1
             return openVars;
         }
 
+        /// <summary>
+        /// Method to clean and validate form of user input.
+        /// </summary>
         public static List<string> TrimmedArgsArray(string input)
         {
             // Get plot parameters as an array
