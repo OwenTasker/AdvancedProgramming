@@ -64,6 +64,7 @@ let GivenTokenize_WhenPassedInput_ReturnCorrectTokens(op1, res) =
 let OperatorCases =
     [
         TestCaseData(["+"],[UnaryPlus])
+        TestCaseData([","],[Comma])
         TestCaseData(["-"],[UnaryMinus])
         TestCaseData(["3";"+"],[Number 3.0;Plus])
         TestCaseData(["3";"-"],[Number 3.0;Minus])
