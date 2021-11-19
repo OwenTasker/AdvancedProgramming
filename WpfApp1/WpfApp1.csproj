@@ -23,7 +23,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="6.0.0" />
+    <PackageReference Include="FSharp.Core" Version="6.0.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="NUnit" Version="3.13.2" />

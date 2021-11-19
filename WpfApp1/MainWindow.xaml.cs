@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Interpreter;
 using Microsoft.FSharp.Collections;
@@ -18,6 +19,9 @@ namespace WpfApp1
     /// https://stackoverflow.com/questions/19975617/press-enter-in-textbox-to-and-execute-button-command
     /// https://stackoverflow.com/questions/14598024/make-textbox-uneditable
     /// https://stackoverflow.com/questions/18260702/textbox-appendtext-not-autoscrolling
+    /// https://www.c-sharpcorner.com/uploadfile/dpatra/autocomplete-textbox-in-wpf/
+    /// https://stackoverflow.com/questions/13180486/convert-list-of-tuples-to-dictionary
+    /// https://stackoverflow.com/questions/141088/what-is-the-best-way-to-iterate-over-a-dictionary
     /// </summary>
     public partial class MainWindow
     {
@@ -27,6 +31,11 @@ namespace WpfApp1
         private IDictionary<string, FSharpList<Util.terminal>> _environment =
             new Dictionary<string, FSharpList<Util.terminal>>();
 
+        /// <summary>
+        /// Collection of mathematical functions.
+        /// </summary>
+        private Trie functions;
+        
         /// <summary>
         /// Class to represent a user defined variable.
         /// </summary>
@@ -47,7 +56,27 @@ namespace WpfApp1
         /// </summary>
         public MainWindow()
         {
+            InitialiseFunctionTrie();
+            
             InitializeComponent();
+            
+            inputText.Text = "Enter query here..."; // initialise prompt text for input terminal
+        }
+
+        /// <summary>
+        /// Method to initialise trie used for function suggestion dropdown.
+        /// </summary>
+        private void InitialiseFunctionTrie()
+        {
+            functions = new Trie();
+
+            Dictionary<string, string> fsfunctions = Util.functions.ToDictionary(t => t.Item1, t => t.Item2);
+
+            foreach (KeyValuePair<string, string> p in fsfunctions)
+            {
+                string s = p.Key + " : " + p.Value;
+                functions.Add(s);
+            }
         }
 
         /// <summary>
@@ -108,6 +137,7 @@ namespace WpfApp1
                     consoleText.AppendText(Util.terminalListToString("", item1) + "\n>>");
                     _environment = item2;
                     UpdateVariableWindow();
+                    UpdateTrie();
                     inputText.Text = "Enter query here...";
                 }
                 catch (Util.TokenizeError ex1)
@@ -191,6 +221,7 @@ namespace WpfApp1
                 _environment = dictionary;
                 consoleText.Text = item2;
                 UpdateVariableWindow();
+                UpdateTrie();
             }
             catch (SaverLoader.SaveLoadException e)
             {
@@ -206,6 +237,120 @@ namespace WpfApp1
             consoleText.Text = ">>";
             _environment = new Dictionary<string, FSharpList<Util.terminal>>();
             UpdateVariableWindow();
+            UpdateTrie();
+        }
+        
+        /// <summary>
+        /// Method to update function suggestion dropdown in response to user input.
+        /// </summary>
+        private void inputText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string input = inputText.Text;
+            string[] split = Regex.Split(input, @"[^a-zA-Z]");
+
+            string partialMatch = "";
+            
+            for (int i = split.Length - 1; i >= 0; i--)
+            {
+                if (!split[i].Equals(""))
+                {
+                    partialMatch = split[i];
+                    break;
+                }
+            }
+            
+            HashSet<string> matches = functions.Contains(partialMatch);
+
+            if (input.Equals("Enter query here...") || input.Equals(""))
+            {
+                suggestionDropDown.Visibility = Visibility.Collapsed;
+                suggestionDropDown.ItemsSource = new List<string>(); 
+            }
+            else if(matches != null)
+            {
+                suggestionDropDown.SelectedIndex = -1;
+                suggestionDropDown.SelectedItem = null;
+                
+                foreach (string s in matches)
+                {
+                    suggestionDropDown.ItemsSource = matches.ToList();
+                    suggestionDropDown.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                suggestionDropDown.Visibility = Visibility.Collapsed;
+                suggestionDropDown.ItemsSource = new List<string>();;
+            }
+        }
+        
+        /// <summary>
+        /// Method to update input terminal with selection from function suggestion dropdown.
+        /// </summary>
+        private void suggestionDropDown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (suggestionDropDown.ItemsSource != null)
+            {
+                suggestionDropDown.Visibility = Visibility.Collapsed;
+                // remove event handler for updating suggestions
+                inputText.TextChanged -= new TextChangedEventHandler(inputText_TextChanged);
+
+                if (suggestionDropDown.SelectedIndex != -1)
+                {
+                    string input = inputText.Text;
+                    string[] split = Regex.Split(input, @"[^a-zA-Z]");
+
+                    string partialMatch = "";
+            
+                    for (int i = split.Length - 1; i >= 0; i--)
+                    {
+                        if (!split[i].Equals(""))
+                        {
+                            partialMatch = split[i];
+                            break;
+                        }
+                    }
+                    
+                    string s = suggestionDropDown.SelectedItem.ToString().Substring(partialMatch.Length);
+
+                    int caretPos = inputText.CaretIndex;
+
+                    if (suggestionDropDown.SelectedItem.ToString().Contains(":"))
+                    {
+                        inputText.Text = inputText.Text.Insert(caretPos, s.Split(" ")[0] + "()");
+                        inputText.CaretIndex = caretPos + s.Split(" ")[0].Length + 1;
+                        inputText.Focus();
+                    }
+                    else
+                    {
+                        inputText.Text = inputText.Text.Insert(inputText.CaretIndex, s.Split(" ")[0]);
+                        inputText.CaretIndex = caretPos + s.Split(" ")[0].Length;
+                        inputText.Focus();
+                    }
+                }
+
+                // readd event handler for updating suggestions
+                inputText.TextChanged += new TextChangedEventHandler(inputText_TextChanged);
+            }
+        }
+        
+        /// <summary>
+        /// Method to refresh suggestion trie.
+        /// </summary>
+        private void UpdateTrie()
+        {
+            var keyValuePairs = _environment.ToList();
+            var variablesList = keyValuePairs.Select(pair => new Variable
+                {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
+            
+            // reinitialise trie
+            InitialiseFunctionTrie();
+            
+            // add varlist to trie
+            foreach (Variable v in variablesList)
+            {
+                functions.Add(v.Name);
+            }
         }
     }
 }
