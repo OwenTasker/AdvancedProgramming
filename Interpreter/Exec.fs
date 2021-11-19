@@ -242,6 +242,10 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
         match extractAssignment tail [] with
         | a, b -> setArguments a (env.Add(x, [reduce b env] ))
     | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
+    
+    
+let rootToTerminals (terminals: terminal list) denominator =
+    [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
 
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
@@ -274,16 +278,35 @@ let rec exec terminals (env: Map<string, terminal list>) =
             match tail.[0], tail.[tail.Length-1] with
             | Lpar, Rpar ->
                 let assignment, expression = extractExpression tail.[1..] []
-                if assignment <> [] then
+                if assignment <> []
+                then
                     if (List.filter (fun x -> x = Comma) assignment).Length = 0
                     then
                         let newEnv = setArguments assignment env
                         if closed expression newEnv
-                        then [reduce (differentiate expression) newEnv], (env |> Map.toSeq |> dict)
+                        then
+                        [reduce (differentiate expression) newEnv], (env |> Map.toSeq |> dict)
                         else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
                     else ExecError "" |> raise
-                else differentiate expression, (env |> Map.toSeq |> dict)
+                else
+                    differentiate expression, (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Malformed expression; missing parenthesis enclosing expression" |> raise
+        | "sqrt" ->
+            //Set assignment to any assignments inside of expression
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error: Unexpected Assignment" |> raise
+            else
+                [reduce (rootToTerminals expression 2.0) env], (env |> Map.toSeq |> dict)
+        | "cbrt" ->
+            //Set assignment to the remains of the 
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error" |> raise
+            else
+                [reduce (rootToTerminals expression 3.0) env], (env |> Map.toSeq |> dict)
         | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->
         if closed terminals env
