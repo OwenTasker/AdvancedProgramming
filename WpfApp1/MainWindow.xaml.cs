@@ -74,10 +74,10 @@ namespace WpfApp1
                 consoleText.AppendText(inputText.Text+"\n" + ">>");
                 try
                 {
-                    var trimmedArgsArray = TrimmedArgsArray(inputText.Text);
+                    var trimmedArgsArray = Grapher.TrimmedArgsArray(inputText.Text);
 
-                    var xArray = ComputeXArray(trimmedArgsArray);
-                    var yArray = ComputeYArray(trimmedArgsArray, xArray);
+                    var xArray = Grapher.ComputeXArray(trimmedArgsArray);
+                    var yArray = Grapher.ComputeYArray(trimmedArgsArray, xArray);
                     
                     var graphPopUp = new GraphPopUp(xArray, yArray);
                     graphPopUp.Show();
@@ -129,7 +129,7 @@ namespace WpfApp1
             }
         }
         
-        private IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function)
+        /*private IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function)
         {
             var funcStrings = function.Select(s => s.ToString()).ToList();
             
@@ -265,7 +265,7 @@ namespace WpfApp1
             }
 
             return trimmedArgsArray;
-        }
+        }*/
 
         /// <summary>
         /// Method to control user submission of a statement to the application.
