@@ -18,6 +18,7 @@
     <Compile Include="MathematicalFunctionsTests.fs" />
     <Compile Include="LexerTests.fs" />
     <Compile Include="ParserTests.fs" />
+    <Compile Include="DifferentiateTests.fs" />
     <Compile Include="ExecTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

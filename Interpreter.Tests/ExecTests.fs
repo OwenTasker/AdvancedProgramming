@@ -670,3 +670,6 @@ let UserFunctionErrorCases =
 [<TestCaseSource("UserFunctionErrorCases")>]
 let GivenExec_WhenPassedInvalidUserFunctionCall_RaiseExecError(terminals: terminal list, env: Map<string, terminal list>) =
     Assert.Throws<ExecError>(fun () -> exec terminals env |> ignore) |> ignore
+    
+//TEST DIFFERENTIATE
+//ADD ERROR CASE FOR ASSIGN ASSIGN
