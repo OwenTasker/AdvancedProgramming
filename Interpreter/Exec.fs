@@ -9,6 +9,7 @@ module Interpreter.Exec
 
 open Interpreter.Util
 open Interpreter.Differentiate
+open Interpreter.MathematicalFunctions
 
 // http://mathcenter.oxford.emory.edu/site/cs171/shuntingYardAlgorithm/
 
@@ -285,7 +286,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
                         let newEnv = setArguments assignment env
                         if closed expression newEnv
                         then
-                        [reduce (differentiate expression) newEnv], (env |> Map.toSeq |> dict)
+                            [reduce (differentiate expression) newEnv], (env |> Map.toSeq |> dict)
                         else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
                     else ExecError "" |> raise
                 else
@@ -300,13 +301,21 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 [reduce (rootToTerminals expression 2.0) env], (env |> Map.toSeq |> dict)
         | "cbrt" ->
-            //Set assignment to the remains of the 
             let assignment, expression = extractExpression tail.[1..] []
             if assignment <> []
             then
                 ExecError "Execution Error" |> raise
             else
                 [reduce (rootToTerminals expression 3.0) env], (env |> Map.toSeq |> dict)
+        | "ln" ->
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error" |> raise
+            else
+                match reduce expression env with
+                | Number a -> [Number (LogE a)], (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error" |> raise
         | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->
         if closed terminals env
