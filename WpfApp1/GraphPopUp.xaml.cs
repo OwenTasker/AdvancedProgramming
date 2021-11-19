@@ -160,9 +160,10 @@ namespace WpfApp1
                         break;
                     }
                     //if y=0 is skipped, set to line below
-                    if (!(yArray[i] > 0.0))
+                    if (yArray[i] > 0.0)
                     {
                         yZero = i - 1;
+                        break;
                     }
                 }
             }
@@ -208,6 +209,7 @@ namespace WpfApp1
                     if (xArray[i] > 0.0)
                     {
                         xZero = i - 1;
+                        break;
                     }
                 }
             }
