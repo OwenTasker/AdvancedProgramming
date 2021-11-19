@@ -394,6 +394,9 @@ namespace WpfApp1
             }
             else if(matches != null)
             {
+                suggestionDropDown.SelectedIndex = -1;
+                suggestionDropDown.SelectedItem = null;
+                
                 foreach (string s in matches)
                 {
                     suggestionDropDown.ItemsSource = matches.ToList();
