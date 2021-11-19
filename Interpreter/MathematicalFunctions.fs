@@ -1,6 +1,5 @@
 ﻿module Interpreter.MathematicalFunctions
 
-open System
 open Interpreter.Util
 
 //Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
