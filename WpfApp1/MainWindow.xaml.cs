@@ -137,6 +137,7 @@ namespace WpfApp1
                     consoleText.AppendText(Util.terminalListToString("", item1) + "\n>>");
                     _environment = item2;
                     UpdateVariableWindow();
+                    UpdateTrie();
                     inputText.Text = "Enter query here...";
                 }
                 catch (Util.TokenizeError ex1)
@@ -346,6 +347,7 @@ namespace WpfApp1
                 _environment = dictionary;
                 consoleText.Text = item2;
                 UpdateVariableWindow();
+                UpdateTrie();
             }
             catch (SaverLoader.SaveLoadException e)
             {
@@ -361,6 +363,7 @@ namespace WpfApp1
             consoleText.Text = ">>";
             _environment = new Dictionary<string, FSharpList<Util.terminal>>();
             UpdateVariableWindow();
+            UpdateTrie();
         }
         
         /// <summary>
@@ -369,7 +372,20 @@ namespace WpfApp1
         private void inputText_TextChanged(object sender, TextChangedEventArgs e)
         {
             string input = inputText.Text;
-            HashSet<string> matches = functions.Contains(input);
+            string[] split = Regex.Split(input, @"[^a-zA-Z]");
+
+            string partialMatch = "";
+            
+            for (int i = split.Length - 1; i >= 0; i--)
+            {
+                if (!split[i].Equals(""))
+                {
+                    partialMatch = split[i];
+                    break;
+                }
+            }
+            
+            HashSet<string> matches = functions.Contains(partialMatch);
 
             if (input.Equals("Enter query here...") || input.Equals(""))
             {
@@ -404,13 +420,56 @@ namespace WpfApp1
 
                 if (suggestionDropDown.SelectedIndex != -1)
                 {
-                    inputText.Text = suggestionDropDown.SelectedItem.ToString().Split(" ")[0] + "()";
+                    string input = inputText.Text;
+                    string[] split = Regex.Split(input, @"[^a-zA-Z]");
+
+                    string partialMatch = "";
+            
+                    for (int i = split.Length - 1; i >= 0; i--)
+                    {
+                        if (!split[i].Equals(""))
+                        {
+                            partialMatch = split[i];
+                            break;
+                        }
+                    }
+
+                    // TODO: add substring at cursor pos, not +=
+                    string s = suggestionDropDown.SelectedItem.ToString().Substring(partialMatch.Length);
+                    inputText.Text += s.Split(" ")[0];
                     inputText.Focus();
-                    inputText.CaretIndex = inputText.Text.Length - 1;
+                    if (suggestionDropDown.SelectedItem.ToString().Contains(":"))
+                    {
+                        inputText.Text += "()";
+                        inputText.CaretIndex = inputText.Text.Length - 1;
+                    }
+                    else
+                    {
+                        inputText.CaretIndex = inputText.Text.Length;
+                    }
                 }
 
                 // readd event handler for updating suggestions
                 inputText.TextChanged += new TextChangedEventHandler(inputText_TextChanged);
+            }
+        }
+        
+        /// <summary>
+        /// Method to refresh suggestion trie.
+        /// </summary>
+        private void UpdateTrie()
+        {
+            var keyValuePairs = _environment.ToList();
+            var variablesList = keyValuePairs.Select(pair => new Variable
+                {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
+            
+            // reinitialise trie
+            InitialiseFunctionTrie();
+            
+            // add varlist to trie
+            foreach (Variable v in variablesList)
+            {
+                functions.Add(v.Name);
             }
         }
     }
