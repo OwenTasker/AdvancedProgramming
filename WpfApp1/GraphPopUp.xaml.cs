@@ -7,8 +7,6 @@ using System.Linq;
 using System.Windows;
 using System.IO;
 using System.Windows.Media.Imaging;
-using JetBrains.Annotations;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace WpfApp1
 {
