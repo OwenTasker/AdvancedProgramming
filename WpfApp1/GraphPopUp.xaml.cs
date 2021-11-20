@@ -16,6 +16,7 @@ namespace WpfApp1
     /// Create image from array of pixel data: https://www.codeguru.com/dotnet/creating-images-from-scratch-in-c/
     /// Custom action on window close: https://docs.microsoft.com/en-us/dotnet/api/system.windows.window.closing?view=windowsdesktop-5.0
     /// Free BitmapImage for deletion: https://stackoverflow.com/questions/8352787/how-to-free-the-memory-after-the-bitmapimage-is-no-longer-needed
+    /// Copy image file to save it: https://stackoverflow.com/questions/7462997/copy-file-to-a-different-directory
     /// </summary>
     
     public partial class GraphPopUp
@@ -276,7 +277,13 @@ namespace WpfApp1
 
         private void SaveButton_OnClick(object sender, RoutedEventArgs e)
         {
-            
+            var fileToSaveTo = SaverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph" + _thisImageId + ".png");
+            if (fileToSaveTo != null)
+            {
+                var path = Path.GetTempPath();
+                File.Copy(path + "MyMathsPal\\graph" + _thisImageId + ".png", fileToSaveTo.FileName);
+                isDataDirty = false;
+            }
         }
     }
 }
