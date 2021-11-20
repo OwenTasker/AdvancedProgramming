@@ -251,6 +251,15 @@ let rec evaluateBrackets opStack numStack =
         | [] -> ExecError "Execution Error: Empty number stack following evaluation of bracketed expression." |> raise
     | head :: tail -> evaluateBrackets tail (performOperation head numStack)
 
+/// <summary>
+/// Extracts a bracketed expression from a list of terminals, including any bracketed sub expressions.
+/// </summary>
+///
+/// <param name="terminals">A stack of terminals representing an expresssion.</param>
+/// <param name="lparCount">The number of left parentheses so far encountered in extracting the expression.</param>
+/// <param name="output">The as yet compiled expression.</param>
+///
+/// <returns>A list of terminals representing a complete bracketed expression.</returns>
 let rec extractExpression terminals lparCount output =
     match terminals with
     | Rpar :: tail ->
