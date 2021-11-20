@@ -7,13 +7,13 @@ using Microsoft.FSharp.Collections;
 
 namespace WpfApp1
 {
-    public class Grapher
+    public static class GraphDataCalculator
     {
         
         /// <summary>
         /// Method to create execution environment including variables held in f sharp.
         /// </summary>
-        private static IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function, IDictionary<string, FSharpList<Util.terminal>> _environment)
+        private static IDictionary<string, FSharpList<Util.terminal>> CreateExecutionEnvironment(string function, IDictionary<string, FSharpList<Util.terminal>> environment)
         {
             var funcStrings = function.Select(s => s.ToString()).ToList();
             
@@ -28,7 +28,7 @@ namespace WpfApp1
             var tempDict = item2.ToList().ToDictionary(
                 pair => pair.Key, pair => pair.Value);
 
-            _environment.ToList().ForEach(x => tempDict.Add(x.Key, x.Value));
+            environment.ToList().ForEach(x => tempDict.Add(x.Key, x.Value));
             
             return tempDict;
         }
@@ -36,14 +36,14 @@ namespace WpfApp1
         /// <summary>
         /// Method to compute all y values based on function and calculated x values.
         /// </summary>
-        public static double[] ComputeYArray(IReadOnlyList<string> trimmedArgsArray, IReadOnlyList<double> xArray, IDictionary<string, FSharpList<Util.terminal>> _environment)
+        public static double[] ComputeYArray(IReadOnlyList<string> trimmedArgsArray, IReadOnlyList<double> xArray, IDictionary<string, FSharpList<Util.terminal>> environment)
         {
             var yArray = new double[750];
 
             // Get variables from function
-            var openVars = GetOpenVariables(trimmedArgsArray[0], _environment);
+            var openVars = GetOpenVariables(trimmedArgsArray[0], environment);
 
-            var environment = CreateExecutionEnvironment(trimmedArgsArray[0], _environment);
+            var executionEnvironment = CreateExecutionEnvironment(trimmedArgsArray[0], environment);
 
             for (var i = 0; i < 750; i++)
             {
@@ -61,7 +61,7 @@ namespace WpfApp1
                 var inputFSharpList = ListModule.OfSeq(queryList);
                 var lexedQuery = Lexer.lexer(inputFSharpList);
 
-                var (executedQuery, _) = Exec.exec(lexedQuery, Util.toMap(environment));
+                var (executedQuery, _) = Exec.exec(lexedQuery, Util.toMap(executionEnvironment));
 
                 yArray[i] = double.Parse(Util.terminalListToString("", executedQuery));
             }
@@ -96,7 +96,7 @@ namespace WpfApp1
         /// <summary>
         /// Method to check if used variables are free.
         /// </summary>
-        private static List<string> GetOpenVariables(string function, IDictionary<string, FSharpList<Util.terminal>> _environment)
+        private static List<string> GetOpenVariables(string function, IDictionary<string, FSharpList<Util.terminal>> environment)
         {
             var variables = Regex.Replace(
                 function, "[^a-zA-Z]", "|").Split("|").Where(
@@ -114,7 +114,7 @@ namespace WpfApp1
                 var lexed = Lexer.lexer(ListModule.OfSeq(enumerable));
 
                 if (count > 0)
-                    if (Exec.closed(lexed, Util.toMap(_environment)) || openVars.Contains(t)) 
+                    if (Exec.closed(lexed, Util.toMap(environment)) || openVars.Contains(t)) 
                         continue;
 
                 openVars.Add(t);
