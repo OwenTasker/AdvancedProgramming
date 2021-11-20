@@ -91,11 +91,9 @@ namespace WpfApp1
         private void PlotPixel(int x, int y)
         {
             //Calculate starting byte of pixel
-            Console.WriteLine("((" + ImageWidth + " * " + BytesPerPixel + ") * " + y + ") + (" + x + " * " + BytesPerPixel + ")");
             var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
             
             //Set BGR to black
-            Console.WriteLine(offset);
             _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
         }
 
@@ -193,17 +191,13 @@ namespace WpfApp1
             }
 
             //Scale y=0 line to image size
-            Console.WriteLine("Unscaled yZero: " + yZero);
             var temp = yZero / (double)yArray.Count;
             temp *= ImageHeight;
             yZero = (int)temp;
-            Console.WriteLine("Scaled yZero: " + yZero);
 
             //Draw y=0 line
-            Console.WriteLine("Plotting y=0");
             for (var i = 0; i < ImageWidth; i++)
             {
-                Console.WriteLine(i + "/" + ImageWidth);
                 PlotPixel(i, yZero);
             }
             
@@ -243,14 +237,11 @@ namespace WpfApp1
             }
             
             //Scale x=0 line to image size
-            Console.WriteLine("Unscaled xZero: " + xZero);
             temp = xZero / (double)xArray.Count;
             temp *= ImageWidth;
             xZero = (int)temp;
-            Console.WriteLine("Scaled xZero: " + xZero);
 
             //Draw x=0 line
-            Console.WriteLine("Plotting x=0");
             for (var i = 0; i < ImageHeight; i ++)
             {
                 PlotPixel(xZero, i);
