@@ -103,10 +103,10 @@ namespace WpfApp1
                 consoleText.AppendText(inputText.Text+"\n" + ">>");
                 try
                 {
-                    var trimmedArgsArray = Grapher.TrimmedArgsArray(inputText.Text);
+                    var trimmedArgsArray = GraphDataCalculator.TrimmedArgsArray(inputText.Text);
 
-                    var xArray = Grapher.ComputeXArray(trimmedArgsArray);
-                    var yArray = Grapher.ComputeYArray(trimmedArgsArray, xArray, _environment);
+                    var xArray = GraphDataCalculator.ComputeXArray(trimmedArgsArray);
+                    var yArray = GraphDataCalculator.ComputeYArray(trimmedArgsArray, xArray, _environment);
                     
                     var graphPopUp = new GraphPopUp(xArray, yArray);
                     graphPopUp.Show();

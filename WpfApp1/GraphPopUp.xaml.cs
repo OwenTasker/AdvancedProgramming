@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -11,27 +12,40 @@ using Microsoft.VisualBasic.CompilerServices;
 
 namespace WpfApp1
 {
-    
-    // References:
-    // Create image from array of pixel data: https://www.codeguru.com/dotnet/creating-images-from-scratch-in-c/
-    // Custom action on window close: https://docs.microsoft.com/en-us/dotnet/api/system.windows.window.closing?view=windowsdesktop-5.0
-    // Free BitmapImage for deletion: https://stackoverflow.com/questions/8352787/how-to-free-the-memory-after-the-bitmapimage-is-no-longer-needed
+    /// <summary>
+    /// Interaction and plotting logic for GraphPopUp.xaml
+    /// References:
+    /// Create image from array of pixel data: https://www.codeguru.com/dotnet/creating-images-from-scratch-in-c/
+    /// Custom action on window close: https://docs.microsoft.com/en-us/dotnet/api/system.windows.window.closing?view=windowsdesktop-5.0
+    /// Free BitmapImage for deletion: https://stackoverflow.com/questions/8352787/how-to-free-the-memory-after-the-bitmapimage-is-no-longer-needed
+    /// </summary>
     
     public partial class GraphPopUp
     {
+        //Constants for ease of readability
         private const int ImageWidth = 750;
         private const int ImageHeight = 400;
         private const int BytesPerPixel = 4;
+        
+        //Image ID tracking for temp saving
         private static int _imageId;
         private readonly int _thisImageId;
+        
+        //Has this graph been saved? true = no
         private bool isDataDirty = true;
 
-        private readonly byte[] _imageBuffer = new byte[1200000];
+        //Array containing all pixels of graph
+        private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
         
+        /// <summary>
+        /// Entry point, initializes the graph window, generates and displays graph.
+        /// </summary>
         public GraphPopUp(double[] x, double[] y)
         {
+            //Image temp save tracking
             _thisImageId = _imageId;
             _imageId++;
+            
             //Show window
             InitializeComponent();
 
@@ -46,9 +60,7 @@ namespace WpfApp1
         
             //Display graph
             var path = Path.GetTempPath();
-            
             var stream = File.OpenRead(path + "MyMathsPal\\graph" + _thisImageId + ".png");
-
             var graph = new BitmapImage();
             graph.BeginInit();
             graph.CacheOption = BitmapCacheOption.OnLoad;
@@ -59,6 +71,9 @@ namespace WpfApp1
             stream.Dispose();
         }
 
+        /// <summary>
+        /// Method to mirror graph along x axis to correct for different coordinate systems.
+        /// </summary>
         private void InvertGraph()
         {
             for (var i = 0; i < ImageHeight / 2; i++)
@@ -70,6 +85,9 @@ namespace WpfApp1
             }
         }
         
+        /// <summary>
+        /// Method to plot a black pixel at (x,y)
+        /// </summary>
         private void PlotPixel(int x, int y)
         {
             //Calculate starting byte of pixel
@@ -81,6 +99,9 @@ namespace WpfApp1
             _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
         }
 
+        /// <summary>
+        /// Method to plot a graph from arrays of x and y values
+        /// </summary>
         private void GenerateGraph(double[] xArray, double[] yArray)
         {
             //Set axis labels
@@ -88,7 +109,6 @@ namespace WpfApp1
             var yMin = yArray.Min();
             var xMax = xArray.Max();
             var xMin = xArray.Min();
-
             LabelYMax.Content = Math.Round(yMax);
             LabelYMin.Content = Math.Round(yMin);
             LabelXMax.Content = Math.Round(xMax);
@@ -102,11 +122,8 @@ namespace WpfApp1
             {
                 yArray[i] -= yMin;
             }
-            
             yMax = yArray.Max();
-
             var scale = (ImageHeight - 1) / yMax;
-
             for (var i = 0; i < ImageWidth; i++)
             {
                 yArray[i] *= scale;
@@ -123,7 +140,7 @@ namespace WpfApp1
             
             //Convert to image
             var path = Path.GetTempPath();
-            unsafe
+            unsafe //Required to use pointers
             {
                 fixed (byte* ptr = _imageBuffer)
                 {
@@ -135,42 +152,49 @@ namespace WpfApp1
             
         }
 
-        private void DrawAxis(double[] xArray, double[] yArray)
+        /// <summary>
+        /// Method to draw x and y axis in correct locations
+        /// </summary>
+        private void DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
         {
             //Find yArray index of y=0, default to below graph
             var yZero = 0;
             if (yArray.Min() > 0.0)
             {
-                //nothing
+                //Do nothing: yZero defaults to correct value
             }
             //y=0 is above graph
             else if (yArray.Max() < 0.0)
             {
-                yZero = yArray.Length - 1;
+                yZero = yArray.Count - 1;
             }
             //y=0 is within graph
             else
             {
-                for (var i = 0; i < yArray.Length; i++)
+                var yMin = yArray.Min();
+                var yMax = yArray.Max();
+                var range = yMax - yMin;
+                var step = range / yArray.Count;
+                for (var i = 0; i < yArray.Count; i++)
                 {
                     //if y=0 exists exactly
-                    if (yArray[i] == 0.0)
+                    if (yMin + (i * step) == 0)
                     {
                         yZero = i;
                         break;
                     }
-                    //if y=0 is skipped, set to line below
-                    if (yArray[i] > 0.0)
+                    //if y=0 is skipped, set to line to left
+                    if (yMin + (i * step) > 0.0)
                     {
                         yZero = i - 1;
                         break;
-                    }
+                    }                                                                                                  
                 }
             }
 
             //Scale y=0 line to image size
             Console.WriteLine("Unscaled yZero: " + yZero);
-            var temp = yZero / (double)yArray.Length;
+            var temp = yZero / (double)yArray.Count;
             temp *= ImageHeight;
             yZero = (int)temp;
             Console.WriteLine("Scaled yZero: " + yZero);
@@ -187,26 +211,30 @@ namespace WpfApp1
             var xZero = 0;
             if (xArray.Min() > 0.0)
             {
-                //nothing
+                //Do nothing: xZero defaults to correct value
             }
             //x=0 is to right of graph
             else if (xArray.Max() < 0.0)
             {
-                xZero = xArray.Length - 1;
+                xZero = xArray.Count - 1;
             }
             //x=0 is within graph
             else
             {
-                for (var i = 0; i < xArray.Length; i++)
+                var xMin = xArray.Min();
+                var xMax = xArray.Max();
+                var range = xMax - xMin;
+                var step = range / xArray.Count;
+                for (var i = 0; i < xArray.Count; i++)
                 {
                     //if x=0 exists exactly
-                    if (xArray[i] == 0.0)
+                    if (xMin + (i * step) == 0)
                     {
                         xZero = i;
                         break;
                     }
                     //if x=0 is skipped, set to line to left
-                    if (xArray[i] > 0.0)
+                    if (xMin + (i * step) > 0.0)
                     {
                         xZero = i - 1;
                         break;
@@ -216,7 +244,7 @@ namespace WpfApp1
             
             //Scale x=0 line to image size
             Console.WriteLine("Unscaled xZero: " + xZero);
-            temp = xZero / (double)xArray.Length;
+            temp = xZero / (double)xArray.Count;
             temp *= ImageWidth;
             xZero = (int)temp;
             Console.WriteLine("Scaled xZero: " + xZero);
@@ -229,6 +257,9 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Method to check if user wants to save before closing if they haven't already
+        /// </summary>
         private void GraphPopUp_Closing(object sender, CancelEventArgs e)
         {
             // If data is dirty, notify user and ask for a response
@@ -253,7 +284,5 @@ namespace WpfApp1
                 File.Delete(path + "MyMathsPal\\graph" + _thisImageId + ".png");
             }
         }
-        
     }
-
 }
