@@ -453,7 +453,7 @@ let ValidEvaluateBracketsCases =
 /// <summary>Test to ensure that evaluateBrackets performs correctly under valid input.</summary>
 [<TestCaseSource("ValidEvaluateBracketsCases")>]
 let GivenEvaluateBrackets_WhenPassedValidBracketedExpression_ThenReturnCorrectTuple(opList: terminal list, numList: terminal list, outLists: terminal list * terminal list) =
-    let result = evaluateBrackets opList numList
+    let result = evaluateBrackets opList numList performOperation
     Assert.That(result, Is.EqualTo(outLists))
 
 /// <summary>Test cases for invalid input to evaluateBrackets.</summary>
@@ -475,7 +475,7 @@ let InvalidEvaluateBracketsCases =
 /// <summary>Test to ensure that evaluateBrackets correctly throws exception with invalid input.</summary>
 [<TestCaseSource("InvalidEvaluateBracketsCases")>]
 let GivenEvaluateBrackets_WhenPassedInvalidExpression_RaiseExecError(opList: terminal list, numList: terminal list) =
-    Assert.Throws<ExecError>(fun () -> evaluateBrackets opList numList |> ignore) |> ignore
+    Assert.Throws<ExecError>(fun () -> evaluateBrackets opList numList performOperation |> ignore) |> ignore
 
 /// <summary>Example environment for testing.</summary>
 let env = Map [("x", [Number 2.0])
@@ -551,19 +551,19 @@ let GivenReduceRecursive_WhenPassedInvalidTokensWithVariables_RaiseExecError(tok
 /// <summary>Test cases for valid assign inputs to exec.</summary>
 let ValidExecAssignCases =
     [
-        TestCaseData([Word "x"; Assign; Number 2.0], [Number 2.0], ("x", [Number 2.0]))
-        TestCaseData([Word "x"; Assign; Word "x";], [Number 2.0], ("x", [Number 2.0]))
-        TestCaseData([Word "x"; Assign; Word "x"; Plus; Word "x"], [Number 4.0], ("x", [Number 4.0]))
-        TestCaseData([Word "y"; Assign; Word "z"], [Word "y"; Assign; Word "z"], ("y", [Word "z"]))
-        TestCaseData([Word "b"; Assign; Word "x"; Times; Word "y"], [Number 6.0], ("b", [Number 6.0]))
-        TestCaseData([Word "x"; Assign; Word "x"; Plus; Number 1.0], [Number 3.0], ("x", [Number 3.0]))
+        TestCaseData([Word "x"; Assign; Number 2.0], ("x", [Number 2.0]))
+        TestCaseData([Word "x"; Assign; Word "x";], ("x", [Number 2.0]))
+        TestCaseData([Word "x"; Assign; Word "x"; Plus; Word "x"], ("x", [Number 4.0]))
+        TestCaseData([Word "y"; Assign; Word "z"], ("y", [Word "z"]))
+        TestCaseData([Word "b"; Assign; Word "x"; Times; Word "y"], ("b", [Number 6.0]))
+        TestCaseData([Word "x"; Assign; Word "x"; Plus; Number 1.0], ("x", [Number 3.0]))
     ]
 
 /// <summary>Test to ensure that exec correctly updates environment when passed valid assign.</summary>
 [<TestCaseSource("ValidExecAssignCases")>]
-let GivenExec_WhenPassedValidAssign_ThenAddToEnvAndReturn(terminals: terminal list, reduction: terminal list, entry: string*terminal list) =
+let GivenExec_WhenPassedValidAssign_ThenAddToEnvAndReturn(terminals: terminal list, entry: string*terminal list) =
     let result = exec terminals env
-    Assert.That(result, Is.EqualTo((reduction, (env.Add entry))))
+    Assert.That(result, Is.EqualTo((terminals, (env.Add entry))))
 
 /// <summary>Test cases for valid input to createTerminalListUpToComma.</summary>
 let CreateTerminalListUpToCommaCases =
@@ -670,3 +670,6 @@ let UserFunctionErrorCases =
 [<TestCaseSource("UserFunctionErrorCases")>]
 let GivenExec_WhenPassedInvalidUserFunctionCall_RaiseExecError(terminals: terminal list, env: Map<string, terminal list>) =
     Assert.Throws<ExecError>(fun () -> exec terminals env |> ignore) |> ignore
+    
+//TEST DIFFERENTIATE
+//ADD ERROR CASE FOR ASSIGN ASSIGN
