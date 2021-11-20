@@ -273,5 +273,10 @@ namespace WpfApp1
                 File.Delete(path + "MyMathsPal\\graph" + _thisImageId + ".png");
             }
         }
+
+        private void SaveButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            
+        }
     }
 }

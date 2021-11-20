@@ -4,27 +4,52 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Title="GraphPopUp"
-        Height="500"
+        Height="530"
         Width="825"
         Background="#B4C7E7"
         Icon="mymathspal_logo.ico"
         Closing="GraphPopUp_Closing">
-        
-    <Grid>
-        
-        <Image Name="ImageGraph" Source="Images/graph.png"  VerticalAlignment="Center" HorizontalAlignment="Center" Height="400" Width="750"/>
-        
-        <Label Content="y" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="25,5,0,0"></Label>
-        <Label Content="x" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="0,0,5,25"></Label>
-        
-        <Label Name="LabelYMax" Content="450" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="5,25,0,0"></Label>
-        <Label Name="LabelYMin" Content="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Padding="5,0,0,25"></Label>
-        <Label Name="LabelXMax" Content="700" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="0,0,25,5"></Label>
-        <Label Name="LabelXMin" Content="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Padding="25,0,0,5"></Label>
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <WrapPanel Height="30" VerticalAlignment="Center" Background="#8FAADC">
+            <WrapPanel x:Name="MyToolbar" Margin="2,2,0, 0" Height="30" Background="#8FAADC">
+                <Button Click="SaveButton_OnClick" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px"
+                        FontFamily="Courier New" FontWeight="Bold" FontSize="14" Padding="3" Margin="5,0,0,0">
+                    Save
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <Separator Background="#8FAADC" />
+            </WrapPanel>
+        </WrapPanel>
+
+        <Grid Grid.Row="1">
+
+            <Image Name="ImageGraph" Source="Images/graph.png" VerticalAlignment="Center" HorizontalAlignment="Center"
+                   Height="400" Width="750" />
+
+            <Label Content="y" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="25,5,0,0" />
+            <Label Content="x" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="0,0,5,25" />
+
+            <Label Name="LabelYMax" Content="450" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="5,25,0,0" />
+            <Label Name="LabelYMin" Content="0" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                   Padding="5,0,0,25" />
+            <Label Name="LabelXMax" Content="700" VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                   Padding="0,0,25,5" />
+            <Label Name="LabelXMin" Content="0" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                   Padding="25,0,0,5" />
+
+        </Grid>
     </Grid>
 </Window>
