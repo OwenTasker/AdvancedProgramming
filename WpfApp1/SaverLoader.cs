@@ -96,7 +96,7 @@ namespace WpfApp1
                 throw new SaveLoadException("Unable To Save: No Contents Or Variables");
             }
 
-            var fileToSaveTo = DetermineFileToSaveTo("MyMathsPal File (*.mmp)|*.mmp");
+            var fileToSaveTo = DetermineFileToSaveTo("MyMathsPal File (*.mmp)|*.mmp", "");
             
             if (fileToSaveTo != null)
             {
@@ -104,12 +104,14 @@ namespace WpfApp1
             }
         }
 
-        public static SaveFileDialog DetermineFileToSaveTo(string fileType)
+        public static SaveFileDialog DetermineFileToSaveTo(string fileType, string defaultName)
         {
             var dialog = new SaveFileDialog
             {
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-
+                
+                FileName = defaultName,
+                
                 Filter = fileType
             };
 
