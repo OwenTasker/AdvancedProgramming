@@ -1016,5 +1016,6 @@ let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(operator: term
     
 // Test that perform operation throws errors
 // Test that auto differentiate performs correct expected differentiation
+
 // Test that auto differentiate throws errors
 // Test that differentiate performs correct expected differentiation

@@ -137,7 +137,7 @@ let getAssociativity operator =
 /// A tuple containing the operator stack with all elements up to and including the next left parenthesis popped and
 /// the number stack with the elements updated to represent the outcome of the bracketed operation.
 /// </returns>
-let rec evaluateBrackets opStack (numStack : 'a) (performOperation : terminal -> 'a -> 'a) : terminal list * 'a =
+let rec evaluateBrackets opStack (numStack : 'a) (performOperation : terminal -> 'a -> 'a) =
     match opStack with
     | []
     | Rpar :: _ -> ExecError "Execution Error: Parenthesis encountered as an operator." |> raise
