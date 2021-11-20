@@ -64,6 +64,7 @@ let GivenTokenize_WhenPassedInput_ReturnCorrectTokens(op1, res) =
 let OperatorCases =
     [
         TestCaseData(["+"],[UnaryPlus])
+        TestCaseData([","],[Comma])
         TestCaseData(["-"],[UnaryMinus])
         TestCaseData(["3";"+"],[Number 3.0;Plus])
         TestCaseData(["3";"-"],[Number 3.0;Minus])
@@ -118,7 +119,7 @@ let WordCases =
         TestCaseData(["D"], [Word "D"])
         TestCaseData(["E"], [Word "E"])
         TestCaseData(["Word";"Word"], [Word "Word"; Word "Word"])
-        TestCaseData(["Word";"5";"Word"], [Word "Word"; Number 5.0; Word "Word"])
+        TestCaseData(["Word";"5";"Word"], [Word "Word"; Number 5.0; Times; Word "Word"])
     ]
 
 /// <summary>Test cases for number inputs to scan.</summary>
@@ -138,10 +139,22 @@ let NumberCases =
         TestCaseData([".25"], [Number 0.25])
         TestCaseData([".252"], [Number 0.252])
     ]
+    
+let NumberWordCases =
+    [
+        TestCaseData(["10";"Word"], [Number 10.0; Times; Word "Word"])
+    ]
+    
+let NumberFunctionCases =
+    [
+        TestCaseData(["10";"ceil"], [Number 10.0; Function "ceil"])
+    ]
 
 /// <summary>Test to ensure that scan returns the correct output for valid inputs.</summary>
 [<TestCaseSource("OperatorCases")>]
 [<TestCaseSource("UnaryCases")>]
+[<TestCaseSource("NumberWordCases")>]
+[<TestCaseSource("NumberFunctionCases")>]
 [<TestCaseSource("FunctionCases")>]
 [<TestCaseSource("AssignCases")>]
 [<TestCaseSource("WordCases")>]
