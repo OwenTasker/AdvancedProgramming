@@ -370,31 +370,6 @@ let performOperation operator numStack =
             :: numStack.[2..]
 
 /// <summary>
-/// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
-/// </summary>
-///
-/// <param name="opStack">A stack of terminals representing operators.</param>
-/// <param name="numStack">A stack of Number terminals.</param>
-///
-/// <returns>
-/// A tuple containing the operator stack with all elements up to and including the next left parenthesis popped and
-/// the number stack with the elements updated to represent the outcome of the bracketed operation.
-/// </returns>
-let rec evaluateBrackets opStack numStack =
-    match opStack with
-    | []
-    | Rpar :: _ ->
-        ExecError "Execution Error: Parenthesis encountered as an operator."
-        |> raise
-    | Lpar :: tail ->
-        match numStack with
-        | _ :: _ -> tail, numStack
-        | [] ->
-            ExecError "Execution Error: Empty number stack following evaluation of bracketed expression."
-            |> raise
-    | head :: tail -> evaluateBrackets tail (performOperation head numStack)
-
-/// <summary>
 /// Extracts a bracketed expression from a list of terminals, including any bracketed sub expressions.
 /// </summary>
 ///
@@ -449,7 +424,7 @@ let rec autoDifferentiate terminals opStack numStack =
                  :: numStack)
         | Lpar -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
         | Rpar ->
-            match evaluateBrackets opStack numStack with
+            match evaluateBrackets opStack numStack performOperation with
             | opStack, numStack -> autoDifferentiate terminalTail opStack numStack
         | UnaryMinus
         | UnaryPlus

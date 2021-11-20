@@ -124,3 +124,25 @@ let getPrecedence operator =
 /// <returns>The associativity value of the operator.</returns>
 let getAssociativity operator =
     (Map.find operator precedenceAssociativityMap) |> snd
+
+/// <summary>
+/// Recursively calls perform operation until a terminal representing a left parenthesis is encountered.
+/// </summary>
+///
+/// <param name="opStack">A stack of terminals representing operators.</param>
+/// <param name="numStack">A stack of Number terminals.</param>
+/// <param name="performOperation">A function to control how operations are performed over the numbers</param>
+///
+/// <returns>
+/// A tuple containing the operator stack with all elements up to and including the next left parenthesis popped and
+/// the number stack with the elements updated to represent the outcome of the bracketed operation.
+/// </returns>
+let rec evaluateBrackets opStack (numStack : 'a) (performOperation : terminal -> 'a -> 'a) : terminal list * 'a =
+    match opStack with
+    | []
+    | Rpar :: _ -> ExecError "Execution Error: Parenthesis encountered as an operator." |> raise
+    | Lpar :: tail ->
+        match numStack with
+        | _ :: _ -> tail, numStack
+        | [] -> ExecError "Execution Error: Empty number stack following evaluation of bracketed expression." |> raise
+    | head :: tail -> evaluateBrackets tail (performOperation head numStack) performOperation
