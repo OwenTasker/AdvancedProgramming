@@ -29,7 +29,7 @@ let LogEInputsOutputs = [
 
 [<TestCaseSource("LogEInputsOutputs")>]
 let givenLogE_ProvidedValidInput_ReturnCorrectApproximation input output =
-    let logRes = LogE' input
+    let logRes = LogE input
     let a = logRes > (output-0.000001)
     let b = logRes < (output+0.000001)
     Assert.True(a && b)
@@ -127,4 +127,4 @@ let InvalidLogInputs = [
 
 [<TestCaseSource("InvalidLogInputs")>]
 let GivenLogE_ProvidedInvalidInput_ThrowInvalidArgumentError input =
-    Assert.Throws<InvalidArgumentError>(fun () -> LogE' input |> ignore) |> ignore
+    Assert.Throws<InvalidArgumentError>(fun () -> LogE input |> ignore) |> ignore
