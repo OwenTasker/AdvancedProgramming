@@ -151,7 +151,27 @@ namespace WpfApp1
             //y=0 is within graph
             else
             {
+                var yMin = yArray.Min();
+                var yMax = yArray.Max();
+                var range = yMax - yMin;
+                var step = range / yArray.Length;
+
                 for (var i = 0; i < yArray.Length; i++)
+                {
+                    //if y=0 exists exactly
+                    if (yMin + (i * step) == 0)
+                    {
+                        yZero = i;
+                        break;
+                    }
+                    //if y=0 is skipped, set to line to left
+                    if (yMin + (i * step) > 0.0)
+                    {
+                        yZero = i - 1;
+                        break;
+                    }                                                                                                  
+                }
+                /*for (var i = 0; i < yArray.Length; i++)
                 {
                     //if y=0 exists exactly
                     if (yArray[i] == 0.0)
@@ -165,7 +185,7 @@ namespace WpfApp1
                         yZero = i - 1;
                         break;
                     }
-                }
+                }*/
             }
 
             //Scale y=0 line to image size
@@ -197,7 +217,28 @@ namespace WpfApp1
             //x=0 is within graph
             else
             {
+                var xMin = xArray.Min();
+                var xMax = xArray.Max();
+                var range = xMax - xMin;
+                var step = range / xArray.Length;
+
                 for (var i = 0; i < xArray.Length; i++)
+                {
+                    //if x=0 exists exactly
+                    if (xMin + (i * step) == 0)
+                    {
+                        xZero = i;
+                        break;
+                    }
+                    //if x=0 is skipped, set to line to left
+                    if (xMin + (i * step) > 0.0)
+                    {
+                        xZero = i - 1;
+                        break;
+                    }
+                }
+                
+                /*for (var i = 0; i < xArray.Length; i++)
                 {
                     //if x=0 exists exactly
                     if (xArray[i] == 0.0)
@@ -211,7 +252,7 @@ namespace WpfApp1
                         xZero = i - 1;
                         break;
                     }
-                }
+                }*/
             }
             
             //Scale x=0 line to image size
