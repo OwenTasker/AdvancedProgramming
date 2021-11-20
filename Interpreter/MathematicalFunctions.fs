@@ -38,3 +38,14 @@ let Log10 input =
     
 let LogX newBase input =
     formNewBaseRuleFraction input newBase
+    
+let TerminalLog logFunction logVal=
+    match logFunction with
+    | nameof(LogE) -> LogE logVal |> Number
+    | nameof(Log10) -> Log10 logVal |> Number
+    | nameof(Log2) -> Log2 logVal |> Number
+    | _ -> InvalidArgumentError "Invalid Arguments" |> raise
+    
+    
+let rootToTerminals (terminals: terminal list) denominator =
+    [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]

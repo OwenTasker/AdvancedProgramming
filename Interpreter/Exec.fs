@@ -244,9 +244,6 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
         | a, b -> setArguments a (env.Add(x, [reduce b env] ))
     | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
     
-    
-let rootToTerminals (terminals: terminal list) denominator =
-    [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
 
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
@@ -311,11 +308,32 @@ let rec exec terminals (env: Map<string, terminal list>) =
             let assignment, expression = extractExpression tail.[1..] []
             if assignment <> []
             then
-                ExecError "Execution Error" |> raise
+                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"ln\"" |> raise
             else
                 match reduce expression env with
-                | Number a -> [Number (LogE a)], (env |> Map.toSeq |> dict)
-                | _ -> ExecError "Execution Error" |> raise
+                | Number a ->
+                    [(TerminalLog (nameof LogE) a)], (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Invalid " |> raise
+        | "log2" ->
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"log2\"" |> raise
+            else
+                match reduce expression env with
+                | Number a ->
+                    [(TerminalLog (nameof Log2) a)], (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Invalid " |> raise
+        | "log10" ->
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"log10\"" |> raise
+            else
+                match reduce expression env with
+                | Number a ->
+                    [(TerminalLog (nameof Log10) a)], (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->
         if closed terminals env
