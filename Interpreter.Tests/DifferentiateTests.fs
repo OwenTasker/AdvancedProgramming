@@ -919,14 +919,102 @@ let GivenPowOperator_WhenCalledWithTwoDuals_ReturnCorrectAnswer (op1: Dual, op2:
     Assert.That(result, Is.EqualTo(res))
 
 // Test that perform binary operation calls the expected operator
+/// <summary>Test to ensure that performBinaryOperation performs correctly for additions.</summary>
+[<TestCaseSource("PlusCases")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleAddition_ReturnCorrectAnswer(op1: Dual, op2: Dual, res: Dual) =
+    let result = performBinaryOperation Plus op1 op2
+    Assert.That(result, Is.EqualTo(res))
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for subtractions.</summary>
+[<TestCaseSource("MinusCases")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleSubtraction_ReturnCorrectAnswer(op1: Dual, op2: Dual, res: Dual) =
+    let result = performBinaryOperation Minus op1 op2
+    Assert.That(result, Is.EqualTo(res))
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for multiplication.</summary>
+[<TestCaseSource("TimesCases")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleMultiplication_ReturnCorrectAnswer(op1: Dual, op2: Dual, res: Dual) =
+    let result = performBinaryOperation Times op1 op2
+    Assert.That(result, Is.EqualTo(res))
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for divisions.</summary>
+[<TestCaseSource("DivideCases")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleDivision_ReturnCorrectAnswer(op1: Dual, op2: Dual, res: Dual) =
+    let result = performBinaryOperation Divide op1 op2
+    Assert.That(result, Is.EqualTo(res))
+
+/// <summary>Test to ensure that performBinaryOperation performs correctly for exponentiation.</summary>
+[<TestCaseSource("ExponentCases")>]
+let GivenPerformBinaryOperation_WhenPassedSimpleExponent_ReturnCorrectAnswer(op1: Dual, op2: Dual, res: Dual) =
+    let result = performBinaryOperation Exponent op1 op2
+    Assert.That(result, Is.EqualTo(res))
 
 // Test that perform binary operation throws errors
 // Test that perform unary operation calls the expected operator
+/// <summary>Test cases for valid input to calculateUnaryOperation.</summary>
+let ValidUnaryData =
+    [
+        TestCaseData(UnaryMinus, Const (1.0, 0.0), Const (-1.0, 0.0))
+        TestCaseData(UnaryMinus, Var (Word "x", 1.0), Expr ([UnaryMinus; Lpar; Word "x"; Rpar;], [UnaryMinus; Number 1.0]))
+        TestCaseData(UnaryMinus, Expr ([UnaryMinus; Lpar; Word "x"; Rpar;], [UnaryMinus; Number 1.0]), Expr ([UnaryMinus; Lpar; UnaryMinus; Lpar; Word "x"; Rpar; Rpar;], [UnaryMinus; Lpar; UnaryMinus; Number 1.0; Rpar]))
+        TestCaseData(UnaryPlus, Const (1.0, 0.0), Const (1.0, 0.0))
+        TestCaseData(UnaryPlus, Var (Word "x", 1.0), Var (Word "x", 1.0))
+        TestCaseData(UnaryPlus, Expr ([UnaryMinus; Lpar; Word "x"; Rpar;], [UnaryMinus; Number 1.0]), Expr ([UnaryMinus; Lpar; Word "x"; Rpar;], [UnaryMinus; Number 1.0]))
+    ]
+
+/// <summary>Test cases for invalid input to calculateUnaryOperation.</summary>
+let InvalidUnaryData =
+    [
+        TestCaseData(Plus)
+        TestCaseData(Minus)
+        TestCaseData(Times)
+        TestCaseData(Divide)
+        TestCaseData(Exponent)
+        TestCaseData(Lpar)
+        TestCaseData(Rpar)
+    ]
+
+/// <summary>Test to ensure that performUnaryOperation performs correctly for valid input.</summary>
+[<TestCaseSource("ValidUnaryData")>]
+let GivenUnary_WhenPassedSimpleExpression_ReturnCorrectAnswer(op1: terminal, op2: Dual, res: Dual) =
+    let result = performUnaryOperation op1 op2
+    Assert.That(result, Is.EqualTo(res))
+    
 // Test that perform unary operation throws errors
+
+/// <summary>Test to ensure that performUnaryOperation performs correctly for invalid input.</summary>
+[<TestCaseSource("InvalidUnaryData")>]
+let GivenUnary_WhenPassedInvalidOperator_RaiseUnaryError(operator: terminal) =
+    Assert.Throws<UnaryError>(fun () -> performUnaryOperation operator (Const (1.0, 0.0)) |> ignore) |> ignore
+    
 // Test that perform operation calls the expected operator
+
+let ValidPerformOperationCases =
+    [
+        //Const(-3.0, 0.0), Const(-4.0, 0.0), Const(-7.0, 0.0)
+        TestCaseData(Plus, [Const(-3.0, 0.0); Const(-4.0, 0.0)], [Const(-7.0, 0.0)])
+        TestCaseData(Minus, [Const(-3.0, 0.0); Const(-4.0, 0.0)], [Const(-1.0, 0.0)])
+        TestCaseData(Times, [Const(-3.0, 0.0); Const(-4.0, 0.0)], [Const(12.0, 0.0)])
+        TestCaseData(Divide, [Const(-3.0, 0.0); Const(-6.0, 0.0)], [Const(2.0, 0.0)])
+        TestCaseData(Exponent, [Const(3.0, 0.0); Const(-4.0, 0.0)], [Const(-64.0, 0.0)])
+        TestCaseData(UnaryPlus, [Const(-3.0, 0.0)], [Const(-3.0, 0.0)])
+        TestCaseData(UnaryMinus, [Const(-3.0, 0.0)], [Const(3.0, 0.0)])
+        TestCaseData(Plus, [Const(-3.0, 0.0); Const(-4.0, 0.0); Const(-7.0, 0.0)], [Const(-7.0, 0.0); Const(-7.0, 0.0)])
+        TestCaseData(Minus, [Const(-3.0, 0.0); Const(-4.0, 0.0); Const(-7.0, 0.0)], [Const(-1.0, 0.0); Const(-7.0, 0.0)])
+        TestCaseData(Times, [Const(-3.0, 0.0); Const(-4.0, 0.0); Const(-7.0, 0.0)], [Const(12.0, 0.0); Const(-7.0, 0.0)])
+        TestCaseData(Divide, [Const(-3.0, 0.0); Const(-6.0, 0.0); Const(-7.0, 0.0)], [Const(2.0, 0.0); Const(-7.0, 0.0)])
+        TestCaseData(Exponent, [Const(3.0, 0.0); Const(-4.0, 0.0); Const(-7.0, 0.0)], [Const(-64.0, 0.0); Const(-7.0, 0.0)])
+        TestCaseData(UnaryPlus, [Const(-3.0, 0.0); Const(-7.0, 0.0)], [Const(-3.0, 0.0); Const(-7.0, 0.0)])
+        TestCaseData(UnaryMinus, [Const(-3.0, 0.0); Const(-7.0, 0.0)], [Const(3.0, 0.0); Const(-7.0, 0.0)])
+    ]
+
+/// <summary>Test to ensure that performOperation performs correctly with valid input.</summary>
+[<TestCaseSource("ValidPerformOperationCases")>]
+let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(operator: terminal, numList: Dual list, res: Dual list) =
+    let result = performOperation operator numList
+    Assert.That(result, Is.EqualTo(res))
+    
 // Test that perform operation throws errors
-// Test that evaluate brackets updates stacks correctly
-// Test that evaluate brackets throws errors
 // Test that auto differentiate performs correct expected differentiation
 // Test that auto differentiate throws errors
 // Test that differentiate performs correct expected differentiation
