@@ -1017,5 +1017,27 @@ let GivenPerformOperation_WhenPassedValidInput_ReturnCorrectTuple(operator: term
 // Test that perform operation throws errors
 // Test that auto differentiate performs correct expected differentiation
 
+// terminal list -> terminal list -> Dual list -> terminal list
+
+let AutoDifferentiateCases =
+    [
+        TestCaseData([Number 2.0], [Number 0.0])
+        TestCaseData([Word "x"], [Number 1.0])
+        TestCaseData([Word "x"; Plus; Word "x"], [Number 2.0])
+        TestCaseData([Word "x"; Times; Word "x"], [Word "x"; Plus; Word "x"])
+        TestCaseData([Word "x"; Exponent; Number 2.0], [Number 2.0; Times; Word "x"; Exponent; Number 1.0])
+        TestCaseData([Number 2.0; Exponent; Word "x"], [Function "ln"; Lpar; Number 2.0; Rpar; Times; Number 2.0; Exponent; Word "x"])
+    ]
+    
+[<TestCaseSource("AutoDifferentiateCases")>]
+let GivenAutoDifferentiate_WhenPassedValidExpression_ReturnFirstDerivative(expression : terminal list, expected : terminal list) =
+    let result = autoDifferentiate expression [] []
+    Assert.That(result, Is.EqualTo(expected))
+    
 // Test that auto differentiate throws errors
 // Test that differentiate performs correct expected differentiation
+
+[<TestCaseSource("AutoDifferentiateCases")>]
+let GivenDifferentiate_WhenPassedValidExpression_ReturnFirstDerivative(expression : terminal list, expected : terminal list) =
+    let result = differentiate expression
+    Assert.That(result, Is.EqualTo(expected))
