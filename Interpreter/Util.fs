@@ -48,6 +48,10 @@ let functions = [
                  ("cbrt", "One Argument; A function to determine the cube root of a value, given a value of 8, will return 2")
                  ("round", "One Argument; A function to determine the rounded value of the provided argument, given a value of 2.5, will return 3")
                  ("plot", "")
+                 ("ln", "One Argument; A function to determine the natural logarithm of the provided argument to 6 accurate decimal points")
+                 ("logTwo", "One Argument; A function to determine the base 2 logarithm of the provided argument to 6 accurate decimal points")
+                 ("logTen", "One Argument; A function to determine the base 10 logarithm of the provided argument to 6 accurate decimal points")
+                 ("logX", "Two Arguments; A function to determine the base X logarithm of the second provided argument to 6 accurate decimal points")
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
                  ("ln", "")
                  ]
@@ -91,6 +95,9 @@ let rec terminalListToString str list =
     match list with
     | head :: tail -> terminalListToString (str + individualTerminalToString head ) tail
     | [] -> str
+    
+let terminalToNum term =
+    term |> individualTerminalToString |> System.Double.Parse 
     
 /// <summary>
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
