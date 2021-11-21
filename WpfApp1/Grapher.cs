@@ -158,6 +158,19 @@ namespace WpfApp1
                 throw new Util.ExecError();
             }
 
+            //If range is backwards, swap them
+            if (Convert.ToDouble(trimmedArgsArray[1]) > Convert.ToDouble(trimmedArgsArray[2]))
+            {
+                (trimmedArgsArray[1], trimmedArgsArray[2]) = (trimmedArgsArray[2], trimmedArgsArray[1]);
+            }
+            
+            //If range is 0, change to default range
+            if (trimmedArgsArray[1] == trimmedArgsArray[2])
+            {
+                trimmedArgsArray[1] = "-10";
+                trimmedArgsArray[2] = "10";
+            }
+
             return trimmedArgsArray;
         }
     }
