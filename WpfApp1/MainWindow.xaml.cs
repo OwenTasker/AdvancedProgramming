@@ -34,7 +34,7 @@ namespace WpfApp1
         /// <summary>
         /// Collection of mathematical functions.
         /// </summary>
-        private Trie functions;
+        private Trie _functions;
         
         /// <summary>
         /// Class to represent a user defined variable.
@@ -56,7 +56,7 @@ namespace WpfApp1
         /// </summary>
         public MainWindow()
         {
-            InitialiseFunctionTrie();
+            InitialiseSuggestionTrie();
             
             InitializeComponent();
             
@@ -64,18 +64,18 @@ namespace WpfApp1
         }
 
         /// <summary>
-        /// Method to initialise trie used for function suggestion dropdown.
+        /// Method to initialise trie used for suggestion dropdown.
         /// </summary>
-        private void InitialiseFunctionTrie()
+        private void InitialiseSuggestionTrie()
         {
-            functions = new Trie();
+            _functions = new Trie();
 
             Dictionary<string, string> fsfunctions = Util.functions.ToDictionary(t => t.Item1, t => t.Item2);
 
-            foreach (KeyValuePair<string, string> p in fsfunctions)
+            foreach (var p in fsfunctions)
             {
-                string s = p.Key + " : " + p.Value;
-                functions.Add(s);
+                var s = p.Key + " : " + p.Value;
+                _functions.Add(s);
             }
         }
 
@@ -137,7 +137,7 @@ namespace WpfApp1
                     consoleText.AppendText(Util.terminalListToString("", item1) + "\n>>");
                     _environment = item2;
                     UpdateVariableWindow();
-                    UpdateTrie();
+                    UpdateSuggestionTrie();
                     inputText.Text = "Enter query here...";
                 }
                 catch (Util.TokenizeError ex1)
@@ -194,6 +194,90 @@ namespace WpfApp1
         }
 
         /// <summary>
+        /// Method to control addition of text replacement for a defined list of special characters' in input box.
+        /// </summary>
+        private void SpecialCharacterButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (inputText.Text == "Enter query here...")
+            {
+                inputText.Text = "";
+            }
+            
+            var caretPos = inputText.CaretIndex;
+
+            if (sender.Equals(sqrtButton))
+            {
+                var sqrtString = "sqrt()";
+                inputText.Text = inputText.Text.Insert(caretPos, sqrtString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + sqrtString.Length - 1;
+            }
+            else if (sender.Equals(cbrtButton))
+            {
+                var cbrtString = "cbrt()";
+                inputText.Text = inputText.Text.Insert(caretPos, cbrtString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + cbrtString.Length - 1;
+            }
+            else if (sender.Equals(xrtButton))
+            {
+                var xrtString = "xrt()";
+                inputText.Text = inputText.Text.Insert(caretPos, xrtString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + xrtString.Length - 1;
+            }
+            else if (sender.Equals(differentiateButton))
+            {
+                var differentiateString = "differentiate()";
+                inputText.Text = inputText.Text.Insert(caretPos, differentiateString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + differentiateString.Length - 1;
+            }
+            else if (sender.Equals(integralButton))
+            {
+                var integralString = "integrate()";
+                inputText.Text = inputText.Text.Insert(caretPos, integralString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + integralString.Length - 1;
+            }
+            else if (sender.Equals(absButton))
+            {
+                var absString = "abs()";
+                inputText.Text = inputText.Text.Insert(caretPos, absString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + absString.Length - 1;
+            }
+            else if (sender.Equals(modButton))
+            {
+                var modString = "%";
+                inputText.Text = inputText.Text.Insert(caretPos, modString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + 1;
+            }
+            else if (sender.Equals(factorialButton))
+            {
+                var factorialString = "!";
+                inputText.Text = inputText.Text.Insert(caretPos, factorialString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + 1;
+            }
+            else if (sender.Equals(piButton))
+            {
+                var piString = "pi";
+                inputText.Text = inputText.Text.Insert(caretPos, piString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + 2;
+            }
+            else if (sender.Equals(eulerButton))
+            {
+                var eulerString = "e";
+                inputText.Text = inputText.Text.Insert(caretPos, eulerString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + 1;
+            }
+        }
+
+        /// <summary>
         /// Method to control action of Save button.
         /// </summary>
         private void SaveButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
@@ -221,7 +305,7 @@ namespace WpfApp1
                 _environment = dictionary;
                 consoleText.Text = item2;
                 UpdateVariableWindow();
-                UpdateTrie();
+                UpdateSuggestionTrie();
             }
             catch (SaverLoader.SaveLoadException e)
             {
@@ -237,7 +321,7 @@ namespace WpfApp1
             consoleText.Text = ">>";
             _environment = new Dictionary<string, FSharpList<Util.terminal>>();
             UpdateVariableWindow();
-            UpdateTrie();
+            UpdateSuggestionTrie();
         }
         
         /// <summary>
@@ -245,12 +329,12 @@ namespace WpfApp1
         /// </summary>
         private void inputText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string input = inputText.Text;
-            string[] split = Regex.Split(input, @"[^a-zA-Z]");
+            var input = inputText.Text;
+            var split = Regex.Split(input, @"[^a-zA-Z]");
 
-            string partialMatch = "";
+            var partialMatch = "";
             
-            for (int i = split.Length - 1; i >= 0; i--)
+            for (var i = split.Length - 1; i >= 0; i--)
             {
                 if (!split[i].Equals(""))
                 {
@@ -259,7 +343,7 @@ namespace WpfApp1
                 }
             }
             
-            HashSet<string> matches = functions.Contains(partialMatch);
+            var matches = _functions.Contains(partialMatch);
 
             if (input.Equals("Enter query here...") || input.Equals(""))
             {
@@ -271,16 +355,13 @@ namespace WpfApp1
                 suggestionDropDown.SelectedIndex = -1;
                 suggestionDropDown.SelectedItem = null;
                 
-                foreach (string s in matches)
-                {
-                    suggestionDropDown.ItemsSource = matches.ToList();
-                    suggestionDropDown.Visibility = Visibility.Visible;
-                }
+                suggestionDropDown.ItemsSource = matches.ToList();
+                suggestionDropDown.Visibility = Visibility.Visible;
             }
             else
             {
                 suggestionDropDown.Visibility = Visibility.Collapsed;
-                suggestionDropDown.ItemsSource = new List<string>();;
+                suggestionDropDown.ItemsSource = new List<string>();
             }
         }
         
@@ -293,16 +374,16 @@ namespace WpfApp1
             {
                 suggestionDropDown.Visibility = Visibility.Collapsed;
                 // remove event handler for updating suggestions
-                inputText.TextChanged -= new TextChangedEventHandler(inputText_TextChanged);
+                inputText.TextChanged -= inputText_TextChanged;
 
+                var input = inputText.Text;
                 if (suggestionDropDown.SelectedIndex != -1)
                 {
-                    string input = inputText.Text;
-                    string[] split = Regex.Split(input, @"[^a-zA-Z]");
+                    var split = Regex.Split(input, @"[^a-zA-Z]");
 
-                    string partialMatch = "";
+                    var partialMatch = "";
             
-                    for (int i = split.Length - 1; i >= 0; i--)
+                    for (var i = split.Length - 1; i >= 0; i--)
                     {
                         if (!split[i].Equals(""))
                         {
@@ -311,9 +392,9 @@ namespace WpfApp1
                         }
                     }
                     
-                    string s = suggestionDropDown.SelectedItem.ToString().Substring(partialMatch.Length);
+                    var s = suggestionDropDown.SelectedItem.ToString().Substring(partialMatch.Length);
 
-                    int caretPos = inputText.CaretIndex;
+                    var caretPos = inputText.CaretIndex;
 
                     if (suggestionDropDown.SelectedItem.ToString().Contains(":"))
                     {
@@ -329,27 +410,27 @@ namespace WpfApp1
                     }
                 }
 
-                // readd event handler for updating suggestions
-                inputText.TextChanged += new TextChangedEventHandler(inputText_TextChanged);
+                // re-add event handler for updating suggestions
+                inputText.TextChanged += inputText_TextChanged;
             }
         }
         
         /// <summary>
         /// Method to refresh suggestion trie.
         /// </summary>
-        private void UpdateTrie()
+        private void UpdateSuggestionTrie()
         {
             var keyValuePairs = _environment.ToList();
             var variablesList = keyValuePairs.Select(pair => new Variable
                 {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
             
             // reinitialise trie
-            InitialiseFunctionTrie();
+            InitialiseSuggestionTrie();
             
             // add varlist to trie
-            foreach (Variable v in variablesList)
+            foreach (var v in variablesList)
             {
-                functions.Add(v.Name);
+                _functions.Add(v.Name);
             }
         }
     }

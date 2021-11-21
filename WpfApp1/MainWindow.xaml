@@ -52,8 +52,34 @@
             <Label x:Name="consoleLabel" Content="Console" Margin="25,0,0,0" Height="35" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" FontFamily="Courier New" FontWeight="Bold" FontSize="16" Foreground="Black"/>
             <TextBox x:Name="consoleText" Text=">>" TextWrapping="NoWrap" Margin="25,25,250,80" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="true" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
 
-            <TextBox x:Name="inputText" Height="30" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalAlignment="Bottom" Margin="25,0,346,25" GotFocus="InputTextBoxRemovePrompt" LostFocus="InputTextBoxAddPrompt" KeyDown="EnterKeyClick" TextChanged="inputText_TextChanged" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
-            <ListBox x:Name="suggestionDropDown" SelectionChanged="suggestionDropDown_SelectionChanged" MinHeight="25" MaxHeight="150" Background="AliceBlue" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25, 0, 250, 55" FontFamily="Courier New"/>
+            <ListBox x:Name="suggestionDropDown" SelectionChanged="suggestionDropDown_SelectionChanged" MinHeight="25" MaxHeight="150" Background="AliceBlue" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25, 0, 250, 55" FontFamily="Courier New"/>
+            <TextBox x:Name="inputText" Height="30" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Hidden" VerticalAlignment="Bottom" Margin="25,0,346,25" GotFocus="InputTextBoxRemovePrompt" LostFocus="InputTextBoxAddPrompt" KeyDown="EnterKeyClick" TextChanged="inputText_TextChanged" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
+            
+            <Grid Width="205" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 25, 15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                
+                <Button x:Name="sqrtButton" Content="√x" Grid.Row="0" Grid.Column="0" Margin="0, 0, 5, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="cbrtButton" Content="∛x" Grid.Row="0" Grid.Column="1" Margin="5, 0, 5, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="xrtButton" Content="x√x" Grid.Row="0" Grid.Column="2" Margin="5, 0, 5, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="differentiateButton" Content="f'x" Grid.Row="0" Grid.Column="3" Margin="5, 0, 5, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="integralButton" Content="∫x" Grid.Row="0" Grid.Column="4" Margin="5, 0, 0, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="absButton" Content="|x|" Grid.Row="1" Grid.Column="0" Margin="0, 5, 5, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="modButton" Content="%" Grid.Row="1" Grid.Column="1" Margin="5, 5, 5, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="factorialButton" Content="x!" Grid.Row="1" Grid.Column="2" Margin="5, 5, 5, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="piButton" Content="π" Grid.Row="1" Grid.Column="3" Margin="5, 5, 5, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+                <Button x:Name="eulerButton" Content="e" Grid.Row="1" Grid.Column="4" FontStyle="Italic" Margin="5, 5, 0, 0" Padding="2" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" Click="SpecialCharacterButton_OnClick"/>
+            </Grid>
+            
             <Button x:Name="enterButton" Content="Enter" Height="30" Width="86" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,250,25" Click="EnterButtonPress" FontSize="16" Background="#9DC3E6" BorderBrush="Black" BorderThickness="1px" FontFamily="Courier New" FontWeight="Bold" >
                 <Button.Resources>
                     <Style TargetType="Border">
