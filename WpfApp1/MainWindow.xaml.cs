@@ -271,16 +271,13 @@ namespace WpfApp1
                 suggestionDropDown.SelectedIndex = -1;
                 suggestionDropDown.SelectedItem = null;
                 
-                foreach (string s in matches)
-                {
-                    suggestionDropDown.ItemsSource = matches.ToList();
-                    suggestionDropDown.Visibility = Visibility.Visible;
-                }
+                suggestionDropDown.ItemsSource = matches.ToList();
+                suggestionDropDown.Visibility = Visibility.Visible;
             }
             else
             {
                 suggestionDropDown.Visibility = Visibility.Collapsed;
-                suggestionDropDown.ItemsSource = new List<string>();;
+                suggestionDropDown.ItemsSource = new List<string>();
             }
         }
         
@@ -293,7 +290,7 @@ namespace WpfApp1
             {
                 suggestionDropDown.Visibility = Visibility.Collapsed;
                 // remove event handler for updating suggestions
-                inputText.TextChanged -= new TextChangedEventHandler(inputText_TextChanged);
+                inputText.TextChanged -= inputText_TextChanged;
 
                 var input = inputText.Text;
                 if (suggestionDropDown.SelectedIndex != -1)
@@ -330,7 +327,7 @@ namespace WpfApp1
                 }
 
                 // re-add event handler for updating suggestions
-                inputText.TextChanged += new TextChangedEventHandler(inputText_TextChanged);
+                inputText.TextChanged += inputText_TextChanged;
             }
         }
         
