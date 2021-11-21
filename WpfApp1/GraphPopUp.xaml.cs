@@ -275,9 +275,14 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Save graph to location of user's choice
+        /// </summary>
         private void SaveButton_OnClick(object sender, RoutedEventArgs e)
         {
             var fileToSaveTo = SaverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph" + _thisImageId + ".png");
+            
+            //fileToSaveTo is null if user chooses cancel above
             if (fileToSaveTo != null)
             {
                 var path = Path.GetTempPath();
