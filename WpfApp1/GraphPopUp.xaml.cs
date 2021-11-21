@@ -290,5 +290,10 @@ namespace WpfApp1
                 isDataDirty = false;
             }
         }
+
+        private void PlotButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
