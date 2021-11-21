@@ -194,6 +194,90 @@ namespace WpfApp1
         }
 
         /// <summary>
+        /// Method to control addition of text replacement for a defined list of special characters' in input box.
+        /// </summary>
+        private void SpecialCharacterButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (inputText.Text == "Enter query here...")
+            {
+                inputText.Text = "";
+            }
+            
+            var caretPos = inputText.CaretIndex;
+
+            if (sender.Equals(sqrtButton))
+            {
+                var sqrtString = "sqrt()";
+                inputText.Text = inputText.Text.Insert(caretPos, sqrtString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + sqrtString.Length - 1;
+            }
+            else if (sender.Equals(cbrtButton))
+            {
+                var cbrtString = "cbrt()";
+                inputText.Text = inputText.Text.Insert(caretPos, cbrtString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + cbrtString.Length - 1;
+            }
+            else if (sender.Equals(xrtButton))
+            {
+                var xrtString = "xrt()";
+                inputText.Text = inputText.Text.Insert(caretPos, xrtString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + xrtString.Length - 1;
+            }
+            else if (sender.Equals(differentiateButton))
+            {
+                var differentiateString = "differentiate()";
+                inputText.Text = inputText.Text.Insert(caretPos, differentiateString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + differentiateString.Length - 1;
+            }
+            else if (sender.Equals(integralButton))
+            {
+                var integralString = "integrate()";
+                inputText.Text = inputText.Text.Insert(caretPos, integralString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + integralString.Length - 1;
+            }
+            else if (sender.Equals(absButton))
+            {
+                var absString = "abs()";
+                inputText.Text = inputText.Text.Insert(caretPos, absString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + absString.Length - 1;
+            }
+            else if (sender.Equals(modButton))
+            {
+                var modString = "%";
+                inputText.Text = inputText.Text.Insert(caretPos, modString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + 1;
+            }
+            else if (sender.Equals(factorialButton))
+            {
+                var factorialString = "!";
+                inputText.Text = inputText.Text.Insert(caretPos, factorialString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + 1;
+            }
+            else if (sender.Equals(piButton))
+            {
+                var piString = "pi";
+                inputText.Text = inputText.Text.Insert(caretPos, piString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + 2;
+            }
+            else if (sender.Equals(eulerButton))
+            {
+                var eulerString = "e";
+                inputText.Text = inputText.Text.Insert(caretPos, eulerString);
+                inputText.Focus();
+                inputText.CaretIndex = caretPos + 1;
+            }
+        }
+
+        /// <summary>
         /// Method to control action of Save button.
         /// </summary>
         private void SaveButton_OnClick(object sender, RoutedEventArgs routedEventArgs)
