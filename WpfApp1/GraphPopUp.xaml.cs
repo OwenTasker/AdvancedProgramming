@@ -6,6 +6,8 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows;
 using System.IO;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Interpreter;
 using Microsoft.FSharp.Collections;
@@ -92,7 +94,7 @@ namespace WpfApp1
             DrawAxis(xArray, yArray);
             
             //Generate line of a function
-            GenerateLine(xArray, yArray);
+            GenerateLine(yArray);
             
             //Invert graph due to coordinate system
             InvertGraph();
@@ -150,7 +152,7 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot a graph from arrays of x and y values
         /// </summary>
-        private void GenerateLine(double[] xArray, double[] yArray)
+        private void GenerateLine(double[] yArray)
         {
             //Scale y values to size of graph
             var yMin = yArray.Min();
@@ -321,16 +323,47 @@ namespace WpfApp1
         }
 
         /// <summary>
-        /// Re-plot graph with new x axis range
+        /// Re-plot graph with new x axis range.
         /// </summary>
         private void PlotButton_OnClick(object sender, RoutedEventArgs e)
         {
+            //If xMin is invalid
             try
             {
-                var argsArray = new string[3];
-                argsArray[0] = _functions[0];
-                argsArray[1] = TextBoxXMin.Text;
-                argsArray[2] = TextBoxXMax.Text;
+                _ = Convert.ToDouble(TextBoxXMin.Text);
+            }
+            catch (Exception)
+            {
+                TextBoxXMin.Text = "";
+                return;
+            }
+            
+            //If xMax is invalid
+            try
+            {
+                _ = Convert.ToDouble(TextBoxXMax.Text);
+            }
+            catch (Exception)
+            {
+                TextBoxXMax.Text = "";
+                return;
+            }
+            
+            //Check that xMin is smaller than xMax, swap if not
+            if (Convert.ToDouble(TextBoxXMin.Text) > Convert.ToDouble(TextBoxXMax.Text))
+            {
+                (TextBoxXMin.Text, TextBoxXMax.Text) = (TextBoxXMax.Text, TextBoxXMin.Text);
+            }
+            
+            //Check if xMin is the same as xMax. If true, do not re-plot
+            if (TextBoxXMin.Text == TextBoxXMax.Text)
+            {
+                return;
+            }
+            
+            try
+            {
+                var argsArray = new[]{_functions[0], TextBoxXMin.Text, TextBoxXMax.Text};
                 
                 var xArray = GraphDataCalculator.ComputeXArray(argsArray);
                 var yArray = GraphDataCalculator.ComputeYArray(argsArray, xArray, _environment);
@@ -342,6 +375,73 @@ namespace WpfApp1
                 Console.WriteLine("Plotting Exception: " + plottingException.Message + "\n" +
                                        plottingException.StackTrace + "\n>>");
             }
+        }
+
+        /// <summary>
+        /// Ensure only numbers entered in xMin and xMax.
+        /// </summary>
+        private void xRange_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string input;
+            
+            //If xMin is modified
+            if (sender.Equals(TextBoxXMin))
+            {
+                input = TextBoxXMin.Text;
+            }
+            //If xMax is modified
+            else if (sender.Equals(TextBoxXMax))
+            {
+                input = TextBoxXMax.Text;
+            }
+            //This should never happen:
+            else
+            {
+                Console.WriteLine("How did we get here?");
+                return;
+            }
+
+            //Check if entry is a valid double, do not allow key-press if not
+            if (input.Length > 0 && input != "-" && input != "-.")
+            {
+                try
+                {
+                    _ = Convert.ToDouble(input);
+                }
+                catch (Exception)
+                {
+                    //If xMin is invalid
+                    if (sender.Equals(TextBoxXMin))
+                    {
+                        TextBoxXMin.Text = TextBoxXMin.Text[..^1];
+                        TextBoxXMin.CaretIndex = int.MaxValue;
+                    }
+                    //If xMax is invalid
+                    else if (sender.Equals(TextBoxXMax))
+                    {
+                        TextBoxXMax.Text = TextBoxXMax.Text[..^1];
+                        TextBoxXMax.CaretIndex = int.MaxValue;
+                    }
+                    //This should never happen:
+                    else
+                    {
+                        Console.WriteLine("How did we get here?");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Re-plot graph if enter key is pressed on xRange TextBoxes.
+        /// </summary>
+        private void xRange_EnterKeyClick(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+            {
+                return;
+            }
+            
+            PlotButton_OnClick(this, new RoutedEventArgs());
         }
     }
 }
