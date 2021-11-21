@@ -53,7 +53,6 @@ let functions = [
                  ("logTen", "One Argument; A function to determine the base 10 logarithm of the provided argument to 6 accurate decimal points")
                  ("logX", "Two Arguments; A function to determine the base X logarithm of the second provided argument to 6 accurate decimal points")
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
-                 ("ln", "")
                  ]
 
 //https://gist.github.com/theburningmonk/3363893
