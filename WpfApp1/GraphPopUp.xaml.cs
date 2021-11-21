@@ -7,6 +7,8 @@ using System.Linq;
 using System.Windows;
 using System.IO;
 using System.Windows.Media.Imaging;
+using Interpreter;
+using Microsoft.FSharp.Collections;
 
 namespace WpfApp1
 {
@@ -31,34 +33,83 @@ namespace WpfApp1
         private readonly int _thisImageId;
         
         //Has this graph been saved? true = no
-        private bool isDataDirty = true;
+        private bool _isDataDirty = true;
 
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
+
+        //List of all plotted functions (starts as just one)
+        private List<string> _functions;
+        
+        //Copy of main execution environment for this session.
+        private readonly IDictionary<string, FSharpList<Util.terminal>> _environment;
         
         /// <summary>
         /// Entry point, initializes the graph window, generates and displays graph.
         /// </summary>
-        public GraphPopUp(double[] x, double[] y)
+        public GraphPopUp(string function, double[] xArray, double[] yArray, 
+            IDictionary<string, FSharpList<Util.terminal>> environment)
         {
             //Image temp save tracking
             _thisImageId = _imageId;
             _imageId++;
-            
+
+            //Add initial function to list
+            _functions = new List<string> {function};
+
+            //Set up copy of execution environment
+            _environment = environment;
+
             //Show window
             InitializeComponent();
 
+            //Generate image of graph
+            GenerateGraph(xArray, yArray);
+        }
+        
+        /// <summary>
+        /// Do everything required to plot/re-plot a graph.
+        /// </summary>
+        private void GenerateGraph(double[] xArray, double[] yArray)
+        {
             //Set graph background to white and opacity to max
             for (var i = 0; i < _imageBuffer.Length; i++)
             {
                 _imageBuffer[i] = 255;
             }
+            
+            //Set axis labels
+            var yMax = yArray.Max();
+            var yMin = yArray.Min();
+            var xMax = xArray.Max();
+            var xMin = xArray.Min();
+            LabelYMax.Content = Math.Ceiling(yMax);
+            LabelYMin.Content = Math.Floor(yMin);
+            LabelXMax.Content = Math.Ceiling(xMax);
+            LabelXMin.Content = Math.Floor(xMin);
 
-            //Generate image of graph
-            GenerateGraph(x, y);
-        
-            //Display graph
+            //Draw axis
+            DrawAxis(xArray, yArray);
+            
+            //Generate line of a function
+            GenerateLine(xArray, yArray);
+            
+            //Invert graph due to coordinate system
+            InvertGraph();
+            
+            //Convert to image
             var path = Path.GetTempPath();
+            unsafe //Required to use pointers
+            {
+                fixed (byte* ptr = _imageBuffer)
+                {
+                    using var image = new Bitmap(ImageWidth, ImageHeight, ImageWidth*BytesPerPixel, PixelFormat.Format32bppRgb, new IntPtr(ptr));
+                    Directory.CreateDirectory(path + "MyMathsPal");
+                    image.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png" );
+                }
+            }
+            
+            //Display graph
             var stream = File.OpenRead(path + "MyMathsPal\\graph" + _thisImageId + ".png");
             var graph = new BitmapImage();
             graph.BeginInit();
@@ -99,54 +150,26 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot a graph from arrays of x and y values
         /// </summary>
-        private void GenerateGraph(double[] xArray, double[] yArray)
+        private void GenerateLine(double[] xArray, double[] yArray)
         {
-            //Set axis labels
-            var yMax = yArray.Max();
-            var yMin = yArray.Min();
-            var xMax = xArray.Max();
-            var xMin = xArray.Min();
-            LabelYMax.Content = Math.Round(yMax);
-            LabelYMin.Content = Math.Round(yMin);
-            LabelXMax.Content = Math.Round(xMax);
-            LabelXMin.Content = Math.Round(xMin);
-
-            //Draw axis
-            DrawAxis(xArray, yArray);
-            
             //Scale y values to size of graph
+            var yMin = yArray.Min();
             for (var i = 0; i < ImageWidth; i++)
             {
                 yArray[i] -= yMin;
             }
-            yMax = yArray.Max();
+            var yMax = yArray.Max();
             var scale = (ImageHeight - 1) / yMax;
             for (var i = 0; i < ImageWidth; i++)
             {
                 yArray[i] *= scale;
             }
             
-            //Plot graph
+            //Plot line
             for (var i = 0; i < ImageWidth; i++)
             {
                 PlotPixel(i, (int)yArray[i]);
             }
-            
-            //Invert graph due to coordinate system
-            InvertGraph();
-            
-            //Convert to image
-            var path = Path.GetTempPath();
-            unsafe //Required to use pointers
-            {
-                fixed (byte* ptr = _imageBuffer)
-                {
-                    using var image = new Bitmap(ImageWidth, ImageHeight, ImageWidth*BytesPerPixel, PixelFormat.Format32bppRgb, new IntPtr(ptr));
-                    Directory.CreateDirectory(path + "MyMathsPal");
-                    image.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png" );
-                }
-            }
-            
         }
 
         /// <summary>
@@ -253,7 +276,7 @@ namespace WpfApp1
         private void GraphPopUp_Closing(object sender, CancelEventArgs e)
         {
             // If data is dirty, notify user and ask for a response
-            if (!isDataDirty) return;
+            if (!_isDataDirty) return;
             const string msg = "Close graph without saving?";
             var result = 
                 MessageBox.Show(
@@ -285,15 +308,40 @@ namespace WpfApp1
             //fileToSaveTo is null if user chooses cancel above
             if (fileToSaveTo != null)
             {
+                //Delete file if one already exists at chosen location
+                if (File.Exists(fileToSaveTo.FileName))
+                {
+                    File.Delete(fileToSaveTo.FileName);
+                }
+                
                 var path = Path.GetTempPath();
                 File.Copy(path + "MyMathsPal\\graph" + _thisImageId + ".png", fileToSaveTo.FileName);
-                isDataDirty = false;
+                _isDataDirty = false;
             }
         }
 
+        /// <summary>
+        /// Re-plot graph with new x axis range
+        /// </summary>
         private void PlotButton_OnClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var argsArray = new string[3];
+                argsArray[0] = _functions[0];
+                argsArray[1] = TextBoxXMin.Text;
+                argsArray[2] = TextBoxXMax.Text;
+                
+                var xArray = GraphDataCalculator.ComputeXArray(argsArray);
+                var yArray = GraphDataCalculator.ComputeYArray(argsArray, xArray, _environment);
+                    
+                GenerateGraph(xArray, yArray);
+            }
+            catch (Exception plottingException)
+            {
+                Console.WriteLine("Plotting Exception: " + plottingException.Message + "\n" +
+                                       plottingException.StackTrace + "\n>>");
+            }
         }
     }
 }

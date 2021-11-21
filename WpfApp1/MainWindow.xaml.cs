@@ -108,7 +108,7 @@ namespace WpfApp1
                     var xArray = GraphDataCalculator.ComputeXArray(trimmedArgsArray);
                     var yArray = GraphDataCalculator.ComputeYArray(trimmedArgsArray, xArray, _environment);
                     
-                    var graphPopUp = new GraphPopUp(xArray, yArray);
+                    var graphPopUp = new GraphPopUp(trimmedArgsArray[0], xArray, yArray, _environment);
                     graphPopUp.Show();
                 }
                 catch (Exception plottingException)
