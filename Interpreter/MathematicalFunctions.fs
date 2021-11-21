@@ -46,6 +46,14 @@ let TerminalLog logFunction logVal=
     | nameof(Log2) -> Log2 logVal |> Number
     | _ -> InvalidArgumentError "Invalid Arguments" |> raise
     
-    
 let rootToTerminals (terminals: terminal list) denominator =
     [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
+    
+let floorToNumber (numToFloor:float) =
+    numToFloor |> int |> float
+    
+let ceilToNumber num =
+    floorToNumber num + 1.0
+    
+let numToTerminal (num:float)=
+    num |> Number

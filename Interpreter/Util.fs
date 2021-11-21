@@ -95,6 +95,9 @@ let rec terminalListToString str list =
     | head :: tail -> terminalListToString (str + individualTerminalToString head ) tail
     | [] -> str
     
+let terminalToNum term =
+    term |> individualTerminalToString |> System.Double.Parse 
+    
 /// <summary>
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
 /// performBinaryOperation functions.

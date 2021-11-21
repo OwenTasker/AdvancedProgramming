@@ -314,7 +314,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
                 | Number a ->
                     [(TerminalLog (nameof LogE) a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
-        | "log2" ->
+        | "logTwo" ->
             let assignment, expression = extractExpression tail.[1..] []
             if assignment <> []
             then
@@ -324,7 +324,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
                 | Number a ->
                     [(TerminalLog (nameof Log2) a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
-        | "log10" ->
+        | "logTen" ->
             let assignment, expression = extractExpression tail.[1..] []
             if assignment <> []
             then
@@ -333,6 +333,26 @@ let rec exec terminals (env: Map<string, terminal list>) =
                 match reduce expression env with
                 | Number a ->
                     [(TerminalLog (nameof Log10) a)], (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Invalid " |> raise
+        | "floor" ->
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"log10\"" |> raise
+            else
+                match reduce expression env with
+                | Number a ->
+                    [numToTerminal (floorToNumber a)], (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Invalid " |> raise
+        | "ceil" ->
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"log10\"" |> raise
+            else
+                match reduce expression env with
+                | Number a ->
+                    [numToTerminal (ceilToNumber a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->
