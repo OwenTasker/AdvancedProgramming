@@ -34,7 +34,7 @@ namespace WpfApp1
         /// <summary>
         /// Collection of mathematical functions.
         /// </summary>
-        private Trie functions;
+        private Trie _functions;
         
         /// <summary>
         /// Class to represent a user defined variable.
@@ -56,7 +56,7 @@ namespace WpfApp1
         /// </summary>
         public MainWindow()
         {
-            InitialiseFunctionTrie();
+            InitialiseSuggestionTrie();
             
             InitializeComponent();
             
@@ -64,18 +64,18 @@ namespace WpfApp1
         }
 
         /// <summary>
-        /// Method to initialise trie used for function suggestion dropdown.
+        /// Method to initialise trie used for suggestion dropdown.
         /// </summary>
-        private void InitialiseFunctionTrie()
+        private void InitialiseSuggestionTrie()
         {
-            functions = new Trie();
+            _functions = new Trie();
 
             Dictionary<string, string> fsfunctions = Util.functions.ToDictionary(t => t.Item1, t => t.Item2);
 
-            foreach (KeyValuePair<string, string> p in fsfunctions)
+            foreach (var p in fsfunctions)
             {
-                string s = p.Key + " : " + p.Value;
-                functions.Add(s);
+                var s = p.Key + " : " + p.Value;
+                _functions.Add(s);
             }
         }
 
@@ -137,7 +137,7 @@ namespace WpfApp1
                     consoleText.AppendText(Util.terminalListToString("", item1) + "\n>>");
                     _environment = item2;
                     UpdateVariableWindow();
-                    UpdateTrie();
+                    UpdateSuggestionTrie();
                     inputText.Text = "Enter query here...";
                 }
                 catch (Util.TokenizeError ex1)
@@ -221,7 +221,7 @@ namespace WpfApp1
                 _environment = dictionary;
                 consoleText.Text = item2;
                 UpdateVariableWindow();
-                UpdateTrie();
+                UpdateSuggestionTrie();
             }
             catch (SaverLoader.SaveLoadException e)
             {
@@ -237,7 +237,7 @@ namespace WpfApp1
             consoleText.Text = ">>";
             _environment = new Dictionary<string, FSharpList<Util.terminal>>();
             UpdateVariableWindow();
-            UpdateTrie();
+            UpdateSuggestionTrie();
         }
         
         /// <summary>
@@ -245,12 +245,12 @@ namespace WpfApp1
         /// </summary>
         private void inputText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string input = inputText.Text;
-            string[] split = Regex.Split(input, @"[^a-zA-Z]");
+            var input = inputText.Text;
+            var split = Regex.Split(input, @"[^a-zA-Z]");
 
-            string partialMatch = "";
+            var partialMatch = "";
             
-            for (int i = split.Length - 1; i >= 0; i--)
+            for (var i = split.Length - 1; i >= 0; i--)
             {
                 if (!split[i].Equals(""))
                 {
@@ -259,7 +259,7 @@ namespace WpfApp1
                 }
             }
             
-            HashSet<string> matches = functions.Contains(partialMatch);
+            var matches = _functions.Contains(partialMatch);
 
             if (input.Equals("Enter query here...") || input.Equals(""))
             {
@@ -295,14 +295,14 @@ namespace WpfApp1
                 // remove event handler for updating suggestions
                 inputText.TextChanged -= new TextChangedEventHandler(inputText_TextChanged);
 
+                var input = inputText.Text;
                 if (suggestionDropDown.SelectedIndex != -1)
                 {
-                    string input = inputText.Text;
-                    string[] split = Regex.Split(input, @"[^a-zA-Z]");
+                    var split = Regex.Split(input, @"[^a-zA-Z]");
 
-                    string partialMatch = "";
+                    var partialMatch = "";
             
-                    for (int i = split.Length - 1; i >= 0; i--)
+                    for (var i = split.Length - 1; i >= 0; i--)
                     {
                         if (!split[i].Equals(""))
                         {
@@ -311,9 +311,9 @@ namespace WpfApp1
                         }
                     }
                     
-                    string s = suggestionDropDown.SelectedItem.ToString().Substring(partialMatch.Length);
+                    var s = suggestionDropDown.SelectedItem.ToString().Substring(partialMatch.Length);
 
-                    int caretPos = inputText.CaretIndex;
+                    var caretPos = inputText.CaretIndex;
 
                     if (suggestionDropDown.SelectedItem.ToString().Contains(":"))
                     {
@@ -329,7 +329,7 @@ namespace WpfApp1
                     }
                 }
 
-                // readd event handler for updating suggestions
+                // re-add event handler for updating suggestions
                 inputText.TextChanged += new TextChangedEventHandler(inputText_TextChanged);
             }
         }
@@ -337,19 +337,19 @@ namespace WpfApp1
         /// <summary>
         /// Method to refresh suggestion trie.
         /// </summary>
-        private void UpdateTrie()
+        private void UpdateSuggestionTrie()
         {
             var keyValuePairs = _environment.ToList();
             var variablesList = keyValuePairs.Select(pair => new Variable
                 {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
             
             // reinitialise trie
-            InitialiseFunctionTrie();
+            InitialiseSuggestionTrie();
             
             // add varlist to trie
-            foreach (Variable v in variablesList)
+            foreach (var v in variablesList)
             {
-                functions.Add(v.Name);
+                _functions.Add(v.Name);
             }
         }
     }

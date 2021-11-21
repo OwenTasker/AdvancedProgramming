@@ -21,11 +21,11 @@ namespace WpfApp1
         }
         public void Add(string s)
         {
-            TrieNode t = Root;
+            var t = Root;
 
-            for (int i = 0; i < s.Length; i++)
+            for (var i = 0; i < s.Length; i++)
             {
-                TrieNode nextNode = t.GetOffspring(s[i]);
+                var nextNode = t.GetOffspring(s[i]);
 
                 if (nextNode.GetIsEmpty() == false && i == s.Length - 1) // probably works?
                 {
@@ -51,11 +51,11 @@ namespace WpfApp1
 
         public HashSet<string> Contains(string s)
         {
-            TrieNode t = Root;
+            var t = Root;
 
-            for (int i = 0; i < s.Length; i++)
+            for (var i = 0; i < s.Length; i++)
             {
-                TrieNode nextNode = t.GetOffspring(s[i]);
+                var nextNode = t.GetOffspring(s[i]);
 
                 if (nextNode.GetIsEmpty() == true)
                 {
@@ -65,45 +65,43 @@ namespace WpfApp1
                 t = nextNode;
             }
             
-            Trie subtrie = new Trie(t);
+            var subtrie = new Trie(t);
 
-            HashSet<string> matches = new HashSet<string>();
+            var matches = new HashSet<string>();
             
             if (s.Length != 0)
             {
-                matches = dfsTraversalRecursive(s[..(s.Length-1)], subtrie.GetRoot(), new HashSet<string>());
+                matches = DfsTraversal(s[..^1], subtrie.GetRoot(), new HashSet<string>());
             }
 
             return matches;
         }
 
-        public TrieNode dfsTraversalRecursive(TrieNode t)
+        public TrieNode DfsTraversal(TrieNode t)
         {
             if(t == null)
             {
-                //Console.WriteLine("if");
                 return null;
             }
             else
             {
                 // PREORDER
                 Console.Write(t);
-                List<TrieNode> offspring = t.GetAllOffspring();
+                var offspring = t.GetAllOffspring();
 
                 for(int i = 0; i < offspring.Count; i++)
                 {
-                    dfsTraversalRecursive(offspring[i]);
+                    DfsTraversal(offspring[i]);
                 }
             }
             // POSTORDER c.wl(t)
             return t;
         }
         
-        public HashSet<string> dfsTraversalRecursive(string search, TrieNode t, HashSet<string> matches)
+        private HashSet<string> DfsTraversal(string search, TrieNode t, HashSet<string> matches)
         {
             if(t == null)
             {
-                //Console.WriteLine("if");
                 return null;
             }
             else
@@ -116,11 +114,11 @@ namespace WpfApp1
                     matches.Add(search);
                 }
 
-                List<TrieNode> offspring = t.GetAllOffspring();
+                var offspring = t.GetAllOffspring();
 
                 for (int i = 0; i < offspring.Count; i++)
                 {
-                    matches.UnionWith(dfsTraversalRecursive(search, offspring[i], matches)); // https://stackoverflow.com/questions/15267034/is-there-an-addrange-equivalent-for-a-hashset-in-c-sharp
+                    matches.UnionWith(DfsTraversal(search, offspring[i], matches)); // https://stackoverflow.com/questions/15267034/is-there-an-addrange-equivalent-for-a-hashset-in-c-sharp
                 }
             }
             // POSTORDER c.wl(t)
