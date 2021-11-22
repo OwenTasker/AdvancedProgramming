@@ -333,8 +333,31 @@ let rec exec terminals (env: Map<string, terminal list>) =
                 | Number a ->
                     [numToTerminal (ceilToNumber a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
+        | "round" ->
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"round\"" |> raise
+            else
+                match reduce expression env with
+                | Number a ->
+                    [numToTerminal (round a)], (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Invalid " |> raise
+        | "abs" ->
+            let assignment, expression = extractExpression tail.[1..] []
+            if assignment <> []
+            then
+                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"round\"" |> raise
+            else
+                match reduce expression env with
+                | Number a ->
+                    [numToTerminal (abs a)], (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->
         if closed terminals env
         then [reduce terminals env], (env |> Map.toSeq |> dict)
         else terminals, (env |> Map.toSeq |> dict)
+        
+        
+//Create extractArguments to read comma seperated list ending with )

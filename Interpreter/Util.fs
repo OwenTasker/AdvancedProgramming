@@ -47,12 +47,13 @@ let functions = [
                  ("sqrt", "One Argument; A function to determine the square root of a value, given a value of 4, will return 2")
                  ("cbrt", "One Argument; A function to determine the cube root of a value, given a value of 8, will return 2")
                  ("round", "One Argument; A function to determine the rounded value of the provided argument, given a value of 2.5, will return 3")
-                 ("plot", "")
+                 ("plot", "One or Three arguments; Plot to graph the first argument, limits determined by second and third arguments")
                  ("ln", "One Argument; A function to determine the natural logarithm of the provided argument to 6 accurate decimal points")
                  ("logTwo", "One Argument; A function to determine the base 2 logarithm of the provided argument to 6 accurate decimal points")
                  ("logTen", "One Argument; A function to determine the base 10 logarithm of the provided argument to 6 accurate decimal points")
                  ("logX", "Two Arguments; A function to determine the base X logarithm of the second provided argument to 6 accurate decimal points")
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
+                 ("abs", "One Argument; A function to determine the absolute value of an expression, given a value of -12, returns 12")
                  ]
 
 //https://gist.github.com/theburningmonk/3363893

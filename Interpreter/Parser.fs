@@ -95,7 +95,8 @@ and factor terminals =
 and arguments terminals =
     match terminals with
     | Word _ :: Assign :: tail -> expression tail |> arguments 
-    | Comma :: tail -> arguments tail
+    | Comma :: tail 
+    | Number _ :: tail -> arguments tail
     | Rpar :: tail -> tail
     | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
     
