@@ -91,8 +91,10 @@ namespace WpfApp1
             LabelXMax.Content = Math.Ceiling(xMax);
             LabelXMin.Content = Math.Floor(xMin);
 
-            //Draw axis
-            DrawAxis(xArray, yArray);
+            //Draw axis and get axis positions
+            int yZero;
+            int xZero;
+            (yZero, xZero) = DrawAxis(xArray, yArray);
             
             //Generate line of a function
             GenerateLine(yArray);
@@ -201,7 +203,7 @@ namespace WpfApp1
         /// <summary>
         /// Method to draw x and y axis in correct locations
         /// </summary>
-        private void DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
+        private (int yZero, int xZero) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
         {
             //Find yArray index of y=0, default to below graph
             var yZero = 0;
@@ -294,6 +296,8 @@ namespace WpfApp1
             {
                 PlotPixel(xZero, i);
             }
+
+            return (yZero, xZero);
         }
 
         /// <summary>
