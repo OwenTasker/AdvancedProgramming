@@ -22,8 +22,8 @@ namespace WpfApp1
     /// Custom action on window close: https://docs.microsoft.com/en-us/dotnet/api/system.windows.window.closing?view=windowsdesktop-5.0
     /// Free BitmapImage for deletion: https://stackoverflow.com/questions/8352787/how-to-free-the-memory-after-the-bitmapimage-is-no-longer-needed
     /// Copy image file to save it: https://stackoverflow.com/questions/7462997/copy-file-to-a-different-directory
+    /// Overlay text on image: https://stackoverflow.com/questions/6826921/write-text-on-an-image-in-c-sharp
     /// </summary>
-    
     public partial class GraphPopUp
     {
         //Constants for ease of readability
@@ -114,29 +114,9 @@ namespace WpfApp1
                 }
             }
             
-            var firstText = "Hello";
-            var secondText = "World";
+            //Add axis labels to graph
+            AddLabels(yZero, xZero, xArray, yArray);
 
-            var firstLocation = new PointF(10f, 10f);
-            var secondLocation = new PointF(10f, 50f);
-
-            Bitmap newBitmap;
-            using (var bitmap = (Bitmap)Image.FromFile(path + "MyMathsPal\\graph" + _thisImageId + ".png"))//load the image file
-            {
-                using(var graphics = Graphics.FromImage(bitmap))
-                {
-                    using (var arialFont =  new Font("Arial", 10))
-                    {
-                        graphics.DrawString(firstText, arialFont, Brushes.Blue, firstLocation);
-                        graphics.DrawString(secondText, arialFont, Brushes.Red, secondLocation);
-                    }
-                }
-                newBitmap = new Bitmap(bitmap);
-            }
-
-            newBitmap.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png");//save the image file
-            newBitmap.Dispose();
-            
             //Display graph
             var stream = File.OpenRead(path + "MyMathsPal\\graph" + _thisImageId + ".png");
             var graph = new BitmapImage();
@@ -173,6 +153,45 @@ namespace WpfApp1
             
             //Set BGR to black
             _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
+        }
+
+        /// <summary>
+        /// Method to add labels to image
+        /// </summary>
+        private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray)
+        {
+            var yMaxLabel = "" + Math.Ceiling(yArray.Max());
+            var yMinLabel = "" + Math.Floor(yArray.Min());
+            var xMaxLabel = "" + Math.Ceiling(xArray.Max());
+            var xMinLabel = "" + Math.Floor(xArray.Min());
+            var zeroLabel = "0";
+
+            var yMaxPoint = new PointF(xZero, ImageHeight);
+            var yMinPoint = new PointF(xZero, 0);
+            var xMaxPoint = new PointF(ImageWidth, yZero);
+            var xMinPoint = new PointF(0, yZero);
+            var zeroPoint = new PointF(xZero, yZero);
+
+            Bitmap newBitmap;
+            var path = Path.GetTempPath();
+            using (var bitmap = (Bitmap)Image.FromFile(path + "MyMathsPal\\graph" + _thisImageId + ".png"))//load the image file
+            {
+                using(var graphics = Graphics.FromImage(bitmap))
+                {
+                    using (var font =  new Font("Courier New", 10))
+                    {
+                        graphics.DrawString(yMaxLabel, font, Brushes.Black, yMaxPoint);
+                        graphics.DrawString(yMinLabel, font, Brushes.Black, yMinPoint);
+                        graphics.DrawString(xMaxLabel, font, Brushes.Black, xMaxPoint);
+                        graphics.DrawString(xMinLabel, font, Brushes.Black, xMinPoint);
+                        graphics.DrawString(zeroLabel, font, Brushes.Black, zeroPoint);
+                    }
+                }
+                newBitmap = new Bitmap(bitmap);
+            }
+
+            newBitmap.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png");//save the image file
+            newBitmap.Dispose();
         }
 
         /// <summary>
