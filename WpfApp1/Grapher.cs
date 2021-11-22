@@ -20,7 +20,7 @@ namespace WpfApp1
             var funcAsFSharpList = ListModule.OfSeq(funcStrings);
             var lexerOutput = Lexer.lexer(funcAsFSharpList);
             
-            Parser.expression(lexerOutput);
+            Parser.parse(lexerOutput);
 
             var (_, item2) = Exec.exec(lexerOutput,
                 Util.toMap(new Dictionary<string, FSharpList<Util.terminal>>()));
