@@ -55,5 +55,23 @@ let floorToNumber (numToFloor:float) =
 let ceilToNumber num =
     floorToNumber num + 1.0
     
+let roundNum (num:float) =
+    let trunkNum = num |> int
+    let stringRep = string num
+    let decimalVals = stringRep.Split[|'.'|]
+    
+    if decimalVals.Length = 2 then
+        let numRep = decimalVals.[1] |> float
+        if numRep >= 5.0 then
+            trunkNum+1 |> float
+        else
+            trunkNum |> float
+    else
+        trunkNum |> float
+    
+let absVal (num:float) =
+    +num
+
 let numToTerminal (num:float)=
     num |> Number
+    
