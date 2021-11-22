@@ -48,7 +48,7 @@ namespace WpfApp1
             for (var i = 0; i < 750; i++)
             {
                 string query;
-                if (openVars.Count == 1)
+                if (openVars.Count < 2)
                 {
                     query = openVars[0] + "()";
                 }
