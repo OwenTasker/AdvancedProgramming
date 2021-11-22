@@ -116,6 +116,9 @@ namespace WpfApp1
                     consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" +
                                            plottingException.StackTrace + "\n>>");
                 }
+            } else if (inputText.Text.ToLower().Equals("clear()"))
+            {
+                ClearButton_OnClick(null, null);
             }
             else
             {
