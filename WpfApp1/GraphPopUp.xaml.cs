@@ -97,7 +97,8 @@ namespace WpfApp1
             (yZero, xZero) = DrawAxis(xArray, yArray);
             
             //Generate line of a function
-            GenerateLine(yArray);
+            var tempYArray = (double[]) yArray.Clone();
+            GenerateLine(tempYArray);
             
             //Invert graph due to coordinate system
             InvertGraph();
@@ -160,25 +161,35 @@ namespace WpfApp1
         /// </summary>
         private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray)
         {
+            //Create axis labels
             var yMaxLabel = "" + Math.Ceiling(yArray.Max());
             var yMinLabel = "" + Math.Floor(yArray.Min());
             var xMaxLabel = "" + Math.Ceiling(xArray.Max());
             var xMinLabel = "" + Math.Floor(xArray.Min());
             var zeroLabel = "0";
 
-            var yMaxPoint = new PointF(xZero, ImageHeight);
-            var yMinPoint = new PointF(xZero, 0);
-            var xMaxPoint = new PointF(ImageWidth, yZero);
-            var xMinPoint = new PointF(0, yZero);
-            var zeroPoint = new PointF(xZero, yZero);
+            //Find axis label locations
+            //This method uses inverted y axis
+            var yMaxPointX = xZero;
+            if (xZero > ImageWidth / 2)
+            {
+                yMaxPointX -= yMaxLabel.Length * 9 + 2;
+            }
+            var yMaxPoint = new PointF(yMaxPointX, 0);
+            var yMinPoint = new PointF(yMaxPointX, ImageHeight - 16);
+            
+            var xMaxPoint = new PointF(ImageWidth, ImageHeight - yZero);
+            var xMinPoint = new PointF(0, ImageHeight - yZero);
+            var zeroPoint = new PointF(xZero, ImageHeight - yZero);
 
+            //Draw labels in graph
             Bitmap newBitmap;
             var path = Path.GetTempPath();
-            using (var bitmap = (Bitmap)Image.FromFile(path + "MyMathsPal\\graph" + _thisImageId + ".png"))//load the image file
+            using (var bitmap = (Bitmap)Image.FromFile(path + "MyMathsPal\\graph" + _thisImageId + ".png"))
             {
                 using(var graphics = Graphics.FromImage(bitmap))
                 {
-                    using (var font =  new Font("Courier New", 10))
+                    using (var font =  new Font("Courier New", 5))
                     {
                         graphics.DrawString(yMaxLabel, font, Brushes.Black, yMaxPoint);
                         graphics.DrawString(yMinLabel, font, Brushes.Black, yMinPoint);
@@ -190,7 +201,7 @@ namespace WpfApp1
                 newBitmap = new Bitmap(bitmap);
             }
 
-            newBitmap.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png");//save the image file
+            newBitmap.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png");
             newBitmap.Dispose();
         }
 
@@ -422,6 +433,8 @@ namespace WpfApp1
                 Console.WriteLine("Plotting Exception: " + plottingException.Message + "\n" +
                                        plottingException.StackTrace + "\n>>");
             }
+
+            _isDataDirty = true;
         }
 
         /// <summary>
