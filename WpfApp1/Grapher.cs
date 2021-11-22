@@ -20,7 +20,7 @@ namespace WpfApp1
             var funcAsFSharpList = ListModule.OfSeq(funcStrings);
             var lexerOutput = Lexer.lexer(funcAsFSharpList);
             
-            Parser.expression(lexerOutput);
+            Parser.parse(lexerOutput);
 
             var (_, item2) = Exec.exec(lexerOutput,
                 Util.toMap(new Dictionary<string, FSharpList<Util.terminal>>()));
@@ -48,7 +48,7 @@ namespace WpfApp1
             for (var i = 0; i < 750; i++)
             {
                 string query;
-                if (openVars.Count == 1)
+                if (openVars.Count < 2)
                 {
                     query = openVars[0] + "()";
                 }
