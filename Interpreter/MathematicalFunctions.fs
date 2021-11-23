@@ -17,7 +17,7 @@ open Interpreter.Util
 /// Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
 /// </remarks>
 ///
-/// <param name="input">A floating point value to take the logarithm base E of </param>
+/// <param name="input">A floating point value to take the logarithm base E of</param>
 /// <param name="increment">
 /// Current iteration of the taylor series, the more iterations performed, the more accurate
 /// the approximation
@@ -42,7 +42,7 @@ let rec LogEGreaterThanZeroPointFive (input:float) (increment:float) (sum:float)
 /// Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
 /// </remarks>
 ///
-/// <param name="input">A floating point value to take the logarithm base E of </param>
+/// <param name="input">A floating point value to take the logarithm base E of</param>
 /// <param name="increment">
 /// Current iteration of the taylor series, the more iterations performed, the more accurate
 /// the approximation
@@ -64,16 +64,42 @@ let rec LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:
             | 0.0 -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum-(((input-1.0)**increment)/increment)
             | _ -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum+(((input-1.0)**increment)/increment)
 
+/// <summary>
+/// Wrapper function for LogE, determines which version of the taylor series to call based on input as the
+/// calculation used is different if performed on values less or equal to 0.5 
+/// </summary>
+///
+/// <remarks>
+/// Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
+/// </remarks>
+///
+/// <param name="input">A floating point value to take the logarithm base E of</param>
+///
+/// <returns>The natural log of the input provided</returns>
 let LogE input =
     match input <= 0.5 with
     | true -> LogELessThanOrEqualToZeroPointFive input 1.0 0.0
     | _ -> LogEGreaterThanZeroPointFive input 1.0 0.0
-        
+
+/// <summary>
+/// Function to dynamically calculate any given base of any given number using the change of base rule
+/// </summary>
+///
+/// <remarks>
+/// Change of base rule :: log(_b)a = log(_d)a / log(_d)b
+/// log(_d) in this formula is represented by logE however any log base would work
+/// </remarks>
+///
+/// <param name="numerator">
+/// A floating point value representing the top half of the change of base rule (a)
+/// </param>
+/// <param name="denominator">
+/// A floating point value representing the bottom half of the change of base rule (b)
+/// </param>
+///
+/// <returns>Value calculated as log(_b)a</returns>
 let FormNewBaseRuleFraction numerator denominator =
-    try
-        LogE numerator / LogE denominator
-    with
-        | :? InvalidArgumentError -> raise (InvalidArgumentError "Input to Logarithmic Function Cannot Be Less Than 0")
+    LogE numerator / LogE denominator
 
 let Log2 input =
     FormNewBaseRuleFraction input 2.0
