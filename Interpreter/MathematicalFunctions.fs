@@ -1,28 +1,73 @@
-﻿module Interpreter.MathematicalFunctions
+﻿/// <summary>
+/// Module containing all bespoke mathematical functions used, done to avoid using inbuilt libraries
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter.MathematicalFunctions</summary>
+/// </namespacedoc>
+module Interpreter.MathematicalFunctions
 
 open Interpreter.Util
 
-//Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
+/// <summary>
+/// Implements a Taylor-Series in order to approximate a value for LogE
+/// </summary>
+///
+/// <remarks>
+/// Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
+/// </remarks>
+///
+/// <param name="input">A floating point value to take the logarithm base E of </param>
+/// <param name="increment">
+/// Current iteration of the taylor series, the more iterations performed, the more accurate
+/// the approximation
+/// </param>
+/// <param name="sum">the cumulative sum of the Taylor Series</param>
+///
+/// <returns>The natural log of the input provided</returns>
+/// <exception cref="InvalidArgumentError">Thrown when the input value is less than or equal to 0.5</exception>
 let rec LogEGreaterThanZeroPointFive (input:float) (increment:float) (sum:float) =
-    match increment with
-    | 2000.0 -> sum
-    | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
-
+    match input > 0.5 with 
+    | true ->
+        match increment with
+        | 2000.0 -> sum
+        | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
+    | false -> InvalidArgumentError "Invalid input passed to function, expected value above 0.5" |> raise
+        
+/// <summary>
+/// Implements a Taylor-Series in order to approximate a value for LogE
+/// </summary>
+///
+/// <remarks>
+/// Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
+/// </remarks>
+///
+/// <param name="input">A floating point value to take the logarithm base E of </param>
+/// <param name="increment">
+/// Current iteration of the taylor series, the more iterations performed, the more accurate
+/// the approximation
+/// </param>
+/// <param name="sum">the cumulative sum of the Taylor Series</param>
+///
+/// <returns>The natural log of the input provided</returns>
+/// <exception cref="InvalidArgumentError">Thrown when the input value is less than or equal to 0.5</exception>
 let rec LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:float) =
-    match increment with
-    | 2000.0 -> sum
-    | _ ->
-        match (increment%2.0) with
-        | 0.0 -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum-(((input-1.0)**increment)/increment)
-        | _ -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum+(((input-1.0)**increment)/increment)
+    match input > 0.5 || input <= 0.0 with
+    | true ->
+        InvalidArgumentError "Invalid input passed to function, expected value less than or equal to 0.5 "
+        |> raise
+    | false ->
+        match increment with
+        | 2000.0 -> sum
+        | _ ->
+            match (increment%2.0) with
+            | 0.0 -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum-(((input-1.0)**increment)/increment)
+            | _ -> LogELessThanOrEqualToZeroPointFive input (increment+1.0) sum+(((input-1.0)**increment)/increment)
 
 let LogE input =
-    if input <= 0.0 then
-        raise (InvalidArgumentError "Input To LogE Can Not Be 0")
-    elif input <= 0.5 then
-        LogELessThanOrEqualToZeroPointFive input 1.0 0.0
-    else
-        LogEGreaterThanZeroPointFive input 1.0 0.0
+    match input <= 0.5 with
+    | true -> LogELessThanOrEqualToZeroPointFive input 1.0 0.0
+    | _ -> LogEGreaterThanZeroPointFive input 1.0 0.0
         
 let FormNewBaseRuleFraction numerator denominator =
     try
