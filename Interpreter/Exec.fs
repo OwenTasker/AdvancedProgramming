@@ -275,14 +275,14 @@ let rec exec terminals (env: Map<string, terminal list>) =
             then
                 ExecError "Execution Error: Unexpected Assignment" |> raise
             else
-                [reduce (rootToTerminals expression 2.0) env], (env |> Map.toSeq |> dict)
+                [reduce (RootToTerminals expression 2.0) env], (env |> Map.toSeq |> dict)
         | "cbrt" ->
             let assignment, expression = extractExpression tail.[1..] []
             if assignment <> []
             then
                 ExecError "Execution Error" |> raise
             else
-                [reduce (rootToTerminals expression 3.0) env], (env |> Map.toSeq |> dict)
+                [reduce (RootToTerminals expression 3.0) env], (env |> Map.toSeq |> dict)
         | "ln" ->
             let assignment, expression = extractExpression tail.[1..] []
             if assignment <> []
@@ -321,7 +321,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [numToTerminal (floorToNumber a)], (env |> Map.toSeq |> dict)
+                    [NumToTerminal (FloorToNumber a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "ceil" ->
             let assignment, expression = extractExpression tail.[1..] []
@@ -331,7 +331,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [numToTerminal (ceilToNumber a)], (env |> Map.toSeq |> dict)
+                    [NumToTerminal (CeilToNumber a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "round" ->
             let assignment, expression = extractExpression tail.[1..] []
@@ -341,7 +341,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [numToTerminal (round a)], (env |> Map.toSeq |> dict)
+                    [NumToTerminal (round a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "abs" ->
             let assignment, expression = extractExpression tail.[1..] []
@@ -351,7 +351,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [numToTerminal (abs a)], (env |> Map.toSeq |> dict)
+                    [NumToTerminal (abs a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->

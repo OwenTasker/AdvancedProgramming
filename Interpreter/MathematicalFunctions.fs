@@ -24,20 +24,20 @@ let LogE input =
     else
         LogEGreaterThanZeroPointFive input 1.0 0.0
         
-let formNewBaseRuleFraction numerator denominator =
+let FormNewBaseRuleFraction numerator denominator =
     try
         LogE numerator / LogE denominator
     with
         | :? InvalidArgumentError -> raise (InvalidArgumentError "Input to Logarithmic Function Cannot Be Less Than 0")
 
 let Log2 input =
-    formNewBaseRuleFraction input 2.0
+    FormNewBaseRuleFraction input 2.0
     
 let Log10 input =
-    formNewBaseRuleFraction input 10.0
+    FormNewBaseRuleFraction input 10.0
     
 let LogX newBase input =
-    formNewBaseRuleFraction input newBase
+    FormNewBaseRuleFraction input newBase
     
 let TerminalLog logFunction logVal=
     match logFunction with
@@ -46,16 +46,16 @@ let TerminalLog logFunction logVal=
     | nameof(Log2) -> Log2 logVal |> Number
     | _ -> InvalidArgumentError "Invalid Arguments" |> raise
     
-let rootToTerminals (terminals: terminal list) denominator =
+let RootToTerminals (terminals: terminal list) denominator =
     [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
     
-let floorToNumber (numToFloor:float) =
+let FloorToNumber (numToFloor:float) =
     numToFloor |> int |> float
     
-let ceilToNumber num =
-    floorToNumber num + 1.0
+let CeilToNumber num =
+    FloorToNumber num + 1.0
     
-let roundNum (num:float) =
+let RoundNum (num:float) =
     let trunkNum = num |> int
     let stringRep = string num
     let decimalVals = stringRep.Split[|'.'|]
@@ -69,9 +69,7 @@ let roundNum (num:float) =
     else
         trunkNum |> float
     
-let absVal (num:float) =
+let AbsVal (num:float) =
     +num
 
-let numToTerminal (num:float)=
-    num |> Number
     

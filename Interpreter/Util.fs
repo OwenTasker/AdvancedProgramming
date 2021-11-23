@@ -96,9 +96,30 @@ let rec terminalListToString str list =
     match list with
     | head :: tail -> terminalListToString (str + individualTerminalToString head ) tail
     | [] -> str
-    
+
+/// <summary>
+/// Function to convert an individual Number terminal into a floating point number
+/// </summary>
+/// 
+/// <param name="term">A terminal value</param>
+/// 
+/// <returns>A string representation of the terminal list.</returns>
+///
+/// <exception cref="InvalidArgumentError">Thrown when the input value is not of Number terminal type</exception>
 let terminalToNum term =
-    term |> individualTerminalToString |> System.Double.Parse 
+    match term with
+    | Number _ -> term |> individualTerminalToString |> System.Double.Parse
+    | _ -> InvalidArgumentError "Cannot Parse Non Number Terminal As Number" |> raise
+
+/// <summary>
+/// Function to convert an individual floating point value into a terminal Number type
+/// </summary>
+/// 
+/// <param name="num">A floating point number</param>
+/// 
+/// <returns>A terminal representation of the floating point number</returns>
+let NumToTerminal num =
+    num |> Number
     
 /// <summary>
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
