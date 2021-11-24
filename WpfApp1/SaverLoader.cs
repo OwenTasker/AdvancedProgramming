@@ -8,7 +8,7 @@ using Microsoft.Win32;
 
 namespace WpfApp1
 {
-    public static class SaverLoader
+    public class SaverLoader : ISaverLoader
     {
         public static (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load()
         {
