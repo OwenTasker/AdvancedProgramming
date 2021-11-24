@@ -71,7 +71,7 @@ and factor terminals =
         match terminalsTail with
         | Lpar :: tailTail -> arguments tailTail
         | Number _ :: _
-        | Word _ :: _ -> raise (ParseError "Parse Error: Word Then Word not allowed")
+        | Word _ :: _ -> raise (ParseError "Parse Error: Word Then Word Or Number not allowed")
         | _ -> terminalsTail
     | Function _ :: Lpar :: terminalsTail ->
         match expression terminalsTail with

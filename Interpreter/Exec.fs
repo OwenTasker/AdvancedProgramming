@@ -291,7 +291,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [(TerminalLog (nameof LogE) a)], (env |> Map.toSeq |> dict)
+                    [LogWrapperToTerminal LogE a], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "logTwo" ->
             let assignment, expression = extractExpression tail.[1..] []
@@ -301,7 +301,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [(TerminalLog (nameof Log2) a)], (env |> Map.toSeq |> dict)
+                    [LogWrapperToTerminal Log2 a], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "logTen" ->
             let assignment, expression = extractExpression tail.[1..] []
@@ -311,7 +311,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [(TerminalLog (nameof Log10) a)], (env |> Map.toSeq |> dict)
+                    [LogWrapperToTerminal Log10 a], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "floor" ->
             let assignment, expression = extractExpression tail.[1..] []

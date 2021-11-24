@@ -101,31 +101,82 @@ let LogE input =
 let FormNewBaseRuleFraction numerator denominator =
     LogE numerator / LogE denominator
 
+/// <summary>
+/// Calculates the log_2 of the given input
+/// </summary>
+/// <param name="input">A floating point value to take the logarithm base 2 of</param>
+///
+/// <returns>The log base 2 of the input provided</returns>
 let Log2 input =
     FormNewBaseRuleFraction input 2.0
     
+/// <summary>
+/// Calculates the log_10 of the given input
+/// </summary>
+/// <param name="input">A floating point value to take the logarithm base 2 of</param>
+///
+/// <returns>The log base 2 of the input provided</returns>
 let Log10 input =
     FormNewBaseRuleFraction input 10.0
     
+/// <summary>
+/// Calculates the log_x of the given input
+/// </summary>
+/// <param name="newBase">the base you want to calculate</param>
+/// <param name="input">A floating point value to take the logarithm base newBase of</param>
+///
+/// <returns>The log base newBase of the input provided</returns>
 let LogX newBase input =
     FormNewBaseRuleFraction input newBase
+
+/// <summary>
+/// Higher order wrapper function for Logs
+/// </summary>
+/// <param name="logFunction">Passed Function consisting of which logarithmic function to call</param>
+/// <param name="logVal">The value to be passed to logFunction</param>
+///
+/// <returns>Returns a Terminal value of any given Log function</returns>
+let LogWrapperToTerminal (logFunction: float->float) logVal=
+        logFunction logVal |> Number
     
-let TerminalLog logFunction logVal=
-    match logFunction with
-    | nameof(LogE) -> LogE logVal |> Number
-    | nameof(Log10) -> Log10 logVal |> Number
-    | nameof(Log2) -> Log2 logVal |> Number
-    | _ -> InvalidArgumentError "Invalid Arguments" |> raise
-    
+/// <summary>
+/// Recreates a terminal list based on the provided square value
+/// </summary>
+/// <param name="terminals">All terminal values within function call</param>
+/// <param name="denominator">Floating point value representing the root to calculate, 2 equals sqrt, 3 equals cbrt etc.</param>
+///
+/// <returns>
+/// Returns a list of terminals equal to the value to calculate the root of to the power of 1/denominator
+/// </returns>
 let RootToTerminals (terminals: terminal list) denominator =
     [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
     
+/// <summary>
+/// Function to calculate the floor of a number, uses the fact that in F#, downcasting a float to int just truncates it
+/// and doesnt take into account anything past the decimal point.
+/// </summary>
+/// <param name="numToFloor">Input to floor</param>
+///
+/// <returns>Returns the floored input</returns>
 let FloorToNumber (numToFloor:float) =
     numToFloor |> int |> float
     
+/// <summary>
+/// Function to calculate the ceiling of a number, uses the fact that in F#, downcasting a float to int just truncates
+/// it and doesnt take into account anything past the decimal point.
+/// </summary>
+/// <param name="num">Input to ceil</param>
+///
+/// <returns>Returns the ceiled input</returns>
 let CeilToNumber num =
     FloorToNumber num + 1.0
     
+/// <summary>
+/// Function to calculate the rounding of a number
+/// </summary>
+/// <param name="num">Input to round</param>
+///
+/// <returns>Returns the rounded input</returns>
 let RoundNum (num:float) =
     let trunkNum = num |> int
     let stringRep = string num
@@ -140,6 +191,12 @@ let RoundNum (num:float) =
     else
         trunkNum |> float
     
+/// <summary>
+/// Function to calculate the absolute value of a number
+/// </summary>
+/// <param name="num">Input to calculate the absolute value of</param>
+///
+/// <returns>Returns the absolute value of the input</returns>
 let AbsVal (num:float) =
     +num
 
