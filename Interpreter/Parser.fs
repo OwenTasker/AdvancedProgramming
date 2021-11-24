@@ -74,14 +74,17 @@ and factor terminals =
         | Word _ :: _ -> raise (ParseError "Parse Error: Word Then Word not allowed")
         | _ -> terminalsTail
     | Function _ :: Lpar :: terminalsTail ->
-        match expression terminalsTail with
-        | Rpar :: terminalsTail ->
-            match terminalsTail with
-            | Number _ :: _
-            | Word _ :: _ -> raise (ParseError "Parse Error: Missing Operator")
-            | _ -> terminalsTail
-        | Comma :: terminalsTailTail -> arguments terminalsTailTail
-        | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
+        match terminalsTail with
+        | Word _ :: Assign :: _ -> arguments terminalsTail
+        | _ ->
+            match expression terminalsTail with
+            | Rpar :: terminalsTail ->
+                match terminalsTail with
+                | Number _ :: _
+                | Word _ :: _ -> raise (ParseError "Parse Error: Missing Operator")
+                | _ -> terminalsTail
+            | Comma :: terminalsTailTail -> arguments terminalsTailTail
+            | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
     | Lpar :: terminalsTail ->
         match expression terminalsTail with
         | Rpar :: terminalsTail ->
@@ -90,6 +93,7 @@ and factor terminals =
             | Word _ :: _ -> raise (ParseError "Parse Error: Missing Operator")
             | _ -> terminalsTail
         | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
+    | [] -> []
     | _ -> raise (ParseError "Parse Error: Malformed Expression")
     
 and arguments terminals =
@@ -97,7 +101,7 @@ and arguments terminals =
     | Word _ :: Assign :: tail -> expression tail |> arguments 
     | Comma :: tail 
     | Number _ :: tail -> arguments tail
-    | Rpar :: tail -> tail
+    | Rpar :: tail -> expressionP tail
     | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
      
 let parse terminals =

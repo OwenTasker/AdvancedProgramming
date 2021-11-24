@@ -187,7 +187,10 @@ let rec scan tokens output  =
                 | _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
             else
                 scan tokensTail (Number(Double.Parse tokenHead) :: output)
-        | AlphabetMatch _ -> scan tokensTail (Word tokenHead :: output)
+        | AlphabetMatch _ ->
+            match tokensTail with
+            | "(" :: _ -> scan tokensTail (Function tokenHead :: output)
+            | _ -> scan tokensTail (Word tokenHead :: output)
         | _ -> raise (ScanError "Scan Error: Malformed Tokens") 
 
 /// <summary>Function to lex an input list of characters as strings by calling tokenize then scan.</summary>
