@@ -321,7 +321,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [NumToTerminal (FloorToNumber a)], (env |> Map.toSeq |> dict)
+                    [FloorToNumber a], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "ceil" ->
             let assignment, expression = extractExpression tail.[1..] []
@@ -331,7 +331,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [NumToTerminal (CeilToNumber a)], (env |> Map.toSeq |> dict)
+                    [CeilToNumber a], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "round" ->
             let assignment, expression = extractExpression tail.[1..] []
@@ -341,7 +341,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [NumToTerminal (round a)], (env |> Map.toSeq |> dict)
+                    [RoundNum a], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | "abs" ->
             let assignment, expression = extractExpression tail.[1..] []
@@ -351,7 +351,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
             else
                 match reduce expression env with
                 | Number a ->
-                    [NumToTerminal (abs a)], (env |> Map.toSeq |> dict)
+                    [AbsVal a], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->

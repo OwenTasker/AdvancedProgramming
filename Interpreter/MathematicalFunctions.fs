@@ -54,8 +54,7 @@ let rec LogEGreaterThanZeroPointFive (input:float) (increment:float) (sum:float)
 let rec LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:float) =
     match input > 0.5 || input <= 0.0 with
     | true ->
-        InvalidArgumentError "Invalid input passed to function, expected value less than or equal to 0.5 "
-        |> raise
+        InvalidArgumentError "Invalid input passed to function, expected value less than or equal to 0.5 " |> raise
     | false ->
         match increment with
         | 2000.0 -> sum
@@ -78,8 +77,8 @@ let rec LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:
 /// <returns>The natural log of the input provided</returns>
 let LogE input =
     match input <= 0.5 with
-    | true -> LogELessThanOrEqualToZeroPointFive input 1.0 0.0
-    | _ -> LogEGreaterThanZeroPointFive input 1.0 0.0
+    | true -> LogELessThanOrEqualToZeroPointFive input 1.0 0.0 
+    | _ -> LogEGreaterThanZeroPointFive input 1.0 0.0 
 
 /// <summary>
 /// Function to dynamically calculate any given base of any given number using the change of base rule
@@ -125,9 +124,9 @@ let Log10 input =
 /// <param name="newBase">the base you want to calculate</param>
 /// <param name="input">A floating point value to take the logarithm base newBase of</param>
 ///
-/// <returns>The log base newBase of the input provided</returns>
+/// <returns>The terminal value of the log base newBase of the input provided</returns>
 let LogX newBase input =
-    FormNewBaseRuleFraction input newBase
+    FormNewBaseRuleFraction input newBase |> Number
 
 /// <summary>
 /// Higher order wrapper function for Logs
@@ -159,7 +158,7 @@ let RootToTerminals (terminals: terminal list) denominator =
 ///
 /// <returns>Returns the floored input</returns>
 let FloorToNumber (numToFloor:float) =
-    numToFloor |> int |> float
+    numToFloor |> int |> float |> Number
     
 /// <summary>
 /// Function to calculate the ceiling of a number, uses the fact that in F#, downcasting a float to int just truncates
@@ -168,8 +167,8 @@ let FloorToNumber (numToFloor:float) =
 /// <param name="num">Input to ceil</param>
 ///
 /// <returns>Returns the ceiled input</returns>
-let CeilToNumber num =
-    FloorToNumber num + 1.0
+let CeilToNumber (num: float) =
+    (num |> int |> float) + 1.0 |> Number
     
 /// <summary>
 /// Function to calculate the rounding of a number
@@ -185,11 +184,11 @@ let RoundNum (num:float) =
     if decimalVals.Length = 2 then
         let numRep = decimalVals.[1] |> float
         if numRep >= 5.0 then
-            trunkNum+1 |> float
+            trunkNum+1 |> float |> Number
         else
-            trunkNum |> float
+            trunkNum |> float |> Number
     else
-        trunkNum |> float
+        trunkNum |> float |> Number
     
 /// <summary>
 /// Function to calculate the absolute value of a number
@@ -198,6 +197,6 @@ let RoundNum (num:float) =
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let AbsVal (num:float) =
-    +num
+    +num |> Number
 
     
