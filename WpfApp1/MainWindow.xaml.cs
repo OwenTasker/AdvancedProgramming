@@ -91,26 +91,13 @@ namespace WpfApp1
         {
             if (inputText.Text == "Enter query here..." || string.IsNullOrEmpty(inputText.Text) ||
                 string.IsNullOrWhiteSpace(inputText.Text)) return;
-            
+
             if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
             {
-                consoleText.AppendText(inputText.Text+"\n" + ">>");
-                try
-                {
-                    var trimmedArgsArray = GraphDataCalculator.TrimmedArgsArray(inputText.Text);
-
-                    var xArray = GraphDataCalculator.ComputeXArray(trimmedArgsArray);
-                    var yArray = GraphDataCalculator.ComputeYArray(trimmedArgsArray, xArray, _environment);
-                    
-                    var graphPopUp = new GraphPopUp(trimmedArgsArray[0], xArray, yArray, _environment);
-                    graphPopUp.Show();
-                }
-                catch (Exception plottingException)
-                {
-                    consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" +
-                                           plottingException.StackTrace + "\n>>");
-                }
-            } else if (inputText.Text.ToLower().Equals("clear"))
+                ShowGraph();
+                consoleText.AppendText(inputText.Text + "\n" + ">>");
+            }
+            else if (inputText.Text.ToLower().Equals("clear"))
             {
                 ClearButton_OnClick(null, null);
             }
