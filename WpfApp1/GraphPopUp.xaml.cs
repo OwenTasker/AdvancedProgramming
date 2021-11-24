@@ -80,16 +80,6 @@ namespace WpfApp1
             {
                 _imageBuffer[i] = 255;
             }
-            
-            //Set axis labels
-            var yMax = yArray.Max();
-            var yMin = yArray.Min();
-            var xMax = xArray.Max();
-            var xMin = xArray.Min();
-            LabelYMax.Content = Math.Ceiling(yMax);
-            LabelYMin.Content = Math.Floor(yMin);
-            LabelXMax.Content = Math.Ceiling(xMax);
-            LabelXMin.Content = Math.Floor(xMin);
 
             //Draw axis and get axis positions
             int yZero;
