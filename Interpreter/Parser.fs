@@ -99,10 +99,6 @@ and arguments terminals =
     | Number _ :: tail -> arguments tail
     | Rpar :: tail -> tail
     | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
-    
-        
+     
 let parse terminals =
-    try
-        if statement terminals = [] then true else false
-    with
-    | ParseError _ -> false
+    if statement terminals = [] then terminals else ParseError "ParseError: Malformed expression."|> raise
