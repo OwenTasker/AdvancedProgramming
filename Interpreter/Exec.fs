@@ -156,14 +156,14 @@ and reduce terminals (env: Map<string, terminal list>) =
 /// <param name="env">The execution environment for any variables in the expression.</param>
 ///
 /// <returns></returns>
-let rec closed terminals (env: Map<string, terminal list>) =
+let rec closed (env: Map<string, terminal list>) terminals  =
     match terminals with
     | [] -> true
     | Word x :: tail ->
-        if env.ContainsKey x && closed env.[x] env
-        then closed tail env
+        if env.ContainsKey x && closed env env.[x] 
+        then closed env tail 
         else false
-    | _ :: tail -> closed tail env
+    | _ :: tail -> closed env tail
 
 /// <summary>
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
@@ -233,20 +233,20 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
 /// <param name="env">The current MyMathsPal execution environment.</param>
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
-let rec exec terminals (env: Map<string, terminal list>) =
+let rec exec (env: Map<string, terminal list>) terminals  =
     match terminals with
     | Word x :: Assign :: tail ->
         match tail with
         | Word _ :: Assign :: _ -> ExecError "Execution Error: Malformed expression; an assignment may not be assigned to an assignment" |> raise
         | _ ->
-            let result, _ = exec tail env
+            let result, _ = exec env tail
             terminals, (env.Add(x, result) |> Map.toSeq |> dict) 
     | Word x :: Lpar :: tail ->
         //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
         let newEnv = setArguments tail Map.empty
         let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
         
-        if closed [Word x] combinedEnv
+        if closed combinedEnv [Word x] 
         then [reduce [Word x] combinedEnv], (env |> Map.toSeq |> dict)
         else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
     | Function a :: tail ->
@@ -260,7 +260,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
                     if (List.filter (fun x -> x = Comma) assignment).Length = 0
                     then
                         let newEnv = setArguments assignment env
-                        if closed expression newEnv
+                        if closed newEnv expression
                         then
                             [reduce (differentiate expression) newEnv], (env |> Map.toSeq |> dict)
                         else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
@@ -355,7 +355,7 @@ let rec exec terminals (env: Map<string, terminal list>) =
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
     | _ ->
-        if closed terminals env
+        if closed env terminals
         then [reduce terminals env], (env |> Map.toSeq |> dict)
         else terminals, (env |> Map.toSeq |> dict)
         
