@@ -32,7 +32,7 @@ namespace WpfApp1
 
         //Image ID tracking for temp saving
         private static int _imageId;
-        private readonly int _thisImageId = _imageId;
+        private readonly int _thisImageId = _imageId++;
 
         //Has this graph been saved? true = no
         private bool _isDataDirty = true;
@@ -45,8 +45,6 @@ namespace WpfApp1
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
-        
-        
 
         /// <summary>
         /// Entry point, initializes the graph window, generates and displays graph.
@@ -67,15 +65,15 @@ namespace WpfApp1
         /// </summary>
         public void GenerateGraph(string input)
         {
+            //Split command into arguments
             var trimmedArgsArray = _graphDataCalculator.TrimmedArgsArray(input);
 
+            //Compute evenly spaced values for x axis between given bounds
             var xArray =
                 _graphDataCalculator.ComputeXArray(double.Parse(trimmedArgsArray[1]), double.Parse(trimmedArgsArray[2]));
             
+            //Compute values for y axis based on given function and calculated x array 
             var yArray = _graphDataCalculator.ComputeYArray(trimmedArgsArray, xArray, _interpreter);
-
-            //Image temp save tracking
-            _imageId++;
 
             //Add initial function to list
             _functions.Add(trimmedArgsArray[0]);
@@ -92,6 +90,7 @@ namespace WpfApp1
             (yZero, xZero) = DrawAxis(xArray, yArray);
             
             //Generate line of a function
+            //.Clone() to avoid accidental pass-by-reference
             var tempYArray = (double[]) yArray.Clone();
             GenerateLine(tempYArray);
             
