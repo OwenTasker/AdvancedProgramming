@@ -7,21 +7,11 @@ open Interpreter.Parser
 open Interpreter.Exec
 open Interpreter.Differentiate
 
-let interpret (input) =
-    try
-        let lexedVals = lexer input
-        let x = statement lexedVals
-        Console.WriteLine x        
-        let a, _ = exec lexedVals (Map<string, terminal list>[])
-        Console.WriteLine a
-    with
-    | TokenizeError _ as e -> Console.WriteLine(e.Message)
-    | ScanError _ as e -> Console.WriteLine(e.Message)
-    | ParseError _ as e -> Console.WriteLine(e.Message)
-    | ExecError _ as e -> Console.WriteLine(e.Message)
-    
-    
-            
+let interpret input env =
+    lexer input |> parse |> exec env
+
+let closed input env =
+    lexer input |> closed env
 
 [<EntryPoint>]
 let main args =
@@ -34,6 +24,6 @@ let main args =
     Console.WriteLine $"%A{rawInput}"
     Console.WriteLine $"%A{lexedVal}"
     Console.WriteLine $"%A{scannedVals}"
-    Console.WriteLine (sprintf "%A" (differentiate scannedVals))
+    Console.WriteLine $"%A{differentiate scannedVals}"
         
     0
