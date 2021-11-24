@@ -83,6 +83,96 @@ let performOperation operator numStack =
             | Number f, Number g -> (performBinaryOperation operator g f) :: numStack.[2 .. ]
             | _ -> ExecError "Execution Error: Number stack contains non-number tokens." |> raise
 
+let rec extractBrackets terminals lparCount out =
+    match terminals with
+    | Lpar :: tail -> extractBrackets tail (lparCount+1) (Lpar::out)
+    | Rpar :: tail ->
+        match lparCount with
+        | 1 -> tail, List.rev (Rpar :: out)
+        | _ -> extractBrackets tail (lparCount-1) (Rpar::out)
+    | any :: tail -> extractBrackets tail lparCount (any::out)
+    | [] -> ExecError "Execution Error: Unmatched parenthesis." |> raise
+
+
+/// <summary>
+/// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
+/// </summary>
+///
+/// <param name="inList">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="outList">A list to contain a single assignment expression taken from the input list.</param>
+///
+/// <returns>
+/// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
+/// the output list.
+/// </returns>
+let rec extractAssignment inList outList =
+    match inList with
+    | Rpar :: _ -> (inList, List.rev outList)
+    | Comma :: inTail -> (inTail, List.rev outList)
+    | any :: inTail -> extractAssignment inTail (any :: outList)
+    | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
+
+/// <summary>
+/// Reads a list of terminals, prepending them to an output list, up to a Comma or final Rpar terminal
+/// </summary>
+///
+/// <param name="inList">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="outList">A list to contain a single expression taken from the input list.</param>
+///
+/// <returns>
+/// A tuple containing the input list and the output list with the leftmost expression moved from the input list to
+/// the output list.
+/// </returns>
+let rec extractExpression inList outList =
+    match inList with
+    | [ Rpar ] -> ([], List.rev outList)
+    | Comma :: inTail -> (inTail, List.rev outList)
+    | any :: inTail -> extractExpression inTail (any :: outList)
+    | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
+
+/// <summary>
+/// Checks whether a function contains any variables whose values are not defined in the current environment.
+/// </summary>
+///
+/// <param name="terminals">A list of terminals representing an expression in infix notation.</param>
+/// <param name="env">The execution environment for any variables in the expression.</param>
+///
+/// <returns></returns>
+let rec closed (env: Map<string, terminal list>) terminals  =
+    match terminals with
+    | [] -> true, env
+    | Word x :: tail ->
+        if env.ContainsKey x && closed env env.[x] |> fst
+        then closed env tail 
+        else false, env
+    | Function _ :: tail ->
+        let newEnv, remainingTerminals = setArguments tail env
+        closed newEnv remainingTerminals
+    | _ :: tail -> closed env tail
+    
+/// <summary>
+/// Creates an environment from a list of terminals representing Comma separate assignments.
+/// </summary>
+///
+/// <param name="terminals">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
+///
+/// <returns></returns>
+and setArguments terminals (env: Map<string, terminal list>) =
+    match terminals with
+    | Rpar :: tail -> env, tail
+    | Word x :: Assign :: tail ->
+        match extractAssignment tail [] with
+        | a, b -> setArguments a (env.Add(x, [reduce b env] ))
+    | Lpar :: tail -> setArguments tail env
+    | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
+
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
 /// expression into an operator stack and a number stack. Performs calculations depending on precedence and
@@ -95,7 +185,7 @@ let performOperation operator numStack =
 /// <param name="env">The execution environment for any variables in the expression.</param>
 ///
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
-let rec reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
+and reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
     match terminals with
     | terminalHead :: terminalTail ->
         match terminalHead with
@@ -103,6 +193,13 @@ let rec reduceRecursive terminals opStack numStack (env: Map<string, terminal li
         | Word x ->
             if env.ContainsKey x
             then reduceRecursive terminalTail opStack (reduce env.[x] env :: numStack) env
+            else ExecError "Execution Error: Expression with unbound variables passed to reduce." |> raise
+        | Function a ->
+            if env.ContainsKey a
+            then
+                let remainingTerminals, bracketedExpression = extractBrackets terminalTail 0 []
+                let terminalList, _ = exec env (Function a :: bracketedExpression)
+                reduceRecursive remainingTerminals opStack (terminalList @ numStack) env
             else ExecError "Execution Error: Expression with unbound variables passed to reduce." |> raise
         | Lpar -> reduceRecursive terminalTail (terminalHead :: opStack) numStack env
         | Rpar ->
@@ -147,82 +244,6 @@ let rec reduceRecursive terminals opStack numStack (env: Map<string, terminal li
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
 and reduce terminals (env: Map<string, terminal list>) =
     reduceRecursive terminals [] [] env
-
-/// <summary>
-/// Checks whether a function contains any variables whose values are not defined in the current environment.
-/// </summary>
-///
-/// <param name="terminals">A list of terminals representing an expression in infix notation.</param>
-/// <param name="env">The execution environment for any variables in the expression.</param>
-///
-/// <returns></returns>
-let rec closed (env: Map<string, terminal list>) terminals  =
-    match terminals with
-    | [] -> true
-    | Word x :: tail ->
-        if env.ContainsKey x && closed env env.[x] 
-        then closed env tail 
-        else false
-    | _ :: tail -> closed env tail
-
-/// <summary>
-/// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
-/// </summary>
-///
-/// <param name="inList">
-/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
-/// </param>
-/// <param name="outList">A list to contain a single assignment expression taken from the input list.</param>
-///
-/// <returns>
-/// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
-/// the output list.
-/// </returns>
-let rec extractAssignment inList outList =
-    match inList with
-    | Rpar :: _ -> (inList, List.rev outList)
-    | Comma :: inTail -> (inTail, List.rev outList)
-    | any :: inTail -> extractAssignment inTail (any :: outList)
-    | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
-
-/// <summary>
-/// Reads a list of terminals, prepending them to an output list, up to a Comma or final Rpar terminal
-/// </summary>
-///
-/// <param name="inList">
-/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
-/// </param>
-/// <param name="outList">A list to contain a single expression taken from the input list.</param>
-///
-/// <returns>
-/// A tuple containing the input list and the output list with the leftmost expression moved from the input list to
-/// the output list.
-/// </returns>
-let rec extractExpression inList outList =
-    match inList with
-    | [ Rpar ] -> ([], List.rev outList)
-    | Comma :: inTail -> (inTail, List.rev outList)
-    | any :: inTail -> extractExpression inTail (any :: outList)
-    | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
-    
-/// <summary>
-/// Creates an environment from a list of terminals representing Comma separate assignments.
-/// </summary>
-///
-/// <param name="terminals">
-/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
-/// </param>
-/// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
-///
-/// <returns></returns>
-let rec setArguments terminals (env: Map<string, terminal list>) =
-    match terminals with
-    | Rpar :: _ -> env
-    | Word x :: Assign :: tail ->
-        match extractAssignment tail [] with
-        | a, b -> setArguments a (env.Add(x, [reduce b env] ))
-    | Lpar :: tail -> setArguments tail env
-    | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
     
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
@@ -233,7 +254,7 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
 /// <param name="env">The current MyMathsPal execution environment.</param>
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
-let rec exec (env: Map<string, terminal list>) terminals  =
+and exec (env: Map<string, terminal list>) terminals  =
     match terminals with
     | Word x :: Assign :: tail ->
         match tail with
@@ -252,8 +273,8 @@ let rec exec (env: Map<string, terminal list>) terminals  =
                 then
                     if (List.filter (fun x -> x = Comma) assignment).Length = 0
                     then
-                        let newEnv = setArguments assignment env
-                        if closed newEnv expression
+                        let newEnv, terminals = setArguments assignment env
+                        if closed newEnv expression |> fst
                         then
                             [reduce (differentiate expression) newEnv], (env |> Map.toSeq |> dict)
                         else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
@@ -348,15 +369,17 @@ let rec exec (env: Map<string, terminal list>) terminals  =
                 | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ ->
             if env.ContainsKey a then
-                let newEnv = setArguments tail Map.empty
+                let newEnv, remainingTerminals = setArguments tail Map.empty
                 let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
-                if closed combinedEnv [Word a] 
-                then [reduce [Word a] combinedEnv], (env |> Map.toSeq |> dict)
+                
+                if closed combinedEnv [Word a] |> fst
+                then [reduce ((reduce [Word a] combinedEnv) :: remainingTerminals) env], (env |> Map.toSeq |> dict)
                 else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
             else ExecError "Execution Error: Undefined function" |> raise
     | _ ->
-        if closed env terminals
-        then [reduce terminals env], (env |> Map.toSeq |> dict)
+        let isClosed, newEnv = closed env terminals
+        if isClosed
+        then [reduce terminals newEnv], (env |> Map.toSeq |> dict)
         else terminals, (env |> Map.toSeq |> dict)
         
         

@@ -59,7 +59,7 @@ namespace WpfApp1
             var inputList = variable.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
 
-            return Program.closed(inputFSharpList, Util.toMap(Environment));
+            return Program.closed(inputFSharpList, Util.toMap(Environment)).Item1;
         }
 
         public IEnumerable<string> GetOpenVariables(string expression)
