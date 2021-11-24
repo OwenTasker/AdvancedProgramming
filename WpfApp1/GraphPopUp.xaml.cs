@@ -161,6 +161,8 @@ namespace WpfApp1
         /// </summary>
         private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray)
         {
+            //This method uses inverted y axis
+            
             //Create axis labels
             var yMaxLabel = "(y)\n" + Math.Ceiling(yArray.Max());
             var yMinLabel = "" + Math.Floor(yArray.Min());
@@ -169,7 +171,6 @@ namespace WpfApp1
             var zeroLabel = "0";
 
             //Find axis label locations
-            //This method uses inverted y axis
             //Find y axis label locations:
             var yMaxPointX = xZero;
             var yMinPointX = xZero;
