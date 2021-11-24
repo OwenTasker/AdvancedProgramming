@@ -109,7 +109,7 @@ let rec extractBrackets terminals lparCount out =
 /// </returns>
 let rec extractAssignment inList outList =
     match inList with
-    | Rpar :: _ -> (inList, List.rev outList)
+    | Rpar :: _ -> inList, List.rev outList
     | Comma :: inTail -> (inTail, List.rev outList)
     | any :: inTail -> extractAssignment inTail (any :: outList)
     | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
@@ -149,9 +149,14 @@ let rec closed (env: Map<string, terminal list>) terminals  =
         if env.ContainsKey x && closed env env.[x] |> fst
         then closed env tail 
         else false, env
-    | Function _ :: tail ->
-        let newEnv, remainingTerminals = setArguments tail env
-        closed newEnv remainingTerminals
+    | Function a :: tail ->
+        match a with
+        | Lexer.FunctionMatch _ ->
+            let remaining, _ = extractBrackets tail 0 []
+            closed env remaining
+        | _ ->
+            let newEnv, remainingTerminals = setArguments tail env
+            closed newEnv remainingTerminals
     | _ :: tail -> closed env tail
     
 /// <summary>
@@ -195,12 +200,18 @@ and reduceRecursive terminals opStack numStack (env: Map<string, terminal list>)
             then reduceRecursive terminalTail opStack (reduce env.[x] env :: numStack) env
             else ExecError "Execution Error: Expression with unbound variables passed to reduce." |> raise
         | Function a ->
+            let remainingTerminals, bracketedExpression = extractBrackets terminalTail 0 []
+            
             if env.ContainsKey a
             then
-                let remainingTerminals, bracketedExpression = extractBrackets terminalTail 0 []
                 let terminalList, _ = exec env (Function a :: bracketedExpression)
                 reduceRecursive remainingTerminals opStack (terminalList @ numStack) env
-            else ExecError "Execution Error: Expression with unbound variables passed to reduce." |> raise
+            else
+                match a with
+                | Lexer.FunctionMatch _ ->
+                    let terminalList, _ = exec env (Function a :: bracketedExpression)
+                    reduceRecursive remainingTerminals opStack (terminalList @ numStack) env
+                | _ -> ExecError "Execution Error: Undefined function" |> raise
         | Lpar -> reduceRecursive terminalTail (terminalHead :: opStack) numStack env
         | Rpar ->
             match evaluateBrackets opStack numStack performOperation with
@@ -266,107 +277,69 @@ and exec (env: Map<string, terminal list>) terminals  =
     | Function a :: tail ->
         match a with
         | "differentiate" ->
-            match tail.[0], tail.[tail.Length-1] with
-            | Lpar, Rpar ->
-                let assignment, expression = extractExpression tail.[1..] []
-                if assignment <> []
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            let assignment, expression = extractExpression bracketedExpression.[1..] []
+            if assignment <> []
+            then
+                if (List.filter (fun x -> x = Comma) assignment).Length = 0
                 then
-                    if (List.filter (fun x -> x = Comma) assignment).Length = 0
+                    let newEnv, _ = setArguments assignment env
+                    if closed newEnv expression |> fst
                     then
-                        let newEnv, terminals = setArguments assignment env
-                        if closed newEnv expression |> fst
-                        then
-                            [reduce (differentiate expression) newEnv], (env |> Map.toSeq |> dict)
-                        else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
-                    else ExecError "" |> raise
-                else
-                    differentiate expression, (env |> Map.toSeq |> dict)
-            | _ -> ExecError "Execution Error: Malformed expression; missing parenthesis enclosing expression" |> raise
+                        [reduce ((reduce (differentiate expression) newEnv) :: remaining) env], (env |> Map.toSeq |> dict)
+                    else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
+                else ExecError "" |> raise
+            else
+                [reduce ((differentiate expression) @ remaining) env], (env |> Map.toSeq |> dict)
         | "sqrt" ->
             //Set assignment to any assignments inside of expression
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error: Unexpected Assignment" |> raise
-            else
-                [reduce (rootToTerminals expression 2.0) env], (env |> Map.toSeq |> dict)
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            [reduce ((reduce (rootToTerminals bracketedExpression 2.0) env) :: remaining) env], (env |> Map.toSeq |> dict)
         | "cbrt" ->
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error" |> raise
-            else
-                [reduce (rootToTerminals expression 3.0) env], (env |> Map.toSeq |> dict)
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            [reduce ((reduce (rootToTerminals bracketedExpression 3.0) env) :: remaining) env], (env |> Map.toSeq |> dict)
         | "ln" ->
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"ln\"" |> raise
-            else
-                match reduce expression env with
-                | Number a ->
-                    [(TerminalLog (nameof LogE) a)], (env |> Map.toSeq |> dict)
-                | _ -> ExecError "Execution Error: Invalid " |> raise
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            match reduce bracketedExpression env with
+            | Number a ->
+                [reduce ((TerminalLog (nameof LogE) a) :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Invalid " |> raise
         | "logTwo" ->
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"log2\"" |> raise
-            else
-                match reduce expression env with
-                | Number a ->
-                    [(TerminalLog (nameof Log2) a)], (env |> Map.toSeq |> dict)
-                | _ -> ExecError "Execution Error: Invalid " |> raise
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            match reduce bracketedExpression env with
+            | Number a ->
+                [reduce ((TerminalLog (nameof Log2) a) :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Invalid " |> raise
         | "logTen" ->
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"log10\"" |> raise
-            else
-                match reduce expression env with
-                | Number a ->
-                    [(TerminalLog (nameof Log10) a)], (env |> Map.toSeq |> dict)
-                | _ -> ExecError "Execution Error: Invalid " |> raise
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            match reduce bracketedExpression env with
+            | Number a ->
+                [reduce ((TerminalLog (nameof Log10) a) :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Invalid " |> raise
         | "floor" ->
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"log10\"" |> raise
-            else
-                match reduce expression env with
-                | Number a ->
-                    [numToTerminal (floorToNumber a)], (env |> Map.toSeq |> dict)
-                | _ -> ExecError "Execution Error: Invalid " |> raise
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            match reduce bracketedExpression env with
+            | Number a ->
+                [reduce ((numToTerminal (floorToNumber a)) :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Invalid " |> raise
         | "ceil" ->
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"log10\"" |> raise
-            else
-                match reduce expression env with
-                | Number a ->
-                    [numToTerminal (ceilToNumber a)], (env |> Map.toSeq |> dict)
-                | _ -> ExecError "Execution Error: Invalid " |> raise
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            match reduce bracketedExpression env with
+            | Number a ->
+                [reduce ((numToTerminal (ceilToNumber a)) :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Invalid " |> raise
         | "round" ->
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"round\"" |> raise
-            else
-                match reduce expression env with
-                | Number a ->
-                    [numToTerminal (round a)], (env |> Map.toSeq |> dict)
-                | _ -> ExecError "Execution Error: Invalid " |> raise
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            match reduce bracketedExpression env with
+            | Number a ->
+                [reduce ((numToTerminal (round a)) :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Invalid " |> raise
         | "abs" ->
-            let assignment, expression = extractExpression tail.[1..] []
-            if assignment <> []
-            then
-                ExecError "Execution Error: Unexpected Assignment Between Parenthesis For \"round\"" |> raise
-            else
-                match reduce expression env with
-                | Number a ->
-                    [numToTerminal (abs a)], (env |> Map.toSeq |> dict)
-                | _ -> ExecError "Execution Error: Invalid " |> raise
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            match reduce bracketedExpression env with
+            | Number a ->
+                [reduce ((numToTerminal (abs a)) :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ ->
             if env.ContainsKey a then
                 let newEnv, remainingTerminals = setArguments tail Map.empty
