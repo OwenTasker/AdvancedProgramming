@@ -170,16 +170,25 @@ namespace WpfApp1
 
             //Find axis label locations
             //This method uses inverted y axis
+            //Find y axis label locations:
             var yMaxPointX = xZero;
+            var yMinPointX = xZero;
             if (xZero > ImageWidth / 2)
             {
                 yMaxPointX -= yMaxLabel.Length * 9 + 2;
+                yMinPointX -= yMinLabel.Length * 9 + 2;
             }
             var yMaxPoint = new PointF(yMaxPointX, 0);
-            var yMinPoint = new PointF(yMaxPointX, ImageHeight - 16);
+            var yMinPoint = new PointF(yMinPointX, ImageHeight - 16);
             
-            var xMaxPoint = new PointF(ImageWidth, ImageHeight - yZero);
-            var xMinPoint = new PointF(0, ImageHeight - yZero);
+            //Find x axis label locations:
+            var xMaxPointY = yZero;
+            if (yZero > ImageHeight / 2)
+            {
+                xMaxPointY -= xMaxLabel.Length * 9 + 2;
+            }
+            var xMaxPoint = new PointF(ImageWidth, ImageHeight - xMaxPointY);
+            var xMinPoint = new PointF(0, ImageHeight - xMaxPointY);
             var zeroPoint = new PointF(xZero, ImageHeight - yZero);
 
             //Draw labels in graph
@@ -189,7 +198,7 @@ namespace WpfApp1
             {
                 using(var graphics = Graphics.FromImage(bitmap))
                 {
-                    using (var font =  new Font("Courier New", 5))
+                    using (var font =  new Font("Courier New", 14, GraphicsUnit.Pixel))
                     {
                         graphics.DrawString(yMaxLabel, font, Brushes.Black, yMaxPoint);
                         graphics.DrawString(yMinLabel, font, Brushes.Black, yMinPoint);
