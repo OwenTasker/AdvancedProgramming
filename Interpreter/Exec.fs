@@ -221,9 +221,9 @@ let rec setArguments terminals (env: Map<string, terminal list>) =
     | Word x :: Assign :: tail ->
         match extractAssignment tail [] with
         | a, b -> setArguments a (env.Add(x, [reduce b env] ))
+    | Lpar :: tail -> setArguments tail env
     | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
     
-
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
 /// a valid statement and an execution environment.
@@ -241,14 +241,7 @@ let rec exec (env: Map<string, terminal list>) terminals  =
         | _ ->
             let result, _ = exec env tail
             terminals, (env.Add(x, result) |> Map.toSeq |> dict) 
-    | Word x :: Lpar :: tail ->
         //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
-        let newEnv = setArguments tail Map.empty
-        let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
-        
-        if closed combinedEnv [Word x] 
-        then [reduce [Word x] combinedEnv], (env |> Map.toSeq |> dict)
-        else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
     | Function a :: tail ->
         match a with
         | "differentiate" ->
@@ -353,7 +346,14 @@ let rec exec (env: Map<string, terminal list>) terminals  =
                 | Number a ->
                     [numToTerminal (abs a)], (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Invalid " |> raise
-        | _ -> ExecError "Execution Error: Malformed expression; undefined function called" |> raise
+        | _ ->
+            if env.ContainsKey a then
+                let newEnv = setArguments tail Map.empty
+                let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
+                if closed combinedEnv [Word a] 
+                then [reduce [Word a] combinedEnv], (env |> Map.toSeq |> dict)
+                else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
+            else ExecError "Execution Error: Undefined function" |> raise
     | _ ->
         if closed env terminals
         then [reduce terminals env], (env |> Map.toSeq |> dict)
