@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Interpreter;
 using Microsoft.FSharp.Collections;
+using Image = System.Drawing.Image;
 
 namespace WpfApp1
 {
@@ -21,8 +22,8 @@ namespace WpfApp1
     /// Custom action on window close: https://docs.microsoft.com/en-us/dotnet/api/system.windows.window.closing?view=windowsdesktop-5.0
     /// Free BitmapImage for deletion: https://stackoverflow.com/questions/8352787/how-to-free-the-memory-after-the-bitmapimage-is-no-longer-needed
     /// Copy image file to save it: https://stackoverflow.com/questions/7462997/copy-file-to-a-different-directory
+    /// Overlay text on image: https://stackoverflow.com/questions/6826921/write-text-on-an-image-in-c-sharp
     /// </summary>
-    
     public partial class GraphPopUp
     {
         //Constants for ease of readability
@@ -79,22 +80,15 @@ namespace WpfApp1
             {
                 _imageBuffer[i] = 255;
             }
-            
-            //Set axis labels
-            var yMax = yArray.Max();
-            var yMin = yArray.Min();
-            var xMax = xArray.Max();
-            var xMin = xArray.Min();
-            LabelYMax.Content = Math.Ceiling(yMax);
-            LabelYMin.Content = Math.Floor(yMin);
-            LabelXMax.Content = Math.Ceiling(xMax);
-            LabelXMin.Content = Math.Floor(xMin);
 
-            //Draw axis
-            DrawAxis(xArray, yArray);
+            //Draw axis and get axis positions
+            int yZero;
+            int xZero;
+            (yZero, xZero) = DrawAxis(xArray, yArray);
             
             //Generate line of a function
-            GenerateLine(yArray);
+            var tempYArray = (double[]) yArray.Clone();
+            GenerateLine(tempYArray);
             
             //Invert graph due to coordinate system
             InvertGraph();
@@ -111,6 +105,9 @@ namespace WpfApp1
                 }
             }
             
+            //Add axis labels to graph
+            AddLabels(yZero, xZero, xArray, yArray);
+
             //Display graph
             var stream = File.OpenRead(path + "MyMathsPal\\graph" + _thisImageId + ".png");
             var graph = new BitmapImage();
@@ -150,6 +147,64 @@ namespace WpfApp1
         }
 
         /// <summary>
+        /// Method to add labels to image
+        /// </summary>
+        private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray)
+        {
+            //Create axis labels
+            var yMaxLabel = "" + Math.Ceiling(yArray.Max());
+            var yMinLabel = "" + Math.Floor(yArray.Min());
+            var xMaxLabel = "" + Math.Ceiling(xArray.Max());
+            var xMinLabel = "" + Math.Floor(xArray.Min());
+            var zeroLabel = "0";
+
+            //Find axis label locations
+            //This method uses inverted y axis
+            //Find y axis label locations:
+            var yMaxPointX = xZero;
+            var yMinPointX = xZero;
+            if (xZero > ImageWidth / 2)
+            {
+                yMaxPointX -= yMaxLabel.Length * 9 + 2;
+                yMinPointX -= yMinLabel.Length * 9 + 2;
+            }
+            var yMaxPoint = new PointF(yMaxPointX, 0);
+            var yMinPoint = new PointF(yMinPointX, ImageHeight - 16);
+            
+            //Find x axis label locations:
+            var xMaxPointY = yZero;
+            if (yZero > ImageHeight / 2)
+            {
+                xMaxPointY -= xMaxLabel.Length * 9 + 2;
+            }
+            var xMaxPoint = new PointF(ImageWidth, ImageHeight - xMaxPointY);
+            var xMinPoint = new PointF(0, ImageHeight - xMaxPointY);
+            var zeroPoint = new PointF(xZero, ImageHeight - yZero);
+
+            //Draw labels in graph
+            Bitmap newBitmap;
+            var path = Path.GetTempPath();
+            using (var bitmap = (Bitmap)Image.FromFile(path + "MyMathsPal\\graph" + _thisImageId + ".png"))
+            {
+                using(var graphics = Graphics.FromImage(bitmap))
+                {
+                    using (var font =  new Font("Courier New", 14, GraphicsUnit.Pixel))
+                    {
+                        graphics.DrawString(yMaxLabel, font, Brushes.Black, yMaxPoint);
+                        graphics.DrawString(yMinLabel, font, Brushes.Black, yMinPoint);
+                        graphics.DrawString(xMaxLabel, font, Brushes.Black, xMaxPoint);
+                        graphics.DrawString(xMinLabel, font, Brushes.Black, xMinPoint);
+                        graphics.DrawString(zeroLabel, font, Brushes.Black, zeroPoint);
+                    }
+                }
+                newBitmap = new Bitmap(bitmap);
+            }
+
+            newBitmap.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png");
+            newBitmap.Dispose();
+        }
+
+        /// <summary>
         /// Method to plot a graph from arrays of x and y values
         /// </summary>
         private void GenerateLine(double[] yArray)
@@ -177,7 +232,7 @@ namespace WpfApp1
         /// <summary>
         /// Method to draw x and y axis in correct locations
         /// </summary>
-        private void DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
+        private (int yZero, int xZero) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
         {
             //Find yArray index of y=0, default to below graph
             var yZero = 0;
@@ -270,6 +325,8 @@ namespace WpfApp1
             {
                 PlotPixel(xZero, i);
             }
+
+            return (yZero, xZero);
         }
 
         /// <summary>
@@ -375,6 +432,8 @@ namespace WpfApp1
                 Console.WriteLine("Plotting Exception: " + plottingException.Message + "\n" +
                                        plottingException.StackTrace + "\n>>");
             }
+
+            _isDataDirty = true;
         }
 
         /// <summary>
