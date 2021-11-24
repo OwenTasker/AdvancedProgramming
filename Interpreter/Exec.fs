@@ -266,31 +266,19 @@ and reduce terminals (env: Map<string, terminal list>) =
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
 and exec (env: Map<string, terminal list>) terminals  =
-    match terminals with
+    let expandedTerminals = evaluateDifferentiates terminals env []
+    match expandedTerminals with
     | Word x :: Assign :: tail ->
         match tail with
         | Word _ :: Assign :: _ -> ExecError "Execution Error: Malformed expression; an assignment may not be assigned to an assignment" |> raise
         | _ ->
             let result, _ = exec env tail
-            terminals, (env.Add(x, result) |> Map.toSeq |> dict) 
+            expandedTerminals, (env.Add(x, result) |> Map.toSeq |> dict) 
         //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
     | Function a :: tail ->
         match a with
         | "differentiate" ->
-            let remaining, bracketedExpression = extractBrackets tail 0 []
-            let assignment, expression = extractExpression bracketedExpression.[1..] []
-            if assignment <> []
-            then
-                if (List.filter (fun x -> x = Comma) assignment).Length = 0
-                then
-                    let newEnv, _ = setArguments assignment env
-                    if closed newEnv expression |> fst
-                    then
-                        [reduce ((reduce (differentiate expression) newEnv) :: remaining) env], (env |> Map.toSeq |> dict)
-                    else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
-                else ExecError "" |> raise
-            else
-                [reduce ((differentiate expression) @ remaining) env], (env |> Map.toSeq |> dict)
+            ExecError "Execution Error: Differential not expanded by exec." |> raise
         | "sqrt" ->
             //Set assignment to any assignments inside of expression
             let remaining, bracketedExpression = extractBrackets tail 0 []
@@ -350,10 +338,31 @@ and exec (env: Map<string, terminal list>) terminals  =
                 else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
             else ExecError "Execution Error: Undefined function" |> raise
     | _ ->
-        let isClosed, newEnv = closed env terminals
+        let isClosed, newEnv = closed env expandedTerminals
         if isClosed
-        then [reduce terminals newEnv], (env |> Map.toSeq |> dict)
-        else terminals, (env |> Map.toSeq |> dict)
+        then [reduce expandedTerminals newEnv], (env |> Map.toSeq |> dict)
+        else expandedTerminals, (env |> Map.toSeq |> dict)
         
+and evaluateDifferentiates terminals (env : Map<string, terminal list>) out =
+    match terminals with
+    | Function "differentiate" :: tail ->
+        let remaining, bracketedExpression = extractBrackets tail 0 []
+        evaluateDifferentiates remaining env ((calculateDifferential bracketedExpression env) @ out)
+    | head :: tail -> evaluateDifferentiates tail env (head :: out)
+    | _ -> List.rev out
         
-//Create extractArguments to read comma seperated list ending with )
+and calculateDifferential bracketedExpression (env : Map<string, terminal list>) =
+    let assignment, expression = extractExpression bracketedExpression.[1..] []
+    if assignment <> []
+    then
+        if (List.filter (fun x -> x = Comma) assignment).Length = 0
+        then
+            let newEnv, _ = setArguments assignment env
+            if closed newEnv expression |> fst
+            then
+                [reduce (differentiate expression) newEnv]
+            else ExecError "Execution Error: Assignment does not match variable in expression" |> raise
+        else ExecError "" |> raise
+    else
+        differentiate expression |> List.rev 
+        
