@@ -22,8 +22,7 @@ namespace WpfApp1
     /// Free BitmapImage for deletion: https://stackoverflow.com/questions/8352787/how-to-free-the-memory-after-the-bitmapimage-is-no-longer-needed
     /// Copy image file to save it: https://stackoverflow.com/questions/7462997/copy-file-to-a-different-directory
     /// </summary>
-    
-    public partial class GraphPopUp
+    public partial class GraphPopUp : IGraphPopUp
     {
         //Constants for ease of readability
         private const int ImageWidth = 750;
