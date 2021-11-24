@@ -161,36 +161,51 @@ namespace WpfApp1
         /// </summary>
         private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray)
         {
+            //This method uses inverted y axis
+            
             //Create axis labels
-            var yMaxLabel = "" + Math.Ceiling(yArray.Max());
+            var yMaxLabel = "(y)\n" + Math.Ceiling(yArray.Max());
             var yMinLabel = "" + Math.Floor(yArray.Min());
-            var xMaxLabel = "" + Math.Ceiling(xArray.Max());
+            var xMaxLabel = "" + Math.Ceiling(xArray.Max()) + " (x)";
             var xMinLabel = "" + Math.Floor(xArray.Min());
             var zeroLabel = "0";
 
             //Find axis label locations
-            //This method uses inverted y axis
             //Find y axis label locations:
             var yMaxPointX = xZero;
             var yMinPointX = xZero;
-            if (xZero > ImageWidth / 2)
+            if (xZero > ImageWidth / 2 - 1)
             {
-                yMaxPointX -= yMaxLabel.Length * 9 + 2;
-                yMinPointX -= yMinLabel.Length * 9 + 2;
+                yMaxPointX -= (yMaxLabel.Length - 3) * 9 + 5;
+                yMinPointX -= yMinLabel.Length * 9 + 5;
             }
             var yMaxPoint = new PointF(yMaxPointX, 0);
             var yMinPoint = new PointF(yMinPointX, ImageHeight - 16);
             
             //Find x axis label locations:
             var xMaxPointY = yZero;
-            if (yZero > ImageHeight / 2)
+            var xMinPointY = yZero;
+            if (yZero < ImageHeight / 2)
             {
-                xMaxPointY -= xMaxLabel.Length * 9 + 2;
+                xMaxPointY += 18;
+                xMinPointY += 18;
             }
-            var xMaxPoint = new PointF(ImageWidth, ImageHeight - xMaxPointY);
-            var xMinPoint = new PointF(0, ImageHeight - xMaxPointY);
-            var zeroPoint = new PointF(xZero, ImageHeight - yZero);
-
+            var xMaxPoint = new PointF(ImageWidth - (xMaxLabel.Length * 9 + 5), ImageHeight - xMaxPointY);
+            var xMinPoint = new PointF(0, ImageHeight - xMinPointY);
+            
+            //Find zero label location:
+            var zeroPointX = xZero;
+            var zeroPointY = ImageHeight - yZero;
+            if (xZero > ImageWidth / 2 - 1)
+            {
+                zeroPointX -= zeroLabel.Length * 9 + 5;
+            }
+            if (yZero < ImageHeight / 2)
+            {
+                zeroPointY -= 18;
+            }
+            var zeroPoint = new PointF(zeroPointX, zeroPointY);
+            
             //Draw labels in graph
             Bitmap newBitmap;
             var path = Path.GetTempPath();
