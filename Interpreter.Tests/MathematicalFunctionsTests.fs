@@ -113,8 +113,8 @@ let LogXInputs = [
 [<TestCaseSource("LogXInputs")>]
 let givenLogX_ProvidedValidInput_ReturnCorrectApproximation logBase input output=
     let logRes = LogX logBase input
-    let a = logRes > (output-0.000001)
-    let b = logRes < (output+0.000001)
+    let a = logRes > (output - 0.000001)
+    let b = logRes < (output + 0.000001)
     Assert.True(a && b)
    
 let InvalidLogInputs = [
@@ -127,3 +127,18 @@ let InvalidLogInputs = [
 [<TestCaseSource("InvalidLogInputs")>]
 let GivenLogE_ProvidedInvalidInput_ThrowInvalidArgumentError input =
     Assert.Throws<InvalidArgumentError>(fun () -> LogE input |> ignore) |> ignore
+    
+let ValidRootToTerminalsInputs = [
+        TestCaseData(
+            [Number 10.0],
+            2,
+            [Lpar; Lpar; Number 10.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData(
+            [Number 10.0;Divide;Number 3.0],
+            2,
+            [Lpar; Lpar; Number 10.0; Divide; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+    ]
+
+[<TestCaseSource(nameof(ValidRootToTerminalsInputs))>]
+let GivenRootToTerminals_ProvidedValidInput_ReturnCorrectOutput inputVals whichRoot output =
+    Assert.That(RootToTerminals inputVals whichRoot, Is.EqualTo(output))

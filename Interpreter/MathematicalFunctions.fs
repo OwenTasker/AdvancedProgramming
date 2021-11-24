@@ -126,7 +126,7 @@ let Log10 input =
 ///
 /// <returns>The terminal value of the log base newBase of the input provided</returns>
 let LogX newBase input =
-    FormNewBaseRuleFraction input newBase |> Number
+    FormNewBaseRuleFraction input newBase
 
 /// <summary>
 /// Higher order wrapper function for Logs
