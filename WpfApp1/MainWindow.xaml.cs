@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Interpreter;
-using Microsoft.FSharp.Collections;
-using JetBrains.Annotations;
+using Ninject;
 
 namespace WpfApp1
 {
@@ -28,38 +28,32 @@ namespace WpfApp1
         /// <summary>
         /// Execution environment for this session.
         /// </summary>
-        private IDictionary<string, FSharpList<Util.terminal>> _environment =
-            new Dictionary<string, FSharpList<Util.terminal>>();
+        private readonly IInterpreter _interpreter;
+
+        private readonly ISaverLoader _saverLoader;
+
+        private readonly StandardKernel _kernel;
 
         /// <summary>
-        /// Collection of mathematical functions.
+        /// Collection of mathematical functions. 
         /// </summary>
         private Trie _functions;
-        
-        /// <summary>
-        /// Class to represent a user defined variable.
-        /// </summary>
-        private class Variable
-        {
-            /// <summary>
-            /// Identifier of the variable.
-            /// </summary>
-            public string Name { [UsedImplicitly] get; init; }
-            /// <summary>
-            /// Value held by the variable.
-            /// </summary>
-            public string Value { [UsedImplicitly] get; init; }
-        }
 
         /// <summary>
         /// Entry point, initializes the app window.
         /// </summary>
         public MainWindow()
         {
-            InitialiseSuggestionTrie();
-            
             InitializeComponent();
+
+            _kernel = new StandardKernel();
+            _kernel.Load(Assembly.GetExecutingAssembly());
             
+            _interpreter = _kernel.Get<IInterpreter>();
+            _saverLoader = _kernel.Get<ISaverLoader>();
+
+            InitialiseSuggestionTrie();
+
             inputText.Text = "Enter query here..."; // initialise prompt text for input terminal
         }
 
