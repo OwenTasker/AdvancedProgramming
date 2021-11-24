@@ -7,7 +7,7 @@ using Microsoft.FSharp.Collections;
 
 namespace WpfApp1
 {
-    public static class GraphDataCalculator
+    public class GraphDataCalculator : IGraphDataCalculator
     {
         
         /// <summary>

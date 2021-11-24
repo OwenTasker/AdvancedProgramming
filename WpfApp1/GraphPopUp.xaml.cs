@@ -24,7 +24,7 @@ namespace WpfApp1
     /// Copy image file to save it: https://stackoverflow.com/questions/7462997/copy-file-to-a-different-directory
     /// Overlay text on image: https://stackoverflow.com/questions/6826921/write-text-on-an-image-in-c-sharp
     /// </summary>
-    public partial class GraphPopUp
+    public partial class GraphPopUp : IGraphPopUp
     {
         //Constants for ease of readability
         private const int ImageWidth = 750;
