@@ -288,7 +288,7 @@ namespace WpfApp1
 
                     var selectedString = suggestionDropDown.SelectedItem.ToString();
 
-                    if (selectedString != null && selectedString.Contains(":"))
+                    if (selectedString != null && selectedString.Contains(":") && !selectedString.Contains("clear"))
                     {
                         if (s != null)
                         {
