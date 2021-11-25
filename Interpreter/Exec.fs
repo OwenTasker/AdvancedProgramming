@@ -282,51 +282,51 @@ and exec (env: Map<string, terminal list>) terminals  =
         | "sqrt" ->
             //Set assignment to any assignments inside of expression
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            [reduce ((reduce (rootToTerminals bracketedExpression 2.0) env) :: remaining) env], (env |> Map.toSeq |> dict)
+            [reduce ((reduce (RootToTerminals bracketedExpression 2.0) env) :: remaining) env], (env |> Map.toSeq |> dict)
         | "cbrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            [reduce ((reduce (rootToTerminals bracketedExpression 3.0) env) :: remaining) env], (env |> Map.toSeq |> dict)
+            [reduce ((reduce (RootToTerminals bracketedExpression 3.0) env) :: remaining) env], (env |> Map.toSeq |> dict)
         | "ln" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce ((TerminalLog (nameof LogE) a) :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce ((LogWrapperToTerminal LogE a) :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "logTwo" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce ((TerminalLog (nameof Log2) a) :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce ((LogWrapperToTerminal Log2 a) :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "logTen" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce ((TerminalLog (nameof Log10) a) :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce ((LogWrapperToTerminal Log10 a) :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "floor" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce ((numToTerminal (floorToNumber a)) :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce (FloorToNumber a :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "ceil" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce ((numToTerminal (ceilToNumber a)) :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce (CeilToNumber a :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "round" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce ((numToTerminal (round a)) :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce (RoundNum a :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "abs" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce ((numToTerminal (abs a)) :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce (AbsVal a :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ ->
             if env.ContainsKey a then
@@ -342,7 +342,6 @@ and exec (env: Map<string, terminal list>) terminals  =
         if isClosed
         then [reduce expandedTerminals newEnv], (env |> Map.toSeq |> dict)
         else expandedTerminals, (env |> Map.toSeq |> dict)
-        
 and evaluateDifferentiates terminals (env : Map<string, terminal list>) out =
     match terminals with
     | Function "differentiate" :: tail ->
