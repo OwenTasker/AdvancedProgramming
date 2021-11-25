@@ -64,9 +64,6 @@
             <Image Name="ImageGraph" Source="Images/graph.png" VerticalAlignment="Center" HorizontalAlignment="Center"
                    Height="400" Width="750" />
 
-            <Label Content="y" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="25,5,0,0" />
-            <Label Content="x" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="0,0,5,25" />
-
         </Grid>
     </Grid>
 </Window>
