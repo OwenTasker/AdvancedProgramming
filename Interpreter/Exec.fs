@@ -7,6 +7,7 @@
 /// </namespacedoc>
 module Interpreter.Exec
 
+open System
 open System.Collections.Generic
 open System.Text.RegularExpressions
 open Interpreter.Util
@@ -332,11 +333,13 @@ and exec (env: Map<string, terminal list>) terminals  =
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "xrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            let cleanedInput = removeBeginningAndEndingParenthesis bracketedExpression
-            let expression1, expression2 = splitTerminalListBasedOnComma cleanedInput
-            let reducedFirstExpression = reduce expression1 env 
-            let reducedSecondExpression = reduce expression2 env 
-            [reduce ((reduce (RootToTerminals [reducedFirstExpression] (reducedSecondExpression |> terminalToNum)) env) :: remaining) env], (env |> Map.toSeq |> dict)
+            let strippedExpression = removeBeginningAndEndingParenthesis bracketedExpression
+            match countCommaOccurance strippedExpression 0 with
+            | 1 ->
+                let expression1, expression2 = splitTerminalListBasedOnComma strippedExpression
+                [reduce ((reduce (RootToTerminals [reduce expression1 env] (reduce expression2 env |> terminalToNum)) env) :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> 
+                InvalidArgumentError "Function xrt expects two arguments" |> raise
         | _ ->
             if env.ContainsKey a then
                 let newEnv, remainingTerminals = setArguments tail Map.empty
@@ -351,6 +354,7 @@ and exec (env: Map<string, terminal list>) terminals  =
         if isClosed
         then [reduce expandedTerminals newEnv], (env |> Map.toSeq |> dict)
         else expandedTerminals, (env |> Map.toSeq |> dict)
+        
 and evaluateDifferentiates terminals (env : Map<string, terminal list>) out =
     match terminals with
     | Function "differentiate" :: tail ->
@@ -385,4 +389,12 @@ and splitTerminalListBasedOnComma (input:terminal list) =
         let x, y = List.splitAt (commaIndex) input
         let z = y.[1..]
         x, z
-    | false -> InvalidArgumentError "Expected Comma But Found None" |> raise
+    | false -> InvalidArgumentError "Invalid Argument Error: At least two arguments expected" |> raise
+    
+and countCommaOccurance (terminalList: terminal list) (count:int) =
+    match terminalList with
+    | terminalHead :: terminalTail ->
+        match terminalHead with
+        | Comma -> countCommaOccurance terminalTail count+1
+        | _ -> countCommaOccurance terminalTail count
+    | [] -> count
