@@ -7,6 +7,7 @@
 /// </namespacedoc>
 module Interpreter.Exec
 
+open System.Collections.Generic
 open System.Text.RegularExpressions
 open Interpreter.Util
 open Interpreter.Differentiate
@@ -331,11 +332,11 @@ and exec (env: Map<string, terminal list>) terminals  =
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "xrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            let x = removeBeginningAndEndingParenthesis bracketedExpression
-            match reduce bracketedExpression env with
-            | Number a ->
-                [reduce (RoundNum a :: remaining) env], (env |> Map.toSeq |> dict)
-            | _ -> ExecError "Execution Error: Invalid " |> raise
+            let cleanedInput = removeBeginningAndEndingParenthesis bracketedExpression
+            let expression1, expression2 = splitTerminalListBasedOnComma cleanedInput
+            let reducedFirstExpression = reduce expression1 env 
+            let reducedSecondExpression = reduce expression2 env 
+            [reduce ((reduce (RootToTerminals [reducedFirstExpression] (reducedSecondExpression |> terminalToNum)) env) :: remaining) env], (env |> Map.toSeq |> dict)
         | _ ->
             if env.ContainsKey a then
                 let newEnv, remainingTerminals = setArguments tail Map.empty
@@ -376,3 +377,12 @@ and calculateDifferential bracketedExpression (env : Map<string, terminal list>)
 and removeBeginningAndEndingParenthesis (input:terminal list) =
     let removeFirstElementAndReverse = input.[1..] |> List.rev
     removeFirstElementAndReverse.[1..] |> List.rev
+
+and splitTerminalListBasedOnComma (input:terminal list) =
+    match List.contains Comma input with
+    | true ->
+        let commaIndex = List.findIndex (fun x -> x = Comma) input
+        let x, y = List.splitAt (commaIndex) input
+        let z = y.[1..]
+        x, z
+    | false -> InvalidArgumentError "Expected Comma But Found None" |> raise
