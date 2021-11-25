@@ -55,6 +55,7 @@ let functions = [
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
                  ("abs", "One Argument; A function to determine the absolute value of an expression, given a value of -12, returns 12")
                  ("clear", "Zero Arguments; Clears the console and user-defined variables")
+                 ("xrt", "Zero Arguments; Clears the console and user-defined variables")
                  ]
 
 //https://gist.github.com/theburningmonk/3363893

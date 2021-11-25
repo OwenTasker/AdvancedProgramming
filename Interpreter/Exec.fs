@@ -7,6 +7,7 @@
 /// </namespacedoc>
 module Interpreter.Exec
 
+open System.Text.RegularExpressions
 open Interpreter.Util
 open Interpreter.Differentiate
 open Interpreter.MathematicalFunctions
@@ -328,6 +329,13 @@ and exec (env: Map<string, terminal list>) terminals  =
             | Number a ->
                 [reduce (AbsVal a :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
+        | "xrt" ->
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            let x = removeBeginningAndEndingParenthesis bracketedExpression
+            match reduce bracketedExpression env with
+            | Number a ->
+                [reduce (RoundNum a :: remaining) env], (env |> Map.toSeq |> dict)
+            | _ -> ExecError "Execution Error: Invalid " |> raise
         | _ ->
             if env.ContainsKey a then
                 let newEnv, remainingTerminals = setArguments tail Map.empty
@@ -365,3 +373,6 @@ and calculateDifferential bracketedExpression (env : Map<string, terminal list>)
     else
         differentiate expression |> List.rev 
         
+and removeBeginningAndEndingParenthesis (input:terminal list) =
+    let removeFirstElementAndReverse = input.[1..] |> List.rev
+    removeFirstElementAndReverse.[1..] |> List.rev
