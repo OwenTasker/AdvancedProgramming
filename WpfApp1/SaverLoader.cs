@@ -8,9 +8,16 @@ using Microsoft.Win32;
 
 namespace WpfApp1
 {
-    public static class SaverLoader
+    public class SaverLoader : ISaverLoader
     {
-        public static (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load()
+        private readonly IInterpreter _interpreter;
+
+        public SaverLoader(IInterpreter interpreter)
+        {
+            _interpreter = interpreter;
+        }
+        
+        public (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load()
         {
             var loadFile = DecideFileToLoad();
 
@@ -19,7 +26,14 @@ namespace WpfApp1
             {
                 return (false, null, null);
             }
+
+            var (variables, consoleContents) = ReadFile(loadFile);
             
+            return (true, consoleContents, variables);
+        }
+
+        private (Dictionary<string, FSharpList<Util.terminal>>, string) ReadFile(string loadFile)
+        {
             var variables = new Dictionary<string, FSharpList<Util.terminal>>();
             var consoleContents = "";
 
@@ -27,15 +41,12 @@ namespace WpfApp1
             {
                 foreach (var loadedLine in File.ReadLines(loadFile))
                 {
-                    //Make sure line is an assigned variable
-                    if (loadedLine.StartsWith("VARIABLE"))
+                    if (loadedLine.StartsWith("VARIABLE")) // If line marked as variable, add to variables
                     {
                         var (variableName, lexedOutput) = ExtractVariable(loadedLine);
-
                         variables.Add(variableName, lexedOutput);
                     }
-                    //If Line wasnt a variable, append to ConsoleContent
-                    else
+                    else // Else append to console content
                     {
                         consoleContents += loadedLine + "\n";
                     }
@@ -51,9 +62,9 @@ namespace WpfApp1
             }
 
             consoleContents += ">>";
-            return (true, consoleContents, variables);
+            return (variables, consoleContents);
         }
-        
+
         private static string DecideFileToLoad()
         {
             var fileDialog = new OpenFileDialog
@@ -67,29 +78,17 @@ namespace WpfApp1
             return fileDialog.ShowDialog() != true ? null : fileDialog.FileName;
         }
 
-        private static (string variableName, FSharpList<Util.terminal> lexedOutput) ExtractVariable(string inputLine)
+        private (string variableName, FSharpList<Util.terminal> lexedOutput) ExtractVariable(string inputLine)
         {
-            var line = inputLine[10..];
-            line = line[..^1];
+            var line = inputLine[10..^1];
             var dictArr = line.Split(",");
             var variableName = dictArr[0][1..];
-            var lexableInput = dictArr[1];
-            lexableInput = lexableInput.Replace("[", "").Replace("]", "");
-            var inpList = lexableInput.Select(character => character.ToString()).ToList();
+            var lexInput = dictArr[1][1..^1];
 
-            var inpFList = ListModule.OfSeq(inpList);
-
-            var lexedOutput = Lexer.lexer(inpFList);
-
-            if (Parser.parse(lexedOutput))
-            {
-                return (variableName, lexedOutput);
-            }
-
-            throw new Util.ParseError();
+            return (variableName, _interpreter.GetTerminalListFromString(lexInput));
         }
 
-        public static void ConstructSaveContents(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents) 
+        public void Save(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
             if (!(consoleContents != ">>" || variableContents.Count > 0) || consoleContents == null)
             {
@@ -97,7 +96,7 @@ namespace WpfApp1
             }
 
             var fileToSaveTo = DetermineFileToSaveTo("MyMathsPal File (*.mmp)|*.mmp", "");
-            
+
             if (fileToSaveTo != null)
             {
                 File.WriteAllLines(fileToSaveTo.FileName, GenerateSavableInfo(consoleContents, variableContents));
@@ -109,16 +108,17 @@ namespace WpfApp1
             var dialog = new SaveFileDialog
             {
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                
+
                 FileName = defaultName,
-                
+
                 Filter = fileType
             };
 
             return dialog.ShowDialog() != true ? null : dialog;
         }
 
-        private static string[] GenerateSavableInfo(string consoleContents, IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        private static string[] GenerateSavableInfo(string consoleContents,
+            IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
             var savableInfo = new string[variableContents.Count + 1];
 
@@ -158,9 +158,7 @@ namespace WpfApp1
         {
             public SaveLoadException(string message) : base(message)
             {
-                
             }
         }
     }
-
 }
