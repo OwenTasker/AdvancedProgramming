@@ -176,16 +176,17 @@ and setArguments terminals (env: Map<string, terminal list>) =
     | Rpar :: tail -> env, tail
     | Word x :: Assign :: tail ->
         match extractAssignment tail [] 0 with
-        | name, expression -> setArguments name (env.Add(x, [reduce expression env] ))
+        | name, expression ->
+            setArguments name (env.Add(x, (exec env expression |> fst)) )
     | Lpar :: tail -> setArguments tail env
     | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
     
-and extractParameters terminals (paramList : terminal list list) =
+and extractParameters terminals (paramList : terminal list list) env =
     match terminals with
     | Rpar :: tail -> paramList, tail
     | _ :: _ ->
         let remaining, parameter = extractAssignment terminals [] 0
-        extractParameters remaining (parameter :: paramList)
+        extractParameters remaining ((exec env parameter |> fst) :: paramList) env
     | [] -> ExecError "Execution Error: Unmatched left parenthesis" |> raise
 
 /// <summary>
