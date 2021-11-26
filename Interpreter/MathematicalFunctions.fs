@@ -168,7 +168,10 @@ let FloorToNumber (numToFloor:float) =
 ///
 /// <returns>Returns the ceiled input</returns>
 let CeilToNumber (num: float) =
-    (num |> int |> float) + 1.0 |> Number
+    let checkForInteger  = num |> int |> float = num
+    match checkForInteger with
+    | true -> num |> Number
+    | _ -> ((num |> int |> float) + 1.0) |> Number
     
 /// <summary>
 /// Function to calculate the rounding of a number
