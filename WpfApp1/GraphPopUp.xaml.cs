@@ -485,7 +485,7 @@ namespace WpfApp1
             }
 
             //Check if entry is a valid double, do not allow key-press if not
-            if (input.Length > 0 && input != "-" && input != "-.")
+            if (input.Length > 0 && input != "-" && input != "." && input != "-.")
             {
                 try
                 {
