@@ -56,6 +56,7 @@ let functions = [
                  ("abs", "One Argument; A function to determine the absolute value of an expression, given a value of -12, returns 12")
                  ("xrt", "Two Arguments; determines the xth root of a given value")
                  ("clear", "Zero Arguments; Clears the console and user-defined variables")
+                 ("gcd", "Two Arguments; Calculates the greatest common divisor of two integer values")
                  ]
 
 //https://gist.github.com/theburningmonk/3363893

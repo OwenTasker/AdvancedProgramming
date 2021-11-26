@@ -345,8 +345,8 @@ and exec (env: Map<string, terminal list>) terminals  =
             let remaining, bracketedExpression = extractBrackets tail 0 []
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
             match extractedParams with
-            | [[Number baseVal];a] ->
-                [reduce ((RootToTerminals a baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
+            | [[Number baseVal];operand] ->
+                [reduce ((RootToTerminals operand baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
         | "logX" ->
@@ -357,11 +357,19 @@ and exec (env: Map<string, terminal list>) terminals  =
                 [reduce ([LogX newBase operand |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
+        | "gcd" ->
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
+            match extractedParams with
+            | [[Number num1];[Number num2]] ->
+                [reduce ([getGCD num1 num2 |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
+            | _ ->
+                expandedTerminals, (env |> Map.toSeq |> dict)
         | _ ->
             if env.ContainsKey a then
                 let newEnv, remainingTerminals = setArguments tail Map.empty
                 let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
-                
+  
                 if closed combinedEnv [Word a] |> fst
                 then [reduce ((reduce [Word a] combinedEnv) :: remainingTerminals) env], (env |> Map.toSeq |> dict)
                 else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise

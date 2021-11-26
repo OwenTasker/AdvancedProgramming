@@ -205,4 +205,11 @@ let RoundNum (num:float) =
 let AbsVal (num:float) =
     +num |> Number
 
-    
+let rec getGCD (num1:float) (num2:float) =
+    match num1 with
+    | _ when num1 = num2 ->
+        num1
+    | _ when num1 > num2 ->
+        getGCD (num1-num2) num2
+    | _ ->
+        getGCD num1 (num2-num1)
