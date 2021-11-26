@@ -281,7 +281,7 @@ let GivenReduceRecursive_WhenPassedValidTokensWithoutVariables_ReturnCorrectAnsw
 /// <summary>Test to ensure that exec returns the correct output with valid input without variables.</summary>
 [<TestCaseSource("ValidNoVariablesReduceCases")>]
 let GivenExec_WhenPassedSimpleExpressionWithoutVariables_ReturnCorrectAnswer(tokens: terminal list, expected: terminal) =
-    let result = exec tokens Map.empty
+    let result = exec Map.empty tokens 
     Assert.That(result, Is.EqualTo([expected], Map.empty |> Map.toSeq |> dict))
 
 /// <summary>Test cases for invalid input to reduce and reduceRecursive.</summary>
@@ -330,7 +330,7 @@ let GivenReduceRecursive_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal
 /// <summary>Test to ensure that exec returns the correct output with invalid input.</summary>
 [<TestCaseSource("InvalidReduceCases")>]
 let GivenExed_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
-    Assert.Throws<ExecError>(fun () -> exec tokens Map.empty |> ignore) |> ignore
+    Assert.Throws<ExecError>(fun () -> exec Map.empty tokens  |> ignore) |> ignore
 
 /// <summary>Test cases for valid input to performOperation.</summary>
 let ValidPerformOperationCases =
@@ -499,7 +499,7 @@ let ClosedCases =
 /// <summary>Test to ensure that closed correctly recognises closed and free expressions.</summary>
 [<TestCaseSource("ClosedCases")>]
 let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean(terminals: terminal list, expected: bool) =
-    let result = closed terminals env
+    let result = closed env terminals |> fst
     Assert.That(result, Is.EqualTo(expected))
 
 /// <summary>Test cases for valid input to reduce and reduceRecursive with variables.</summary>
@@ -562,7 +562,7 @@ let ValidExecAssignCases =
 /// <summary>Test to ensure that exec correctly updates environment when passed valid assign.</summary>
 [<TestCaseSource("ValidExecAssignCases")>]
 let GivenExec_WhenPassedValidAssign_ThenAddToEnvAndReturn(terminals: terminal list, entry: string*terminal list) =
-    let result = exec terminals env
+    let result = exec env terminals 
     Assert.That(result, Is.EqualTo((terminals, (env.Add entry))))
 
 /// <summary>Test cases for valid input to createTerminalListUpToComma.</summary>
@@ -581,7 +581,7 @@ let CreateTerminalListUpToCommaCases =
 /// <summary>Test to ensure that createTerminalListUpToComma forms correct terminal list with valid input.</summary>
 [<TestCaseSource("CreateTerminalListUpToCommaCases")>]
 let GivenCreateTerminalListUpToComma_WhenPassedTokens_ReadUpToCommaOrRparCorrectly(terminalIn: terminal list, terminalsOut: terminal list, expected: terminal list * terminal list) =
-    let result = extractAssignment terminalIn terminalsOut
+    let result = extractAssignment terminalIn terminalsOut 0
     Assert.That(result, Is.EqualTo(expected))
 
 /// <summary>Test cases for invalid input to createTerminalListUpToComma.</summary>
@@ -594,7 +594,7 @@ let CreateTerminalListUpToCommaErrorCases =
 /// <summary>Test to ensure that createTerminalListUpToComma correctly throws exception with invalid input.</summary>
 [<TestCaseSource("CreateTerminalListUpToCommaErrorCases")>]
 let GivenCreateTerminalListUpToComma_WhenPassedEmptyArray_RaiseExecError(terminalIn: terminal list) =
-    Assert.Throws<ExecError>(fun () -> extractAssignment terminalIn [] |> ignore) |> ignore
+    Assert.Throws<ExecError>(fun () -> extractAssignment terminalIn [] 0 |> ignore) |> ignore
 
 /// <summary>Test cases for valid input to setArguments.</summary>
 let SetArgumentsCases =
@@ -611,7 +611,7 @@ let SetArgumentsCases =
 /// <summary>Test to ensure that set arguments creates the correct map when passed valid input.</summary>
 [<TestCaseSource("SetArgumentsCases")>]
 let GivenSetArguments_WhenPassedValidAssignments_ReturnUpdatedMap(terminals: terminal list, inMap: Map<string, terminal list>, outMap: Map<string, terminal list>) =
-    let result = setArguments terminals inMap
+    let result = setArguments terminals inMap |> fst
     Assert.That(result, Is.EqualTo(outMap))
 
 /// <summary>Test cases for invalid input to setArguments.</summary>
@@ -641,35 +641,35 @@ let GivenSetArguments_WhenInvalidAssignment_RaiseExecError(terminalIn: terminal 
 /// <summary>Test cases for valid user function calls to exec.</summary>
 let UserFunctionCases =
     [
-        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Number 2.0])], [Number 2.0])
-        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])], [Number 2.0])
-        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 2.0; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])], [Number 2.0])
-        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"])], [Number 4.0])
-        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0])], [Number 16.0])
-        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Comma; Word "z"; Assign; Number 3.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])], [Number 19.0])
+        TestCaseData([Function "y"; Lpar; Rpar;], Map [("y", [Number 2.0])], [Number 2.0])
+        TestCaseData([Function "y"; Lpar; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])], [Number 2.0])
+        TestCaseData([Function "y"; Lpar; Word "x"; Assign; Number 2.0; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])], [Number 2.0])
+        TestCaseData([Function "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"])], [Number 4.0])
+        TestCaseData([Function "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0])], [Number 16.0])
+        TestCaseData([Function "y"; Lpar; Word "x"; Assign; Number 4.0; Comma; Word "z"; Assign; Number 3.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])], [Number 19.0])
     ]
 
 /// <summary>Test to ensure that exec returns correctly result with valid user function call.</summary>
 [<TestCaseSource("UserFunctionCases")>]
 let GivenExec_WhenPassedValidUserFunctionCall_ReturnCorrectResult(terminals: terminal list, env: Map<string, terminal list>, expected: terminal list) =
-    let result = exec terminals env
+    let result = exec env terminals
     Assert.That(result, Is.EqualTo((expected, env |> Map.toSeq |> dict)))
 
 /// <summary>Test cases for invalid input to exec with user functions.</summary>
 let UserFunctionErrorCases =
     [
-        TestCaseData([Word "y"; Lpar;], Map [("y", [Number 2.0])])
-        TestCaseData([Word "y"; Lpar; Comma; Rpar;], Map [("y", [Word "x"])])
-        TestCaseData([Word "y"; Lpar; Rpar;], Map [("y", [Word "x"]); ("x", [Word "z"])])
-        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Word "z"; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])])
-        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
-        TestCaseData([Word "y"; Lpar; Word "x"; Assign; Number 4.0; Comma;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
+        TestCaseData([Function "y"; Lpar;], Map [("y", [Number 2.0])])
+        TestCaseData([Function "y"; Lpar; Comma; Rpar;], Map [("y", [Word "x"])])
+        TestCaseData([Function "y"; Lpar; Rpar;], Map [("y", [Word "x"]); ("x", [Word "z"])])
+        TestCaseData([Function "y"; Lpar; Word "x"; Assign; Word "z"; Rpar;], Map [("y", [Word "x"]); ("x", [Number 2.0])])
+        TestCaseData([Function "y"; Lpar; Word "x"; Assign; Number 4.0; Rpar;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
+        TestCaseData([Function "y"; Lpar; Word "x"; Assign; Number 4.0; Comma;], Map [("y", [Word "x"; Exponent; Number 2.0; Plus; Word "z"])])
     ]
 
 /// <summary>Test to ensure that exec correctly throws exception with invalid user function call.</summary>
 [<TestCaseSource("UserFunctionErrorCases")>]
 let GivenExec_WhenPassedInvalidUserFunctionCall_RaiseExecError(terminals: terminal list, env: Map<string, terminal list>) =
-    Assert.Throws<ExecError>(fun () -> exec terminals env |> ignore) |> ignore
+    Assert.Throws<ExecError>(fun () -> exec env terminals  |> ignore) |> ignore
     
 //TEST DIFFERENTIATE
 //ADD ERROR CASE FOR ASSIGN ASSIGN
