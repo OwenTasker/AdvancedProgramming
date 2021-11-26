@@ -107,11 +107,13 @@ let rec extractBrackets terminals lparCount out =
 /// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
 /// the output list.
 /// </returns>
-let rec extractAssignment inList outList =
+let rec extractAssignment inList outList nestCount =
     match inList with
-    | Rpar :: _ -> inList, List.rev outList
-    | Comma :: inTail -> (inTail, List.rev outList)
-    | any :: inTail -> extractAssignment inTail (any :: outList)
+    | Rpar :: _ when nestCount = 0 -> inList, List.rev outList
+    | Comma :: inTail when nestCount = 0 -> (inTail, List.rev outList)
+    | Lpar :: inTail -> extractAssignment inTail (Lpar :: outList) (nestCount+1)
+    | Rpar :: inTail -> extractAssignment inTail (Rpar :: outList) (nestCount-1)
+    | any :: inTail -> extractAssignment inTail (any :: outList) nestCount
     | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
 
 /// <summary>
@@ -173,8 +175,8 @@ and setArguments terminals (env: Map<string, terminal list>) =
     match terminals with
     | Rpar :: tail -> env, tail
     | Word x :: Assign :: tail ->
-        match extractAssignment tail [] with
-        | a, b -> setArguments a (env.Add(x, [reduce b env] ))
+        match extractAssignment tail [] 0 with
+        | name, expression -> setArguments name (env.Add(x, [reduce expression env] ))
     | Lpar :: tail -> setArguments tail env
     | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
 
