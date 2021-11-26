@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Interpreter;
-using Microsoft.FSharp.Collections;
-using JetBrains.Annotations;
+using Ninject;
 
 namespace WpfApp1
 {
@@ -28,38 +28,32 @@ namespace WpfApp1
         /// <summary>
         /// Execution environment for this session.
         /// </summary>
-        private IDictionary<string, FSharpList<Util.terminal>> _environment =
-            new Dictionary<string, FSharpList<Util.terminal>>();
+        private readonly IInterpreter _interpreter;
+
+        private readonly ISaverLoader _saverLoader;
+
+        private readonly StandardKernel _kernel;
 
         /// <summary>
-        /// Collection of mathematical functions.
+        /// Collection of mathematical functions. 
         /// </summary>
         private Trie _functions;
-        
-        /// <summary>
-        /// Class to represent a user defined variable.
-        /// </summary>
-        private class Variable
-        {
-            /// <summary>
-            /// Identifier of the variable.
-            /// </summary>
-            public string Name { [UsedImplicitly] get; init; }
-            /// <summary>
-            /// Value held by the variable.
-            /// </summary>
-            public string Value { [UsedImplicitly] get; init; }
-        }
 
         /// <summary>
         /// Entry point, initializes the app window.
         /// </summary>
         public MainWindow()
         {
-            InitialiseSuggestionTrie();
-            
             InitializeComponent();
+
+            _kernel = new StandardKernel();
+            _kernel.Load(Assembly.GetExecutingAssembly());
             
+            _interpreter = _kernel.Get<IInterpreter>();
+            _saverLoader = _kernel.Get<ISaverLoader>();
+
+            InitialiseSuggestionTrie();
+
             inputText.Text = "Enter query here..."; // initialise prompt text for input terminal
         }
 
@@ -70,12 +64,9 @@ namespace WpfApp1
         {
             _functions = new Trie();
 
-            Dictionary<string, string> fsfunctions = Util.functions.ToDictionary(t => t.Item1, t => t.Item2);
-
-            foreach (var p in fsfunctions)
+            foreach (var (function, description) in Util.functions)
             {
-                var s = p.Key + " : " + p.Value;
-                _functions.Add(s);
+                _functions.Add(function + " : " + description);
             }
         }
 
@@ -84,10 +75,7 @@ namespace WpfApp1
         /// </summary>
         private void UpdateVariableWindow()
         {
-            var keyValuePairs = _environment.ToList();
-            var variablesList = keyValuePairs.Select(pair => new Variable
-                {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
-            varDisplay.ItemsSource = variablesList;
+            varDisplay.ItemsSource = _interpreter.GetVariables().ToList();
         }
 
         /// <summary>
@@ -97,72 +85,19 @@ namespace WpfApp1
         {
             if (inputText.Text == "Enter query here..." || string.IsNullOrEmpty(inputText.Text) ||
                 string.IsNullOrWhiteSpace(inputText.Text)) return;
-            
+
             if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
             {
-                consoleText.AppendText(inputText.Text+"\n" + ">>");
-                try
-                {
-                    var trimmedArgsArray = GraphDataCalculator.TrimmedArgsArray(inputText.Text);
-
-                    var xArray = GraphDataCalculator.ComputeXArray(trimmedArgsArray);
-                    var yArray = GraphDataCalculator.ComputeYArray(trimmedArgsArray, xArray, _environment);
-                    
-                    var graphPopUp = new GraphPopUp(trimmedArgsArray[0], xArray, yArray, _environment);
-                    graphPopUp.Show();
-                }
-                catch (Exception plottingException)
-                {
-                    consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" +
-                                           plottingException.StackTrace + "\n>>");
-                }
-            } else if (inputText.Text.ToLower().Equals("clear"))
+                ShowGraph();
+                consoleText.AppendText(inputText.Text + "\n" + ">>");
+            }
+            else if (inputText.Text.ToLower().Equals("clear"))
             {
                 ClearButton_OnClick(null, null);
             }
             else
             {
-                // 1. send query to lexer/parser/executor
-                // 2a. if valid, put received answer on new line
-                // 2b. if invalid, put out error
-                var input = inputText.Text;
-
-                try
-                {
-                    var inputList = input.Select(c => c.ToString()).ToList();
-                    var inputFSharpList = ListModule.OfSeq(inputList);
-                    var lexerOutput = Lexer.lexer(inputFSharpList);
-                    Parser.expression(lexerOutput);
-                    consoleText.AppendText(" " + input + "\n");
-                    consoleText.ScrollToEnd();
-                    inputText.Clear();
-                    var (item1, item2) = Exec.exec(lexerOutput, Util.toMap(_environment));
-                    consoleText.AppendText(Util.terminalListToString("", item1) + "\n>>");
-                    _environment = item2;
-                    UpdateVariableWindow();
-                    UpdateSuggestionTrie();
-                    inputText.Text = "Enter query here...";
-                }
-                catch (Util.TokenizeError ex1)
-                {
-                    consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
-                }
-                catch (Util.ScanError ex1)
-                {
-                    consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
-                }
-                catch (Util.ParseError ex1)
-                {
-                    consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
-                }
-                catch (Util.ExecError ex1)
-                {
-                    consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
-                }
-                catch (Exception ex)
-                {
-                    consoleText.AppendText("Expression cannot be executed\n" + ex.Message);
-                }
+                Calculate();
             }
         }
 
@@ -171,9 +106,9 @@ namespace WpfApp1
         /// </summary>
         private void EnterKeyClick(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.Enter) 
+            if (e.Key != Key.Enter)
                 return;
-            
+
             EnterButtonPress(this, new RoutedEventArgs());
             inputText.Clear();
         }
@@ -209,79 +144,28 @@ namespace WpfApp1
             {
                 inputText.Text = "";
             }
-            
+
             var caretPos = inputText.CaretIndex;
 
-            if (sender.Equals(sqrtButton))
+            var (text, caretMod) = (sender as Button)?.Name switch
             {
-                var sqrtString = "sqrt()";
-                inputText.Text = inputText.Text.Insert(caretPos, sqrtString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + sqrtString.Length - 1;
-            }
-            else if (sender.Equals(cbrtButton))
-            {
-                var cbrtString = "cbrt()";
-                inputText.Text = inputText.Text.Insert(caretPos, cbrtString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + cbrtString.Length - 1;
-            }
-            else if (sender.Equals(xrtButton))
-            {
-                var xrtString = "xrt()";
-                inputText.Text = inputText.Text.Insert(caretPos, xrtString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + xrtString.Length - 1;
-            }
-            else if (sender.Equals(differentiateButton))
-            {
-                var differentiateString = "differentiate()";
-                inputText.Text = inputText.Text.Insert(caretPos, differentiateString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + differentiateString.Length - 1;
-            }
-            else if (sender.Equals(integralButton))
-            {
-                var integralString = "integrate()";
-                inputText.Text = inputText.Text.Insert(caretPos, integralString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + integralString.Length - 1;
-            }
-            else if (sender.Equals(absButton))
-            {
-                var absString = "abs()";
-                inputText.Text = inputText.Text.Insert(caretPos, absString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + absString.Length - 1;
-            }
-            else if (sender.Equals(modButton))
-            {
-                var modString = "%";
-                inputText.Text = inputText.Text.Insert(caretPos, modString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + 1;
-            }
-            else if (sender.Equals(factorialButton))
-            {
-                var factorialString = "!";
-                inputText.Text = inputText.Text.Insert(caretPos, factorialString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + 1;
-            }
-            else if (sender.Equals(piButton))
-            {
-                var piString = "pi";
-                inputText.Text = inputText.Text.Insert(caretPos, piString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + 2;
-            }
-            else if (sender.Equals(eulerButton))
-            {
-                var eulerString = "e";
-                inputText.Text = inputText.Text.Insert(caretPos, eulerString);
-                inputText.Focus();
-                inputText.CaretIndex = caretPos + 1;
-            }
+                "sqrtButton" => ("sqrt()", -1),
+                "cbrtButton" => ("cbrt()", -1),
+                "xrtButton" => ("xrt()", -1),
+                "differentiateButton" => ("differentiate()", -1),
+                "integralButton" => ("integral()", -1),
+                "absButton" => ("abs()", -1),
+                "moduloButton" => ("modulo()", -1),
+                "factorialButton" => ("factorial()", -1),
+                "piButton" => ("pi()", 0),
+                "eulerButton" => ("euler()", 0),
+                _ => throw new InvalidOperationException()
+            };
+
+
+            inputText.Text = inputText.Text.Insert(caretPos, text);
+            inputText.Focus();
+            inputText.CaretIndex = caretPos + text.Length + caretMod;
         }
 
         /// <summary>
@@ -291,13 +175,12 @@ namespace WpfApp1
         {
             try
             {
-                SaverLoader.ConstructSaveContents(consoleText.Text, _environment);
+                _saverLoader.Save(consoleText.Text, _interpreter.Environment);
             }
-            catch (SaverLoader.SaveLoadException e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.Message);
             }
-            
         }
 
         /// <summary>
@@ -307,16 +190,16 @@ namespace WpfApp1
         {
             try
             {
-                var (item1, item2, dictionary) = SaverLoader.Load();
+                var (item1, item2, dictionary) = _saverLoader.Load();
                 if (!item1) return;
-                _environment = dictionary;
+                _interpreter.Environment = dictionary;
                 consoleText.Text = item2;
                 UpdateVariableWindow();
                 UpdateSuggestionTrie();
             }
-            catch (SaverLoader.SaveLoadException e)
+            catch (Exception e)
             {
-                MessageBox.Show(e.Message  + "\nPlease Check The File Then Try Again");
+                MessageBox.Show(e.Message + "\nPlease Check The File Then Try Again");
             }
         }
 
@@ -326,11 +209,11 @@ namespace WpfApp1
         private void ClearButton_OnClick(object sender, RoutedEventArgs e)
         {
             consoleText.Text = ">>";
-            _environment = new Dictionary<string, FSharpList<Util.terminal>>();
+            _interpreter.ClearEnvironment();
             UpdateVariableWindow();
             UpdateSuggestionTrie();
         }
-        
+
         /// <summary>
         /// Method to update function suggestion dropdown in response to user input.
         /// </summary>
@@ -340,7 +223,7 @@ namespace WpfApp1
             var split = Regex.Split(input, @"[^a-zA-Z]");
 
             var partialMatch = "";
-            
+
             for (var i = split.Length - 1; i >= 0; i--)
             {
                 if (!split[i].Equals(""))
@@ -349,19 +232,19 @@ namespace WpfApp1
                     break;
                 }
             }
-            
+
             var matches = _functions.Contains(partialMatch);
 
             if (input.Equals("Enter query here...") || input.Equals(""))
             {
                 suggestionDropDown.Visibility = Visibility.Collapsed;
-                suggestionDropDown.ItemsSource = new List<string>(); 
+                suggestionDropDown.ItemsSource = new List<string>();
             }
-            else if(matches != null)
+            else if (matches != null)
             {
                 suggestionDropDown.SelectedIndex = -1;
                 suggestionDropDown.SelectedItem = null;
-                
+
                 suggestionDropDown.ItemsSource = matches.ToList();
                 suggestionDropDown.Visibility = Visibility.Visible;
             }
@@ -371,7 +254,7 @@ namespace WpfApp1
                 suggestionDropDown.ItemsSource = new List<string>();
             }
         }
-        
+
         /// <summary>
         /// Method to update input terminal with selection from function suggestion dropdown.
         /// </summary>
@@ -389,7 +272,7 @@ namespace WpfApp1
                     var split = Regex.Split(input, @"[^a-zA-Z]");
 
                     var partialMatch = "";
-            
+
                     for (var i = split.Length - 1; i >= 0; i--)
                     {
                         if (!split[i].Equals(""))
@@ -398,21 +281,31 @@ namespace WpfApp1
                             break;
                         }
                     }
-                    
-                    var s = suggestionDropDown.SelectedItem.ToString().Substring(partialMatch.Length);
+
+                    var s = suggestionDropDown.SelectedItem.ToString()?[partialMatch.Length..];
 
                     var caretPos = inputText.CaretIndex;
 
-                    if (suggestionDropDown.SelectedItem.ToString().Contains(":"))
+                    var selectedString = suggestionDropDown.SelectedItem.ToString();
+
+                    if (selectedString != null && selectedString.Contains(":"))
                     {
-                        inputText.Text = inputText.Text.Insert(caretPos, s.Split(" ")[0] + "()");
-                        inputText.CaretIndex = caretPos + s.Split(" ")[0].Length + 1;
+                        if (s != null)
+                        {
+                            inputText.Text = inputText.Text.Insert(caretPos, s.Split(" ")[0] + "()");
+                            inputText.CaretIndex = caretPos + s.Split(" ")[0].Length + 1;
+                        }
+
                         inputText.Focus();
                     }
                     else
                     {
-                        inputText.Text = inputText.Text.Insert(inputText.CaretIndex, s.Split(" ")[0]);
-                        inputText.CaretIndex = caretPos + s.Split(" ")[0].Length;
+                        if (s != null)
+                        {
+                            inputText.Text = inputText.Text.Insert(inputText.CaretIndex, s.Split(" ")[0]);
+                            inputText.CaretIndex = caretPos + s.Split(" ")[0].Length;
+                        }
+
                         inputText.Focus();
                     }
                 }
@@ -421,23 +314,76 @@ namespace WpfApp1
                 inputText.TextChanged += inputText_TextChanged;
             }
         }
-        
+
         /// <summary>
         /// Method to refresh suggestion trie.
         /// </summary>
         private void UpdateSuggestionTrie()
         {
-            var keyValuePairs = _environment.ToList();
-            var variablesList = keyValuePairs.Select(pair => new Variable
-                {Name = pair.Key, Value = Util.terminalListToString("", pair.Value)});
-            
             // reinitialise trie
             InitialiseSuggestionTrie();
-            
-            // add varlist to trie
-            foreach (var v in variablesList)
+
+            // add var list to trie
+            foreach (var (key, _) in _interpreter.GetVariables().ToList())
             {
-                _functions.Add(v.Name);
+                _functions.Add(key);
+            }
+        }
+
+        private void ShowGraph()
+        {
+            try
+            {
+                var graphPopUp = _kernel.Get<IGraphPopUp>();
+                graphPopUp.GenerateGraph(inputText.Text);
+            }
+            catch (Exception plottingException)
+            {
+                consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" +
+                                       plottingException.StackTrace + "\n>>");
+            }
+        }
+
+        private void Calculate()
+        {
+            var input = inputText.Text;
+
+            try
+            {
+                consoleText.AppendText(" " + input + "\n");
+                consoleText.ScrollToEnd();
+                inputText.Clear();
+
+                consoleText.AppendText(_interpreter.Interpret(input) + "\n>>");
+
+                UpdateVariableWindow();
+                UpdateSuggestionTrie();
+
+                inputText.Text = "Enter query here...";
+            }
+            catch (Util.TokenizeError ex1)
+            {
+                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+            }
+            catch (Util.ScanError ex1)
+            {
+                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+            }
+            catch (Util.ParseError ex1)
+            {
+                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+            }
+            catch (Util.ExecError ex1)
+            {
+                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+            }
+            catch (Util.InvalidArgumentError ex1)
+            {
+                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+            }
+            catch (Exception ex)
+            {
+                consoleText.AppendText("Expression cannot be executed\n" + ex.Message);
             }
         }
     }

@@ -124,6 +124,7 @@ let InvalidLogInputs = [
     TestCaseData(-10)
 ]
 
+//Extend to all log cases
 [<TestCaseSource("InvalidLogInputs")>]
 let GivenLogE_ProvidedInvalidInput_ThrowInvalidArgumentError input =
     Assert.Throws<InvalidArgumentError>(fun () -> LogE input |> ignore) |> ignore

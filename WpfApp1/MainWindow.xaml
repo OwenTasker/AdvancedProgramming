@@ -98,7 +98,7 @@
                 </ListView.Resources>
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" Width="100" DisplayMemberBinding="{Binding Path=Name}" HeaderContainerStyle="{StaticResource varDisplayHeaderStyle}"/>
+                        <GridViewColumn Header="Name" Width="100" DisplayMemberBinding="{Binding Path=Key}" HeaderContainerStyle="{StaticResource varDisplayHeaderStyle}"/>
                         <GridViewColumn Header="Value" Width="100" DisplayMemberBinding="{Binding Path=Value}" HeaderContainerStyle="{StaticResource varDisplayHeaderStyle}"/>
                     </GridView>
                 </ListView.View>
