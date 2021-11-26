@@ -104,7 +104,7 @@ let rec extractBrackets terminals lparCount out =
 /// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
 /// </param>
 /// <param name="outList">A list to contain a single assignment expression taken from the input list.</param>
-///
+/// <param name="nestCount">Maintain a count of left and right parenthesis</param>
 /// <returns>
 /// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
 /// the output list.
@@ -112,6 +112,7 @@ let rec extractBrackets terminals lparCount out =
 let rec extractAssignment inList outList nestCount =
     match inList with
     | Rpar :: _ when nestCount = 0 -> inList, List.rev outList
+    | [Rpar] -> inList, List.rev outList
     | Comma :: inTail when nestCount = 0 -> (inTail, List.rev outList)
     | Lpar :: inTail -> extractAssignment inTail (Lpar :: outList) (nestCount+1)
     | Rpar :: inTail -> extractAssignment inTail (Rpar :: outList) (nestCount-1)
@@ -185,7 +186,7 @@ and setArguments terminals (env: Map<string, terminal list>) =
     
 and extractParameters terminals (paramList : terminal list list) env =
     match terminals with
-    | Rpar :: tail -> paramList, tail
+    | Rpar :: tail -> List.rev paramList , tail
     | _ :: _ ->
         let remaining, parameter = extractAssignment terminals [] 0
         extractParameters remaining ((exec env parameter |> fst) :: paramList) env
@@ -290,8 +291,7 @@ and exec (env: Map<string, terminal list>) terminals  =
     //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
     | Function a :: tail ->
         match a with
-        | "differentiate" ->
-            ExecError "Execution Error: Differential not expanded by exec." |> raise
+        | "differentiate" -> ExecError "Execution Error: Differential not expanded by exec." |> raise
         | "sqrt" ->
             //Set assignment to any assignments inside of expression
             let remaining, bracketedExpression = extractBrackets tail 0 []
@@ -343,14 +343,20 @@ and exec (env: Map<string, terminal list>) terminals  =
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "xrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            let strippedExpression = removeBeginningAndEndingParenthesis bracketedExpression
-            
-            match countCommaOccurance strippedExpression 0 with
-            | 1 ->
-                let expression1, expression2 = splitTerminalListBasedOnComma strippedExpression
-                [reduce ((reduce (RootToTerminals [reduce expression1 env] (reduce expression2 env |> terminalToNum)) env) :: remaining) env], (env |> Map.toSeq |> dict)
-            | _ -> 
-                InvalidArgumentError "Function xrt expects two arguments" |> raise
+            let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
+            match extractedParams with
+            | [[Number baseVal];a] ->
+                [reduce ((RootToTerminals a baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
+            | _ ->
+                expandedTerminals, (env |> Map.toSeq |> dict)
+        | "logX" ->
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
+            match extractedParams with
+            | [[Number newBase];[Number operand]] ->
+                [reduce ([LogX newBase operand |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
+            | _ ->
+                expandedTerminals, (env |> Map.toSeq |> dict)
         | _ ->
             if env.ContainsKey a then
                 let newEnv, remainingTerminals = setArguments tail Map.empty

@@ -77,6 +77,7 @@ and factor terminals =
         match terminalsTail with
         | Word _ :: Assign :: _ -> arguments terminalsTail
         | _ ->
+            
             match expression terminalsTail with
             | Rpar :: terminalsTail ->
                 match terminalsTail with
@@ -86,7 +87,8 @@ and factor terminals =
             | Comma :: terminalsTailTail -> arguments terminalsTailTail
             | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
     | Lpar :: terminalsTail ->
-        match expression terminalsTail with
+        let x = expression terminalsTail
+        match x with
         | Rpar :: terminalsTail ->
             match terminalsTail with
             | Number _ :: _
@@ -99,8 +101,11 @@ and factor terminals =
 and arguments terminals =
     match terminals with
     | Word _ :: Assign :: tail -> expression tail |> arguments 
-    | Comma :: tail 
-    | Number _ :: tail -> arguments tail
+    | Comma :: tail
+    | Number _ :: tail
+    | Word _ :: tail -> arguments tail
+    | Function _ :: _ -> factor terminals |> arguments
+    | Lpar :: _ -> expression terminals |> arguments
     | Rpar :: tail -> expressionP tail
     | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
      
