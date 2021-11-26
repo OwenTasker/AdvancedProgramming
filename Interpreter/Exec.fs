@@ -179,6 +179,14 @@ and setArguments terminals (env: Map<string, terminal list>) =
         | name, expression -> setArguments name (env.Add(x, [reduce expression env] ))
     | Lpar :: tail -> setArguments tail env
     | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
+    
+and extractParameters terminals (paramList : terminal list list) =
+    match terminals with
+    | Rpar :: tail -> paramList, tail
+    | _ :: _ ->
+        let remaining, parameter = extractAssignment terminals [] 0
+        extractParameters remaining (parameter :: paramList)
+    | [] -> ExecError "Execution Error: Unmatched left parenthesis" |> raise
 
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
