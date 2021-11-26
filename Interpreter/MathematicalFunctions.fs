@@ -158,7 +158,10 @@ let RootToTerminals (terminals: terminal list) denominator =
 ///
 /// <returns>Returns the floored input</returns>
 let FloorToNumber (numToFloor:float) =
-    numToFloor |> int |> float |> Number
+    let isNegative = numToFloor < 0.0
+    match isNegative with
+    | false -> numToFloor |> int |> float |> Number
+    | _ -> (numToFloor |> int |> float) - 1.0 |> Number
     
 /// <summary>
 /// Function to calculate the ceiling of a number, uses the fact that in F#, downcasting a float to int just truncates

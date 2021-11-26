@@ -96,7 +96,6 @@ let rec extractBrackets terminals lparCount out =
     | any :: tail -> extractBrackets tail lparCount (any::out)
     | [] -> ExecError "Execution Error: Unmatched parenthesis." |> raise
 
-
 /// <summary>
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
 /// </summary>
@@ -277,7 +276,7 @@ and exec (env: Map<string, terminal list>) terminals  =
         | _ ->
             let result, _ = exec env tail
             expandedTerminals, (env.Add(x, result) |> Map.toSeq |> dict) 
-        //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
+    //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
     | Function a :: tail ->
         match a with
         | "differentiate" ->
@@ -334,6 +333,7 @@ and exec (env: Map<string, terminal list>) terminals  =
         | "xrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             let strippedExpression = removeBeginningAndEndingParenthesis bracketedExpression
+            
             match countCommaOccurance strippedExpression 0 with
             | 1 ->
                 let expression1, expression2 = splitTerminalListBasedOnComma strippedExpression
@@ -383,6 +383,10 @@ and removeBeginningAndEndingParenthesis (input:terminal list) =
     removeFirstElementAndReverse.[1..] |> List.rev
 
 and splitTerminalListBasedOnComma (input:terminal list) =
+    let stringRep = terminalListToString "" input
+    
+        
+        
     match List.contains Comma input with
     | true ->
         let commaIndex = List.findIndex (fun x -> x = Comma) input
@@ -398,3 +402,10 @@ and countCommaOccurance (terminalList: terminal list) (count:int) =
         | Comma -> countCommaOccurance terminalTail count+1
         | _ -> countCommaOccurance terminalTail count
     | [] -> count
+
+//let extractParameter (terminals:terminal list) (nestCount:int) (paramList: terminal list) : (terminal list * terminal list) =
+//    match terminals with
+//    | Comma :: tail when nestCount = 0 ->
+//        terminals, paramList
+//    | Rpar :: tail when nestCount = 0 ->
+//        extractBrackets
