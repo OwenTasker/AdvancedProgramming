@@ -67,12 +67,6 @@ let GivenStatement_WhenPassedValidStatement_ReturnEmptyArray(terminals: terminal
     let result = statement terminals
     Assert.That(result, Is.EqualTo([]))
 
-/// <summary>Test to ensure that parse correctly parses valid input.</summary>
-[<TestCaseSource("ValidCases")>]
-let GivenParse_WhenPassedValidExpression_ReturnTrue(terminals: terminal list) =
-     let result = parse terminals
-     Assert.That(result, Is.EqualTo(true))
-
 /// <summary>List of test cases representing invalid inputs to the parser.</summary>
 let InvalidCases =
     [
@@ -129,10 +123,6 @@ let InvalidCases =
 let GivenStatement_WhenPassedInvalidExpression_ThenRaiseParseError(terminals: terminal list) =
     Assert.Throws<ParseError>(fun () -> statement terminals |> ignore) |> ignore
 
-/// <summary>Test to ensure that parse correctly throws an exception for invalid input.</summary>
-[<TestCaseSource("InvalidCases")>]
-let GivenParse_WhenPassedInvalidExpression_ReturnFalse(terminals: terminal list) =
-     let result = parse terminals
-     Assert.That(result, Is.EqualTo(false))
+
 
 
