@@ -54,6 +54,9 @@ and exponentP terminals =
 // unary ::= -unary | +unary | factor
 and unary terminals =
     match terminals with
+    | [UnaryMinus]
+    | [UnaryPlus]
+    | [] -> ParseError "Parse Error: Malformed Expression" |> raise
     | UnaryMinus :: terminalsTail
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
@@ -66,18 +69,29 @@ and factor terminals =
         | Lpar :: _
         | Number _ :: _
         | Word _ :: _ ->  ParseError "Parse Error: Missing Operator" |> raise
+        | [Plus]
+        | [Minus]  
+        | [Times]  
+        | [Divide]
+        | [Assign]
+        | [Exponent] -> ParseError "Parse Error: Malformed Expression" |> raise
         | _ -> terminalsTail
     | Word _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: tailTail -> arguments tailTail
         | Number _ :: _
         | Word _ :: _ -> ParseError "Parse Error: Word Then Word Or Number not allowed" |> raise
+        | [Plus]
+        | [Minus]  
+        | [Times]  
+        | [Divide]
+        | [Assign]
+        | [Exponent] -> ParseError "Parse Error: Malformed Expression" |> raise
         | _ -> terminalsTail
     | Function _ :: Lpar :: terminalsTail ->
         match terminalsTail with
         | Word _ :: Assign :: _ -> arguments terminalsTail
         | _ ->
-            
             match expression terminalsTail with
             | Rpar :: terminalsTail ->
                 match terminalsTail with
@@ -96,6 +110,8 @@ and factor terminals =
             | _ -> terminalsTail
         | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
     | [] -> []
+    | [UnaryMinus]
+    | [UnaryPlus]
     | _ -> ParseError "Parse Error: Malformed Expression" |> raise
     
 and arguments terminals =
