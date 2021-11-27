@@ -65,13 +65,13 @@ and factor terminals =
         match terminalsTail with
         | Lpar :: _
         | Number _ :: _
-        | Word _ :: _ ->  raise (ParseError "Parse Error: Missing Operator")
+        | Word _ :: _ ->  ParseError "Parse Error: Missing Operator" |> raise
         | _ -> terminalsTail
     | Word _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: tailTail -> arguments tailTail
         | Number _ :: _
-        | Word _ :: _ -> raise (ParseError "Parse Error: Word Then Word Or Number not allowed")
+        | Word _ :: _ -> ParseError "Parse Error: Word Then Word Or Number not allowed" |> raise
         | _ -> terminalsTail
     | Function _ :: Lpar :: terminalsTail ->
         match terminalsTail with
@@ -82,21 +82,21 @@ and factor terminals =
             | Rpar :: terminalsTail ->
                 match terminalsTail with
                 | Number _ :: _
-                | Word _ :: _ -> raise (ParseError "Parse Error: Missing Operator")
+                | Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
                 | _ -> terminalsTail
             | Comma :: terminalsTailTail -> arguments terminalsTailTail
-            | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
+            | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
     | Lpar :: terminalsTail ->
         let x = expression terminalsTail
         match x with
         | Rpar :: terminalsTail ->
             match terminalsTail with
             | Number _ :: _
-            | Word _ :: _ -> raise (ParseError "Parse Error: Missing Operator")
+            | Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
             | _ -> terminalsTail
-        | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
+        | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
     | [] -> []
-    | _ -> raise (ParseError "Parse Error: Malformed Expression")
+    | _ -> ParseError "Parse Error: Malformed Expression" |> raise
     
 and arguments terminals =
     match terminals with
@@ -107,7 +107,7 @@ and arguments terminals =
     | Function _ :: _ -> factor terminals |> arguments
     | Lpar :: _ -> expression terminals |> arguments
     | Rpar :: tail -> expressionP tail
-    | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
+    | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
      
 let parse terminals =
-    if statement terminals = [] then terminals else ParseError "ParseError: Malformed expression."|> raise
+    if statement terminals = [] then terminals else ParseError "ParseError: Malformed expression." |> raise
