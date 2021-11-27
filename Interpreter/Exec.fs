@@ -354,7 +354,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
             match extractedParams with
             | [[Number newBase];[Number operand]] ->
-                [reduce ([LogX newBase operand |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
+                [reduce ([LogX newBase operand] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
         | "gcd" ->
@@ -362,7 +362,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
             match extractedParams with
             | [[Number num1];[Number num2]] ->
-                [reduce ([getGCD num1 num2 |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
+                [reduce ([getGCD num1 num2] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
         | "mod" ->
@@ -370,7 +370,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
             match extractedParams with
             | [[Number num1];[Number num2]] ->
-                [reduce ([moduloCalc num1 num2 |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
+                [reduce ([moduloCalc num1 num2] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
         | "rand" ->
@@ -378,7 +378,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
             match extractedParams with
             | [[Number num1];[Number num2]] ->
-                [reduce ([(pseudoRandom num1 num2) |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
+                [reduce ([pseudoRandom num1 num2] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
         | _ ->
@@ -418,35 +418,3 @@ and calculateDifferential bracketedExpression (env : Map<string, terminal list>)
         else ExecError "" |> raise
     else
         differentiate expression |> List.rev 
-        
-and removeBeginningAndEndingParenthesis (input:terminal list) =
-    let removeFirstElementAndReverse = input.[1..] |> List.rev
-    removeFirstElementAndReverse.[1..] |> List.rev
-
-and splitTerminalListBasedOnComma (input:terminal list) =
-    let stringRep = terminalListToString "" input
-    
-        
-        
-    match List.contains Comma input with
-    | true ->
-        let commaIndex = List.findIndex (fun x -> x = Comma) input
-        let x, y = List.splitAt (commaIndex) input
-        let z = y.[1..]
-        x, z
-    | false -> InvalidArgumentError "Invalid Argument Error: At least two arguments expected" |> raise
-    
-and countCommaOccurance (terminalList: terminal list) (count:int) =
-    match terminalList with
-    | terminalHead :: terminalTail ->
-        match terminalHead with
-        | Comma -> countCommaOccurance terminalTail count+1
-        | _ -> countCommaOccurance terminalTail count
-    | [] -> count
-
-//let extractParameter (terminals:terminal list) (nestCount:int) (paramList: terminal list) : (terminal list * terminal list) =
-//    match terminals with
-//    | Comma :: tail when nestCount = 0 ->
-//        terminals, paramList
-//    | Rpar :: tail when nestCount = 0 ->
-//        extractBrackets

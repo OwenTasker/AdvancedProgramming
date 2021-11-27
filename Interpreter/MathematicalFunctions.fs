@@ -7,7 +7,6 @@
 /// </namespacedoc>
 module Interpreter.MathematicalFunctions
 
-open System.Threading
 open Interpreter.Util
 
 /// <summary>
@@ -130,7 +129,7 @@ let Log10 input =
 ///
 /// <returns>The terminal value of the log base newBase of the input provided</returns>
 let LogX newBase input =
-    FormNewBaseRuleFraction input newBase
+    FormNewBaseRuleFraction input newBase |> Number
 
 /// <summary>
 /// Higher order wrapper function for Logs
@@ -230,9 +229,9 @@ let AbsVal (num:float) =
 let rec getGCD (num1:float) (num2:float) =
     match num1 with
     | _ when num1 = num2 ->
-        num1
+        num1 |> Number
     | _ when num1 > num2 ->
-        getGCD (num1-num2) num2
+        getGCD (num1-num2) num2 
     | _ ->
         getGCD num1 (num2-num1)
         
@@ -247,7 +246,7 @@ let rec getGCD (num1:float) (num2:float) =
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let moduloCalc (num1:float) (num2:float) =
-    num1%num2
+    num1%num2 |> Number
 
 /// <summary>
 /// Function to return a random whole number between specified lower and upper bound
@@ -256,11 +255,11 @@ let moduloCalc (num1:float) (num2:float) =
 /// <param name="num1">Lower bound</param>
 /// <param name="num2">Upper bound</param>
 ///
-/// <returns>Returns the absolute value of the input</returns>
+/// <returns>Returns a random Number terminal between a lower and upper bound </returns>
 let pseudoRandom (num1:float) (num2:float) =
     let isNum1Whole = (num1 |> int |> float) = num1
     let isNum2Whole = (num2 |> int |> float) = num2
     if (isNum1Whole && isNum2Whole) then
-        System.Random().Next(num1 |> int, num2 |> int) |> float
+        System.Random().Next(num1 |> int, num2 |> int) |> float |> Number
     else
         InvalidArgumentError "Ensure both values passed to rand are whole numbers" |> raise

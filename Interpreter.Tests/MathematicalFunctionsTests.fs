@@ -111,10 +111,10 @@ let LogXInputs = [
 ]
 
 [<TestCaseSource("LogXInputs")>]
-let givenLogX_ProvidedValidInput_ReturnCorrectApproximation logBase input output=
+let givenLogX_ProvidedValidInput_ReturnCorrectApproximation logBase input output =
     let logRes = LogX logBase input
-    let a = logRes > (output - 0.000001)
-    let b = logRes < (output + 0.000001)
+    let a = logRes > (output - 0.000001 |> Number)
+    let b = logRes < (output + 0.000001 |> Number)
     Assert.True(a && b)
    
 let InvalidLogInputs = [
