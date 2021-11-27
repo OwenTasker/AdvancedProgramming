@@ -64,6 +64,7 @@ and unary terminals =
 // factor ::= int | ( expression ) 
 and factor terminals =
     match terminals with
+    | [] -> []
     | Number _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: _
@@ -74,7 +75,7 @@ and factor terminals =
         | [Times]  
         | [Divide]
         | [Assign]
-        | [Exponent] -> ParseError "Parse Error: Malformed Expression" |> raise
+        | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
         | _ -> terminalsTail
     | Word _ :: terminalsTail ->
         match terminalsTail with
@@ -86,7 +87,7 @@ and factor terminals =
         | [Times]  
         | [Divide]
         | [Assign]
-        | [Exponent] -> ParseError "Parse Error: Malformed Expression" |> raise
+        | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
         | _ -> terminalsTail
     | Function _ :: Lpar :: terminalsTail ->
         match terminalsTail with
@@ -109,9 +110,8 @@ and factor terminals =
             | Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
             | _ -> terminalsTail
         | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
-    | [] -> []
     | [UnaryMinus]
-    | [UnaryPlus]
+    | [UnaryPlus] -> ParseError "Parse Error: Trailing Operator" |> raise
     | _ -> ParseError "Parse Error: Malformed Expression" |> raise
     
 and arguments terminals =
@@ -119,6 +119,7 @@ and arguments terminals =
     | Word _ :: Assign :: tail -> expression tail |> arguments 
     | Comma :: tail
     | Number _ :: tail
+    | UnaryMinus :: tail
     | Word _ :: tail -> arguments tail
     | Function _ :: _ -> factor terminals |> arguments
     | Lpar :: _ -> expression terminals |> arguments

@@ -293,12 +293,19 @@ and exec (env: Map<string, terminal list>) terminals  =
         match a with
         | "differentiate" -> ExecError "Execution Error: Differential not expanded by exec." |> raise
         | "sqrt" ->
-            //Set assignment to any assignments inside of expression
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            [reduce ((reduce (RootToTerminals bracketedExpression 2.0) env) :: remaining) env], (env |> Map.toSeq |> dict)
+            let reducedRes = reduce (RootToTerminals bracketedExpression 2.0) env
+            if reducedRes <> Number nan then
+                [reduce (reducedRes :: remaining) env], (env |> Map.toSeq |> dict)
+            else
+                InvalidArgumentError "Ensure First Argument is greater than or equal to 0" |> raise
         | "cbrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            [reduce ((reduce (RootToTerminals bracketedExpression 3.0) env) :: remaining) env], (env |> Map.toSeq |> dict)
+            let reducedRes = reduce (RootToTerminals bracketedExpression 2.0) env
+            if reducedRes <> Number nan then
+                [reduce (reducedRes :: remaining) env], (env |> Map.toSeq |> dict)
+            else
+                InvalidArgumentError "Ensure First Argument is greater than or equal to 0" |> raise
         | "ln" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
@@ -346,7 +353,10 @@ and exec (env: Map<string, terminal list>) terminals  =
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
             match extractedParams with
             | [[Number baseVal];operand] ->
-                [reduce ((RootToTerminals operand baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
+                if baseVal > 0.0 then
+                    [reduce ((RootToTerminals operand baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
+                else
+                    InvalidArgumentError "Ensure First Argument is greater than or equal to 0" |> raise
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
         | "logX" ->

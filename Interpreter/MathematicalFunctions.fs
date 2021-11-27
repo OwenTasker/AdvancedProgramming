@@ -158,7 +158,12 @@ let LogWrapperToTerminal (logFunction: float->float) logVal=
 /// Returns a list of terminals equal to the value to calculate the root of to the power of 1/denominator
 /// </returns>
 let RootToTerminals (terminals: terminal list) denominator =
-    [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
+    let terminalsNotEmpty = not terminals.IsEmpty
+    let denominatorNotZeroOrNegative = not (denominator < 0.0)
+    if terminalsNotEmpty && denominatorNotZeroOrNegative then
+        [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
+    else
+        InvalidArgumentError "Ensure that input value is not empty and the root you are taking is not 0" |> raise
     
 /// <summary>
 /// Function to calculate the floor of a number, uses the fact that in F#, downcasting a float to int just truncates it

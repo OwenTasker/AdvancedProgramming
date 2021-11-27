@@ -236,48 +236,31 @@ let givenLogE_ProvidedInvalidInputs_ThrowInvalidArgumentError input =
 let givenLogX_ProvidedInvalidInputs_ThrowInvalidArgumentError newBase input =
     Assert.Throws<InvalidArgumentError>(fun () -> (LogX newBase input) |> ignore) |> ignore  
    
-   
-   
-   
-   
-   
-   
-
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-    
-let ValidRootToTerminalsInputs = [
-        TestCaseData(
-            [Number 10.0],
-            2,
-            [Lpar; Lpar; Number 10.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
-        TestCaseData(
-            [Number 10.0;Divide;Number 3.0],
-            2,
-            [Lpar; Lpar; Number 10.0; Divide; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+//RootToTerminal Test Cases
+let rootToTerminalValidInputs =
+    [
+        //order is -- Xth root of Y
+        //[Number 1.0], 2.0 means the 1st root of 2
+        TestCaseData([Number 1.0], 2.0, [Lpar; Lpar;Number 1.0;Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Number 10.0], 2.0,[Lpar; Lpar; Number 10.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Number 10.0; Divide; Number 3.0], 2.0, [Lpar; Lpar; Number 10.0; Divide; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Word "x"; Plus; Number 3.0], 3.0, [Lpar; Lpar; Word "x"; Plus; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 3.0; Rpar; Rpar])
+        TestCaseData([Number 2.0], 2.0, [Lpar; Lpar; Number 2.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
     ]
 
-[<TestCaseSource(nameof(ValidRootToTerminalsInputs))>]
-let GivenRootToTerminals_ProvidedValidInput_ReturnCorrectOutput inputVals whichRoot output =
-    Assert.That(RootToTerminals inputVals whichRoot, Is.EqualTo(output))
+let rootToTerminalInvalidInputs =
+    [
+        //Cannot test first argument/bases here outside of the empty case, this needs to be done via integration testing
+        TestCaseData(([]:terminal list), 2.0)
+        TestCaseData([Number 2.0], -1.0)
+    ]
+
+
+[<TestCaseSource(nameof rootToTerminalValidInputs)>]
+let givenRootToTerminals_ProvidedValidInput_ReturnCorrectValues inputList denominator output =
+    let rootToTerminalRes = RootToTerminals inputList denominator
+    Assert.That(rootToTerminalRes, Is.EqualTo(output))
+   
+[<TestCaseSource(nameof rootToTerminalInvalidInputs)>]
+let givenRootToTerminals_ProvidedInvalidInputs_ThrowInvalidArgumentError newBase input =
+    Assert.Throws<InvalidArgumentError>(fun () -> (RootToTerminals newBase input) |> ignore) |> ignore  
