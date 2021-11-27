@@ -26,13 +26,13 @@ open Interpreter.Util
 ///
 /// <returns>The natural log of the input provided</returns>
 /// <exception cref="InvalidArgumentError">Thrown when the input value is less than or equal to 0.5</exception>
-let rec LogEGreaterThanZeroPointFive (input:float) (increment:float) (sum:float) =
-    match input > 0.5 with 
-    | true ->
-        match increment with
-        | 2000.0 -> sum
-        | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
-    | false -> InvalidArgumentError "Invalid input passed to function, expected value above 0.5" |> raise
+let rec LogEGreaterThanZeroPointFive (input:float) (increment:float) (sum:float) =      
+        match input with 
+        | _ when input > 0.5 ->
+            match increment with
+            | 2000.0 -> sum
+            | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
+        | _ -> InvalidArgumentError "Invalid input passed to function, expected value above 0.5" |> raise
         
 /// <summary>
 /// Implements a Taylor-Series in order to approximate a value for LogE
@@ -128,8 +128,13 @@ let Log10 input =
 /// <param name="input">A floating point value to take the logarithm base newBase of</param>
 ///
 /// <returns>The terminal value of the log base newBase of the input provided</returns>
-let LogX newBase input =
-    FormNewBaseRuleFraction input newBase |> Number
+let LogX newBase input =  
+    if newBase = 0.0 && input = 0.0 then
+        InvalidArgumentError "Expected Base to be greater than or equal to 0" |> raise
+    elif newBase = 0.0 then
+        0.0 |> Number
+    else
+        (FormNewBaseRuleFraction input newBase) |> Number
 
 /// <summary>
 /// Higher order wrapper function for Logs
