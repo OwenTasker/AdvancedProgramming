@@ -365,6 +365,22 @@ and exec (env: Map<string, terminal list>) terminals  =
                 [reduce ([getGCD num1 num2 |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
+        | "mod" ->
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
+            match extractedParams with
+            | [[Number num1];[Number num2]] ->
+                [reduce ([moduloCalc num1 num2 |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
+            | _ ->
+                expandedTerminals, (env |> Map.toSeq |> dict)
+        | "rand" ->
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
+            match extractedParams with
+            | [[Number num1];[Number num2]] ->
+                [reduce ([(pseudoRandom num1 num2) |> Number] @ remaining) env], (env |> Map.toSeq |> dict)
+            | _ ->
+                expandedTerminals, (env |> Map.toSeq |> dict)
         | _ ->
             if env.ContainsKey a then
                 let newEnv, remainingTerminals = setArguments tail Map.empty

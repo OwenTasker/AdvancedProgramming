@@ -7,6 +7,7 @@
 /// </namespacedoc>
 module Interpreter.MathematicalFunctions
 
+open System.Threading
 open Interpreter.Util
 
 /// <summary>
@@ -103,6 +104,7 @@ let FormNewBaseRuleFraction numerator denominator =
 /// <summary>
 /// Calculates the log_2 of the given input
 /// </summary>
+/// 
 /// <param name="input">A floating point value to take the logarithm base 2 of</param>
 ///
 /// <returns>The log base 2 of the input provided</returns>
@@ -112,6 +114,7 @@ let Log2 input =
 /// <summary>
 /// Calculates the log_10 of the given input
 /// </summary>
+/// 
 /// <param name="input">A floating point value to take the logarithm base 2 of</param>
 ///
 /// <returns>The log base 2 of the input provided</returns>
@@ -121,6 +124,7 @@ let Log10 input =
 /// <summary>
 /// Calculates the log_x of the given input
 /// </summary>
+/// 
 /// <param name="newBase">the base you want to calculate</param>
 /// <param name="input">A floating point value to take the logarithm base newBase of</param>
 ///
@@ -131,6 +135,7 @@ let LogX newBase input =
 /// <summary>
 /// Higher order wrapper function for Logs
 /// </summary>
+/// 
 /// <param name="logFunction">Passed Function consisting of which logarithmic function to call</param>
 /// <param name="logVal">The value to be passed to logFunction</param>
 ///
@@ -141,6 +146,7 @@ let LogWrapperToTerminal (logFunction: float->float) logVal=
 /// <summary>
 /// Recreates a terminal list based on the provided square value
 /// </summary>
+/// 
 /// <param name="terminals">All terminal values within function call</param>
 /// <param name="denominator">Floating point value representing the root to calculate, 2 equals sqrt, 3 equals cbrt etc.</param>
 ///
@@ -154,6 +160,7 @@ let RootToTerminals (terminals: terminal list) denominator =
 /// Function to calculate the floor of a number, uses the fact that in F#, downcasting a float to int just truncates it
 /// and doesnt take into account anything past the decimal point.
 /// </summary>
+/// 
 /// <param name="numToFloor">Input to floor</param>
 ///
 /// <returns>Returns the floored input</returns>
@@ -167,6 +174,7 @@ let FloorToNumber (numToFloor:float) =
 /// Function to calculate the ceiling of a number, uses the fact that in F#, downcasting a float to int just truncates
 /// it and doesnt take into account anything past the decimal point.
 /// </summary>
+/// 
 /// <param name="num">Input to ceil</param>
 ///
 /// <returns>Returns the ceiled input</returns>
@@ -179,6 +187,7 @@ let CeilToNumber (num: float) =
 /// <summary>
 /// Function to calculate the rounding of a number
 /// </summary>
+/// 
 /// <param name="num">Input to round</param>
 ///
 /// <returns>Returns the rounded input</returns>
@@ -199,12 +208,25 @@ let RoundNum (num:float) =
 /// <summary>
 /// Function to calculate the absolute value of a number
 /// </summary>
+///
+///<remarks>|num|</remarks>
+/// 
 /// <param name="num">Input to calculate the absolute value of</param>
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let AbsVal (num:float) =
     +num |> Number
 
+/// <summary>
+/// Function to calculate the greatest common divisor of a pair of integers
+/// </summary>
+///
+/// <remarks>Input order is irrelevant</remarks>
+/// 
+/// <param name="num1">First value taken into account</param>
+/// <param name="num2">Second value taken into account</param>
+///
+/// <returns>Returns the absolute value of the input</returns>
 let rec getGCD (num1:float) (num2:float) =
     match num1 with
     | _ when num1 = num2 ->
@@ -213,3 +235,32 @@ let rec getGCD (num1:float) (num2:float) =
         getGCD (num1-num2) num2
     | _ ->
         getGCD num1 (num2-num1)
+        
+/// <summary>
+/// Function to calculate the modulo of a number by another number
+/// </summary>
+///
+/// <remarks>num1 mod num2</remarks>
+/// 
+/// <param name="num1">Original Number</param>
+/// <param name="num2">Number to divide num1 by</param>
+///
+/// <returns>Returns the absolute value of the input</returns>
+let moduloCalc (num1:float) (num2:float) =
+    num1%num2
+
+/// <summary>
+/// Function to return a random whole number between specified lower and upper bound
+/// </summary>
+///
+/// <param name="num1">Lower bound</param>
+/// <param name="num2">Upper bound</param>
+///
+/// <returns>Returns the absolute value of the input</returns>
+let pseudoRandom (num1:float) (num2:float) =
+    let isNum1Whole = (num1 |> int |> float) = num1
+    let isNum2Whole = (num2 |> int |> float) = num2
+    if (isNum1Whole && isNum2Whole) then
+        System.Random().Next(num1 |> int, num2 |> int) |> float
+    else
+        InvalidArgumentError "Ensure both values passed to rand are whole numbers" |> raise

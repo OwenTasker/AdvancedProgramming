@@ -55,8 +55,10 @@ let functions = [
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
                  ("abs", "One Argument; A function to determine the absolute value of an expression, given a value of -12, returns 12")
                  ("xrt", "Two Arguments; determines the xth root of a given value")
-                 ("clear", "Zero Arguments; Clears the console and user-defined variables")
                  ("gcd", "Two Arguments; Calculates the greatest common divisor of two integer values")
+                 ("mod", "Two Arguments; Calculates the modulo value of a pair of floating point values")
+                 ("rand", "Two Arguments; Returns a random integer based on a specified lower and upper bound")
+                 ("clear", "Zero Arguments; Clears the console and user-defined variables")
                  ]
 
 //https://gist.github.com/theburningmonk/3363893
