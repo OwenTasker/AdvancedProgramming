@@ -298,7 +298,7 @@ let ceilToTerminalInputsOutputs =
 let givenCeilToTerminal_ProvidedValidInput_ReturnCorrectResult input output =
     Assert.That((CeilToTerminal input), Is.EqualTo(output))
     
-//RoundToTerminal
+//RoundToTerminal Test Cases
 let roundNumInputsOutputs =
     [
         TestCaseData(0.0,Number 0.0)
@@ -316,3 +316,17 @@ let roundNumInputsOutputs =
 [<TestCaseSource(nameof roundNumInputsOutputs)>]
 let givenRoundNum_ProvidedValidInput_ReturnCorrectResult input output = 
     Assert.That((RoundNum input), Is.EqualTo(output))
+    
+//AbsVal Test Cases
+let absValInputsOutputs =
+    [
+        TestCaseData(0.0, Number 0.0)
+        TestCaseData(-0.0, Number 0.0)
+        TestCaseData(-5.0, Number 5.0)
+        TestCaseData(5.0, Number 5.0)
+        TestCaseData(-2.2, Number 2.2)
+    ]
+    
+[<TestCaseSource(nameof absValInputsOutputs)>]
+let givenAbsVal_ProvidedValidInput_ReturnCorrectResult input output =
+    Assert.That((AbsVal input), Is.EqualTo(output))

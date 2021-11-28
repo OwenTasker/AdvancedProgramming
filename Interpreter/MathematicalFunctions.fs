@@ -242,7 +242,9 @@ let RoundNum (num:float) =
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let AbsVal (num:float) =
-    +num |> Number
+    match num < 0.0 with
+    | true -> -num |> Number
+    | _ -> num |> Number
 
 /// <summary>
 /// Function to calculate the greatest common divisor of a pair of integers
