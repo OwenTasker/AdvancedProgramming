@@ -380,12 +380,12 @@ let performOperation operator numStack =
 /// <returns>A list of terminals representing a complete bracketed expression.</returns>
 let rec extractExpression terminals lparCount output =
     match terminals with
-    | Rpar :: tail ->
-        match lparCount with
-        | 1 -> List.rev (Rpar :: output), tail
-        | _ -> extractExpression tail (lparCount - 1) (Rpar :: output)
+    | Comma :: tail when lparCount = 0 ->  List.rev output, tail
+    | Rpar :: tail when lparCount = 0 ->  List.rev (output), tail
+    | Rpar :: tail -> extractExpression tail (lparCount - 1) (Rpar :: output)
     | Lpar :: tail -> extractExpression tail (lparCount + 1) (Lpar :: output)
     | head :: tail -> extractExpression tail lparCount (head :: output)
+    | [] when lparCount = 0 -> List.rev(output), []
     | [] ->
         ExecError "Execution Error: Unmatched parenthesis"
         |> raise
@@ -407,21 +407,66 @@ let rec autoDifferentiate terminals opStack numStack =
         match terminalHead with
         | Word _ -> autoDifferentiate terminalTail opStack (Var(terminalHead, 1.0) :: numStack)
         | Number a -> autoDifferentiate terminalTail opStack (Const(a, 0.0) :: numStack)
-        | Function "ln" ->
+        | Function a ->
             let expression, remainingTerminals = extractExpression terminalTail 0 []
 
-            autoDifferentiate
-                remainingTerminals
-                opStack
-                (Expr(
-                    (Function "ln" :: expression),
-                    (Lpar :: (autoDifferentiate expression [] [])
-                     @ Rpar
-                       :: Times
-                          :: Lpar :: Number 1.0 :: Divide :: expression
-                       @ [ Rpar ])
-                 )
-                 :: numStack)
+            match a with
+            | "ln" ->
+                autoDifferentiate
+                    remainingTerminals
+                    opStack
+                    (Expr(
+                        (Function "ln" :: expression),
+                        (Lpar :: (autoDifferentiate expression [] [])
+                         @ Rpar
+                           :: Times
+                              :: Lpar :: Number 1.0 :: Divide :: expression
+                           @ [ Rpar ])
+                     )
+                     :: numStack)
+            | "abs" ->
+                autoDifferentiate
+                    remainingTerminals
+                    opStack
+                    (Expr(
+                        (Function "abs" :: Lpar :: expression @ [ Rpar ]),
+                        (Lpar
+                         :: Lpar :: (autoDifferentiate expression [] [])
+                         @ Rpar :: Times :: expression
+                           @ Divide :: Function "abs" :: expression @ [ Rpar ])
+                     )
+                     :: numStack)
+            | "logTen" ->
+                autoDifferentiate
+                    remainingTerminals
+                    opStack
+                    (Expr(
+                        (Function "logTen" :: expression),
+                        (autoDifferentiate (Function "ln" :: expression @ [Divide; Function "ln"; Lpar; Number 10.0; Rpar]) [] [])
+                     )
+                     :: numStack)
+            | "logTwo" ->
+                autoDifferentiate
+                    remainingTerminals
+                    opStack
+                    (Expr(
+                        (Function "logTwo" :: expression),
+                        (autoDifferentiate (Function "ln" :: expression @ [Divide; Function "ln"; Lpar; Number 2.0; Rpar]) [] [])
+                     )
+                     :: numStack)
+            | "logX" ->
+                let logBase, remainWithOperand = extractExpression expression.[1..] 0 []
+                let operand, _ = extractExpression remainWithOperand 0 []
+                autoDifferentiate
+                    remainingTerminals
+                    opStack
+                    (Expr(
+                        (Function "logX" :: Lpar :: logBase @ [Comma] @ operand @ [Rpar]),
+                        (autoDifferentiate (Function "ln" :: Lpar :: operand @ [Rpar; Divide; Function "ln"; Lpar] @ logBase @ [Rpar]) [] [])
+                     )
+                     :: numStack)
+            | _ ->
+                ExecError "Differentiation Error: Derivative is undefined" |> raise
         | Lpar -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
         | Rpar ->
             match evaluateBrackets opStack numStack performOperation with

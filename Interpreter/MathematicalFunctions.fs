@@ -75,11 +75,13 @@ let rec LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:
 /// <param name="input">A floating point value to take the logarithm base E of</param>
 ///
 /// <returns>The natural log of the input provided</returns>
-let LogE input =
+let LogEFloat input =
     match input <= 0.5 with
     | true -> LogELessThanOrEqualToZeroPointFive input 1.0 0.0 
     | _ -> LogEGreaterThanZeroPointFive input 1.0 0.0 
 
+let LogETerminal input =
+    LogEFloat input |> Number
 /// <summary>
 /// Function to dynamically calculate any given base of any given number using the change of base rule
 /// </summary>
@@ -98,7 +100,7 @@ let LogE input =
 ///
 /// <returns>Value calculated as log(_b)a</returns>
 let FormNewBaseRuleFraction numerator denominator =
-    LogE numerator / LogE denominator
+    LogEFloat numerator / LogEFloat denominator
 
 /// <summary>
 /// Calculates the log_2 of the given input
@@ -108,7 +110,7 @@ let FormNewBaseRuleFraction numerator denominator =
 ///
 /// <returns>The log base 2 of the input provided</returns>
 let Log2 input =
-    FormNewBaseRuleFraction input 2.0
+    FormNewBaseRuleFraction input 2.0 |> Number
     
 /// <summary>
 /// Calculates the log_10 of the given input
@@ -118,7 +120,7 @@ let Log2 input =
 ///
 /// <returns>The log base 2 of the input provided</returns>
 let Log10 input =
-    FormNewBaseRuleFraction input 10.0
+    FormNewBaseRuleFraction input 10.0 |> Number
     
 /// <summary>
 /// Calculates the log_x of the given input
@@ -135,17 +137,6 @@ let LogX newBase input =
         0.0 |> Number
     else
         (FormNewBaseRuleFraction input newBase) |> Number
-
-/// <summary>
-/// Higher order wrapper function for Logs
-/// </summary>
-/// 
-/// <param name="logFunction">Passed Function consisting of which logarithmic function to call</param>
-/// <param name="logVal">The value to be passed to logFunction</param>
-///
-/// <returns>Returns a Terminal value of any given Log function</returns>
-let LogWrapperToTerminal (logFunction: float->float) logVal=
-        logFunction logVal |> Number
     
 /// <summary>
 /// Recreates a terminal list based on the provided square value
@@ -158,12 +149,11 @@ let LogWrapperToTerminal (logFunction: float->float) logVal=
 /// Returns a list of terminals equal to the value to calculate the root of to the power of 1/denominator
 /// </returns>
 let RootToTerminals (terminals: terminal list) denominator =
-    let terminalsNotEmpty = not terminals.IsEmpty
-    let denominatorNotZeroOrNegative = not (denominator < 0.0)
-    if terminalsNotEmpty && denominatorNotZeroOrNegative then
-        [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
+    if not terminals.IsEmpty && denominator <> [Number 0.0] then
+        [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide] @ denominator @ [Rpar; Rpar]
     else
         InvalidArgumentError "Ensure that input value is not empty and the root you are taking is not 0" |> raise
+    
     
 /// <summary>
 /// Function to calculate the floor of a number, uses the fact that in F#, downcasting a float to int just truncates it
@@ -173,25 +163,33 @@ let RootToTerminals (terminals: terminal list) denominator =
 /// <param name="numToFloor">Input to floor</param>
 ///
 /// <returns>Returns the floored input</returns>
-let FloorToNumber (numToFloor:float) =
+let FloorToTerminal (numToFloor:float) =
     let isNegative = numToFloor < 0.0
-    match isNegative with
-    | false -> numToFloor |> int |> float |> Number
-    | _ -> (numToFloor |> int |> float) - 1.0 |> Number
+    let checkForInteger = numToFloor |> int |> float = numToFloor
+    match checkForInteger with
+    | true -> numToFloor |> Number
+    | _ ->
+        match isNegative with
+        | false -> numToFloor |> int |> float |> Number
+        | _ -> numToFloor - 1.0 |> int |> float |> Number
     
 /// <summary>
 /// Function to calculate the ceiling of a number, uses the fact that in F#, downcasting a float to int just truncates
 /// it and doesnt take into account anything past the decimal point.
 /// </summary>
 /// 
-/// <param name="num">Input to ceil</param>
+/// <param name="numToCeil">Input to ceil</param>
 ///
 /// <returns>Returns the ceiled input</returns>
-let CeilToNumber (num: float) =
-    let checkForInteger  = num |> int |> float = num
+let CeilToTerminal (numToCeil: float) =
+    let isNegative = numToCeil < 0.0
+    let checkForInteger  = numToCeil |> int |> float = numToCeil
     match checkForInteger with
-    | true -> num |> Number
-    | _ -> ((num |> int |> float) + 1.0) |> Number
+    | true -> numToCeil |> Number
+    | _ ->
+        match isNegative with
+        | false -> numToCeil + 1.0 |> int |> float |> Number
+        | _ -> numToCeil |> int |> float |> Number
     
 /// <summary>
 /// Function to calculate the rounding of a number
