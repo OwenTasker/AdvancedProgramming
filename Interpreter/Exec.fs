@@ -290,7 +290,15 @@ and exec (env: Map<string, terminal list>) terminals  =
     //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
     | Function a :: tail ->
         match a with
-        | "differentiate" -> ExecError "Execution Error: Differential not expanded by exec." |> raise
+        | "differentiate" ->
+            let extractedParams, remaining = extractParameters tail.[1..] [] env
+            if extractedParams.Length > 1 then
+                let diffEnv, _ = setArguments extractedParams.[1] env
+                let diffedExpr = reduce (differentiate extractedParams.[0]) diffEnv
+                [reduce (diffedExpr :: remaining) env], env |> Map.toSeq |> dict
+            else
+                let diffedExpr, _ = exec env (differentiate extractedParams.[0])
+                exec env (diffedExpr @ remaining)
         | "sqrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             let reducedRes = reduce (RootToTerminals bracketedExpression 2.0) env
