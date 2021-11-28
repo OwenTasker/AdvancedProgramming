@@ -353,10 +353,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
             match extractedParams with
             | [[Number baseVal];operand] ->
-                if baseVal > 0.0 then
-                    [reduce ((RootToTerminals operand baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
-                else
-                    InvalidArgumentError "Ensure First Argument is greater than or equal to 0" |> raise
+                [reduce ((RootToTerminals operand baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
         | "logX" ->
