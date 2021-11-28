@@ -75,11 +75,13 @@ let rec LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:
 /// <param name="input">A floating point value to take the logarithm base E of</param>
 ///
 /// <returns>The natural log of the input provided</returns>
-let LogE input =
+let LogEFloat input =
     match input <= 0.5 with
     | true -> LogELessThanOrEqualToZeroPointFive input 1.0 0.0 
     | _ -> LogEGreaterThanZeroPointFive input 1.0 0.0 
 
+let LogETerminal input =
+    LogEFloat input |> Number
 /// <summary>
 /// Function to dynamically calculate any given base of any given number using the change of base rule
 /// </summary>
@@ -98,7 +100,7 @@ let LogE input =
 ///
 /// <returns>Value calculated as log(_b)a</returns>
 let FormNewBaseRuleFraction numerator denominator =
-    LogE numerator / LogE denominator
+    LogEFloat numerator / LogEFloat denominator
 
 /// <summary>
 /// Calculates the log_2 of the given input
@@ -108,7 +110,7 @@ let FormNewBaseRuleFraction numerator denominator =
 ///
 /// <returns>The log base 2 of the input provided</returns>
 let Log2 input =
-    FormNewBaseRuleFraction input 2.0
+    FormNewBaseRuleFraction input 2.0 |> Number
     
 /// <summary>
 /// Calculates the log_10 of the given input
@@ -118,7 +120,7 @@ let Log2 input =
 ///
 /// <returns>The log base 2 of the input provided</returns>
 let Log10 input =
-    FormNewBaseRuleFraction input 10.0
+    FormNewBaseRuleFraction input 10.0 |> Number
     
 /// <summary>
 /// Calculates the log_x of the given input
@@ -135,17 +137,6 @@ let LogX newBase input =
         0.0 |> Number
     else
         (FormNewBaseRuleFraction input newBase) |> Number
-
-/// <summary>
-/// Higher order wrapper function for Logs
-/// </summary>
-/// 
-/// <param name="logFunction">Passed Function consisting of which logarithmic function to call</param>
-/// <param name="logVal">The value to be passed to logFunction</param>
-///
-/// <returns>Returns a Terminal value of any given Log function</returns>
-let LogWrapperToTerminal (logFunction: float->float) logVal=
-        logFunction logVal |> Number
     
 /// <summary>
 /// Recreates a terminal list based on the provided square value
