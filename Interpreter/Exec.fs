@@ -33,7 +33,7 @@ let performBinaryOperation operator op1 op2 =
     | Times -> Number (op1 * op2)
     | Divide ->
         match op2 with
-        | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero, this operation is undefined." |> raise
+        | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero." |> raise
         | _ -> Number (op1 / op2)
     | Exponent -> Number (op1 ** op2)
     | _ -> CalculateError "Calculate Error: Invalid operator passed." |> raise
@@ -341,8 +341,12 @@ and exec (env: Map<string, terminal list>) terminals  =
 
 and handleRootFunction remaining env operand exponent =
     match operand, exponent with
-    | [Number _], [Number _] ->
-        exec env ((reduce (RootToTerminals operand exponent) env) :: remaining)
+    | [Number _], [Number a] ->
+        if a > 0.0 then
+            let reducedExponent = reduce exponent env
+            exec env ((reduce (RootToTerminals operand [reducedExponent]) env) :: remaining)
+        else
+            InvalidArgumentError "First argument to root function must be positive." |> raise
     | _ ->
         exec env ((RootToTerminals operand exponent) @ remaining)
 

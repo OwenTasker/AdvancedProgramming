@@ -149,9 +149,9 @@ let LogX newBase input =
 /// Returns a list of terminals equal to the value to calculate the root of to the power of 1/denominator
 /// </returns>
 let RootToTerminals (terminals: terminal list) (denominator:terminal list) =
-    let terminalsNotEmpty = terminals.Length > 0
-    let denominatorGreaterThan0 = terminalToNum denominator.[0] > 0.0
-    if terminalsNotEmpty && denominatorGreaterThan0 then
+    let contentNotEmpty = terminals.Length > 0
+    let denominatorNotEmpty = denominator.Length > 0
+    if contentNotEmpty && denominatorNotEmpty then
         [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide] @ denominator @ [Rpar; Rpar]
     else
         InvalidArgumentError "Ensure that input value is not empty and the root you are taking is not 0" |> raise
