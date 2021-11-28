@@ -1,6 +1,7 @@
 ﻿module Interpreter.Program
 
 open System
+open Interpreter.MathematicalFunctions
 open Interpreter.Util
 open Interpreter.Lexer
 open Interpreter.Parser

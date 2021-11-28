@@ -54,6 +54,9 @@ and exponentP terminals =
 // unary ::= -unary | +unary | factor
 and unary terminals =
     match terminals with
+    | [UnaryMinus]
+    | [UnaryPlus]
+    | [] -> ParseError "Parse Error: Malformed Expression" |> raise
     | UnaryMinus :: terminalsTail
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
@@ -61,17 +64,30 @@ and unary terminals =
 // factor ::= int | ( expression ) 
 and factor terminals =
     match terminals with
+    | [] -> []
     | Number _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: _
         | Number _ :: _
-        | Word _ :: _ ->  raise (ParseError "Parse Error: Missing Operator")
+        | Word _ :: _ ->  ParseError "Parse Error: Missing Operator" |> raise
+        | [Plus]
+        | [Minus]  
+        | [Times]  
+        | [Divide]
+        | [Assign]
+        | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
         | _ -> terminalsTail
     | Word _ :: terminalsTail ->
         match terminalsTail with
         | Lpar :: tailTail -> arguments tailTail
         | Number _ :: _
-        | Word _ :: _ -> raise (ParseError "Parse Error: Word Then Word not allowed")
+        | Word _ :: _ -> ParseError "Parse Error: Word Then Word Or Number not allowed" |> raise
+        | [Plus]
+        | [Minus]  
+        | [Times]  
+        | [Divide]
+        | [Assign]
+        | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
         | _ -> terminalsTail
     | Function _ :: Lpar :: terminalsTail ->
         match terminalsTail with
@@ -81,28 +97,34 @@ and factor terminals =
             | Rpar :: terminalsTail ->
                 match terminalsTail with
                 | Number _ :: _
-                | Word _ :: _ -> raise (ParseError "Parse Error: Missing Operator")
+                | Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
                 | _ -> terminalsTail
             | Comma :: terminalsTailTail -> arguments terminalsTailTail
-            | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
+            | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
     | Lpar :: terminalsTail ->
-        match expression terminalsTail with
+        let x = expression terminalsTail
+        match x with
         | Rpar :: terminalsTail ->
             match terminalsTail with
             | Number _ :: _
-            | Word _ :: _ -> raise (ParseError "Parse Error: Missing Operator")
+            | Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
             | _ -> terminalsTail
-        | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
-    | [] -> []
-    | _ -> raise (ParseError "Parse Error: Malformed Expression")
+        | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
+    | [UnaryMinus]
+    | [UnaryPlus] -> ParseError "Parse Error: Trailing Operator" |> raise
+    | _ -> ParseError "Parse Error: Malformed Expression" |> raise
     
 and arguments terminals =
     match terminals with
     | Word _ :: Assign :: tail -> expression tail |> arguments 
-    | Comma :: tail 
-    | Number _ :: tail -> arguments tail
+    | Comma :: tail
+    | Number _ :: tail
+    | UnaryMinus :: tail
+    | Word _ :: tail -> arguments tail
+    | Function _ :: _ -> factor terminals |> arguments
+    | Lpar :: _ -> expression terminals |> arguments
     | Rpar :: tail -> expressionP tail
-    | _ -> raise (ParseError "Parse Error: Missing Right Parenthesis")
+    | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
      
 let parse terminals =
-    if statement terminals = [] then terminals else ParseError "ParseError: Malformed expression."|> raise
+    if statement terminals = [] then terminals else ParseError "ParseError: Malformed expression." |> raise

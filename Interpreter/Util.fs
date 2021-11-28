@@ -54,6 +54,10 @@ let functions = [
                  ("logX", "Two Arguments; A function to determine the base X logarithm of the second provided argument to 6 accurate decimal points")
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
                  ("abs", "One Argument; A function to determine the absolute value of an expression, given a value of -12, returns 12")
+                 ("xrt", "Two Arguments; determines the xth root of a given value")
+                 ("gcd", "Two Arguments; Calculates the greatest common divisor of two integer values")
+                 ("mod", "Two Arguments; Calculates the modulo value of a pair of floating point values")
+                 ("rand", "Two Arguments; Returns a random integer based on a specified lower and upper bound")
                  ("clear", "Zero Arguments; Clears the console and user-defined variables")
                  ]
 
@@ -96,9 +100,30 @@ let rec terminalListToString str list =
     match list with
     | head :: tail -> terminalListToString (str + individualTerminalToString head ) tail
     | [] -> str
-    
+
+/// <summary>
+/// Function to convert an individual Number terminal into a floating point number
+/// </summary>
+/// 
+/// <param name="term">A terminal value</param>
+/// 
+/// <returns>A string representation of the terminal list.</returns>
+///
+/// <exception cref="InvalidArgumentError">Thrown when the input value is not of Number terminal type</exception>
 let terminalToNum term =
-    term |> individualTerminalToString |> System.Double.Parse 
+    match term with
+    | Number _ -> term |> individualTerminalToString |> System.Double.Parse
+    | _ -> InvalidArgumentError "Cannot Parse Non Number Terminal As Number" |> raise
+
+/// <summary>
+/// Function to convert an individual floating point value into a terminal Number type
+/// </summary>
+/// 
+/// <param name="num">A floating point number</param>
+/// 
+/// <returns>A terminal representation of the floating point number</returns>
+let NumToTerminal num =
+    num |> Number
     
 /// <summary>
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and

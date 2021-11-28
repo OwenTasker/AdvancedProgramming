@@ -198,5 +198,5 @@ let rec scan tokens output  =
 /// <param name="input">A list of characters as strings.</param>
 ///
 /// <returns>A list of terminals.</returns>
-let lexer input =
+let lexer (input) =
     scan (tokenize input) []
