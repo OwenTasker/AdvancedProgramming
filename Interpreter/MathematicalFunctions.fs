@@ -234,10 +234,10 @@ let RoundNum (num:float) =
 let AbsVal (num:float) =
     match num < 0.0 with
     | true -> -num |> Number
-    | _ -> num |> Number
+    | _ -> num |> Number    
 
 /// <summary>
-/// Function to calculate the greatest common divisor of a pair of integers
+/// Function to calculate the greatest common divisor from a pair of integers
 /// </summary>
 ///
 /// <remarks>Input order is irrelevant</remarks>
@@ -245,15 +245,34 @@ let AbsVal (num:float) =
 /// <param name="num1">First value taken into account</param>
 /// <param name="num2">Second value taken into account</param>
 ///
-/// <returns>Returns the absolute value of the input</returns>
+/// <returns>Return the greatest common denominator/highest common factor of the two provided values</returns>
 let rec getGCD (num1:float) (num2:float) =
-    match num1 with
-    | _ when num1 = num2 ->
-        num1 |> Number
-    | _ when num1 > num2 ->
-        getGCD (num1-num2) num2 
-    | _ ->
-        getGCD num1 (num2-num1)
+    if num2 = 0.0 then
+        AbsVal num1
+    else
+        getGCD num2 (num1%num2)
+        
+/// <summary>
+/// Wrapper function for greatest common divisor from a pair of integers, contains logic in which to call getGCD with
+/// </summary>
+///
+/// <remarks>Input order is irrelevant</remarks>
+/// 
+/// <param name="num1">First value taken into account</param>
+/// <param name="num2">Second value taken into account</param>
+///
+/// <returns>Returns the Greatest Common Denominator/Highest Common Factor of the two provided values</returns>
+let getGCDWrapper num1 num2 =
+    let areBothInputsIntegers = (num1 |> int |> float = num1) && (num2 |> int |> float = num2)
+    let areBothIntegersNotZero = (num1 <> 0.0) && (num2 <> 0.0)
+    
+    if not areBothIntegersNotZero then
+        0.0 |> Number
+    elif areBothInputsIntegers then
+        getGCD num1 num2
+    else
+        InvalidArgumentError "Ensure both arguments are non-zero integers" |> raise
+    
         
 /// <summary>
 /// Function to calculate the modulo of a number by another number
