@@ -183,21 +183,21 @@ let givenLogELessThanOrEqualToZeroPointFive_ProvidedValidInput_ReturnCorrectValu
 
 [<TestCaseSource(nameof LogEValidInputsOutputs)>]
 let givenLogE_ProvidedValidInput_ReturnCorrectApproximation input output =
-    let logRes = LogE input
+    let logRes = LogEFloat input
     let a = logRes > (output-0.000001)
     let b = logRes < (output+0.000001)
     Assert.True(a && b)
     
 [<TestCaseSource(nameof Log2ValidInputOutputs)>]
 let givenLog2_ProvidedValidInput_ReturnCorrectApproximation input output =
-    let logRes = Log2 input
-    let a = logRes > (output-0.000001)
-    let b = logRes < (output+0.000001)
+    let logRes = (Log2 input) |> terminalToNum
+    let a = logRes > (output - 0.000001)
+    let b = logRes < (output + 0.000001)
     Assert.True(a && b)
     
 [<TestCaseSource(nameof Log10ValidInputOutputs)>]
 let givenLog10_ProvidedValidInput_ReturnCorrectApproximation input output =
-    let logRes = Log10 input
+    let logRes = (Log10 input) |> terminalToNum
     let a = logRes > (output-0.000001)
     let b = logRes < (output+0.000001)
     Assert.True(a && b)
@@ -230,7 +230,7 @@ let givenLog2_ProvidedInvalidInputs_ThrowInvalidArgumentError input =
    
 [<TestCaseSource(nameof GenericInvalidLogInputs)>]
 let givenLogE_ProvidedInvalidInputs_ThrowInvalidArgumentError input =
-    Assert.Throws<InvalidArgumentError>(fun () -> LogE input |> ignore) |> ignore
+    Assert.Throws<InvalidArgumentError>(fun () -> LogEFloat input |> ignore) |> ignore
 
 [<TestCaseSource(nameof LogXInvalidInputs)>]
 let givenLogX_ProvidedInvalidInputs_ThrowInvalidArgumentError newBase input =
@@ -241,18 +241,18 @@ let rootToTerminalValidInputs =
     [
         //order is -- Xth root of Y
         //[Number 1.0], 2.0 means the 1st root of 2
-        TestCaseData([Number 1.0], 2.0, [Lpar; Lpar;Number 1.0;Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
-        TestCaseData([Number 10.0], 2.0,[Lpar; Lpar; Number 10.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
-        TestCaseData([Number 10.0; Divide; Number 3.0], 2.0, [Lpar; Lpar; Number 10.0; Divide; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
-        TestCaseData([Word "x"; Plus; Number 3.0], 3.0, [Lpar; Lpar; Word "x"; Plus; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 3.0; Rpar; Rpar])
-        TestCaseData([Number 2.0], 2.0, [Lpar; Lpar; Number 2.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Number 1.0], [Number 2.0], [Lpar; Lpar;Number 1.0;Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Number 10.0], [Number 2.0],[Lpar; Lpar; Number 10.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Number 10.0; Divide; Number 3.0], [Number 2.0], [Lpar; Lpar; Number 10.0; Divide; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Word "x"; Plus; Number 3.0], [Number 3.0], [Lpar; Lpar; Word "x"; Plus; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 3.0; Rpar; Rpar])
+        TestCaseData([Number 2.0], [Number 2.0], [Lpar; Lpar; Number 2.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
     ]
 
 let rootToTerminalInvalidInputs =
     [
         //Cannot test first argument/bases here outside of the empty case, this needs to be done via integration testing
-        TestCaseData(([]:terminal list), 2.0)
-        TestCaseData([Number 2.0], -1.0)
+        TestCaseData(([]:terminal list), [Number 1.0])
+        TestCaseData([Number 2.0], [Number -1.0])
     ]
 
 [<TestCaseSource(nameof rootToTerminalValidInputs)>]

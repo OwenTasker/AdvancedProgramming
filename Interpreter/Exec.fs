@@ -320,7 +320,7 @@ and exec (env: Map<string, terminal list>) terminals  =
         | "round" -> handleSingleArgumentFunction tail env RoundNum a
         | "abs" -> handleSingleArgumentFunction tail env AbsVal a
         | "logX" -> handleTwoArgumentFunction tail env LogX a
-        | "gcd" -> handleTwoArgumentFunction tail env getGCD a
+        | "gcd" -> handleTwoArgumentFunction tail env getGCDWrapper a
         | "mod" -> handleTwoArgumentFunction tail env moduloCalc a
         | "rand" -> handleTwoArgumentFunction tail env pseudoRandom a
         | _ ->
