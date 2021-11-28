@@ -381,13 +381,21 @@ and exec (env: Map<string, terminal list>) terminals  =
                 | Times :: tail -> Function "logX" :: Lpar :: baseValue @ [Comma] @ operand @ [Rpar] @ [remaining.[0]] @ (exec env tail |> fst), (env |> Map.toSeq |> dict)
                 | _ -> ExecError "Execution Error: Malformed expression" |> raise
         | "gcd" ->
-            let remaining, bracketedExpression = extractBrackets tail 0 []
-            let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
-            match extractedParams with
-            | [[Number num1];[Number num2]] ->
+            let extractedParams , remaining = extractParameters tail.[1..] [] env
+            let numberOne = exec env extractedParams.[0] |> fst
+            let numberTwo = exec env extractedParams.[1] |> fst
+            match numberOne, numberTwo with
+            | [Number num1], [Number num2] ->
                 [reduce ([getGCD num1 num2] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
-                expandedTerminals, (env |> Map.toSeq |> dict)
+                match remaining with
+                | [] -> Function "gcd" :: Lpar :: numberOne @ [Comma] @ numberTwo @ [Rpar], (env |> Map.toSeq |> dict)
+                | Plus :: tail
+                | Minus :: tail
+                | Divide :: tail
+                | Exponent :: tail
+                | Times :: tail -> Function "gcd" :: Lpar :: numberOne @ [Comma] @ numberTwo @ [Rpar] @ [remaining.[0]] @ (exec env tail |> fst), (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Malformed expression" |> raise
         | "mod" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
