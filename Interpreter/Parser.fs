@@ -116,11 +116,11 @@ and factor terminals =
     
 and arguments terminals =
     match terminals with
-    | Word _ :: Assign :: tail -> expression tail |> arguments 
-    | Comma :: tail
-    | Number _ :: tail
-    | UnaryMinus :: tail
-    | Word _ :: tail -> arguments tail
+    | Word _ :: Assign :: tail
+    | Comma :: tail -> expression tail |> arguments 
+    | Number _ :: _
+    | UnaryMinus :: _
+    | Word _ :: _ -> expression terminals |> arguments
     | Function _ :: _ -> factor terminals |> arguments
     | Lpar :: _ -> expression terminals |> arguments
     | Rpar :: tail -> expressionP tail
