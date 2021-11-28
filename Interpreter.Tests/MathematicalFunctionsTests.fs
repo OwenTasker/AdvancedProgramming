@@ -299,3 +299,20 @@ let givenCeilToTerminal_ProvidedValidInput_ReturnCorrectResult input output =
     Assert.That((CeilToTerminal input), Is.EqualTo(output))
     
 //RoundToTerminal
+let roundNumInputsOutputs =
+    [
+        TestCaseData(0.0,Number 0.0)
+        TestCaseData(0.5,Number 1.0)
+        TestCaseData(0.4,Number 0.0)
+        TestCaseData(1.1,Number 1.0)
+        TestCaseData(-0.4,Number 0.0)
+        TestCaseData(-0.5,Number -1.0)
+        TestCaseData(-4.5,Number -5.0)
+        TestCaseData(-4.4,Number -4.0)
+        TestCaseData(4.4,Number 4.0)
+        TestCaseData(4.5,Number 5.0)
+    ]
+    
+[<TestCaseSource(nameof roundNumInputsOutputs)>]
+let givenRoundNum_ProvidedValidInput_ReturnCorrectResult input output = 
+    Assert.That((RoundNum input), Is.EqualTo(output))

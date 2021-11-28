@@ -209,18 +209,28 @@ let CeilToTerminal (numToCeil: float) =
 ///
 /// <returns>Returns the rounded input</returns>
 let RoundNum (num:float) =
-    let trunkNum = num |> int
-    let stringRep = string num
-    let decimalVals = stringRep.Split[|'.'|]
-    
-    if decimalVals.Length = 2 then
-        let numRep = decimalVals.[1] |> float
-        if numRep >= 5.0 then
-            trunkNum+1 |> float |> Number
+    let isInteger = (num |> int |> float = num)
+    if isInteger then
+        num |> Number
+    else
+        let trunkNum = num |> int
+        let stringRep = string num
+        let decimalVals = stringRep.Split[|'.'|]
+        
+        if decimalVals.Length = 2 then
+            let numRep = decimalVals.[1] |> float
+            if num > 0.0 then
+                if numRep >= 5.0 then
+                    trunkNum+1 |> float |> Number
+                else
+                    trunkNum |> float |> Number
+            else
+                if numRep >= 5.0 then
+                    trunkNum-1 |> float |> Number
+                else
+                    trunkNum |> float |> Number
         else
             trunkNum |> float |> Number
-    else
-        trunkNum |> float |> Number
     
 /// <summary>
 /// Function to calculate the absolute value of a number
