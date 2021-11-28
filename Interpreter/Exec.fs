@@ -301,14 +301,14 @@ and exec (env: Map<string, terminal list>) terminals  =
                 exec env (diffedExpr @ remaining)
         | "sqrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            let reducedRes = reduce (RootToTerminals bracketedExpression 2.0) env
+            let reducedRes = reduce (RootToTerminals bracketedExpression [Number 2.0]) env
             if reducedRes <> Number nan then
                 [reduce (reducedRes :: remaining) env], (env |> Map.toSeq |> dict)
             else
                 InvalidArgumentError "Ensure First Argument is greater than or equal to 0" |> raise
         | "cbrt" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
-            let reducedRes = reduce (RootToTerminals bracketedExpression 2.0) env
+            let reducedRes = reduce (RootToTerminals bracketedExpression [Number 3.0]) env
             if reducedRes <> Number nan then
                 [reduce (reducedRes :: remaining) env], (env |> Map.toSeq |> dict)
             else
