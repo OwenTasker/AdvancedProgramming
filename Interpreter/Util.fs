@@ -114,16 +114,6 @@ let terminalToNum term =
     match term with
     | Number _ -> term |> individualTerminalToString |> System.Double.Parse
     | _ -> InvalidArgumentError "Cannot Parse Non Number Terminal As Number" |> raise
-
-/// <summary>
-/// Function to convert an individual floating point value into a terminal Number type
-/// </summary>
-/// 
-/// <param name="num">A floating point number</param>
-/// 
-/// <returns>A terminal representation of the floating point number</returns>
-let NumToTerminal num =
-    num |> Number
     
 /// <summary>
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
