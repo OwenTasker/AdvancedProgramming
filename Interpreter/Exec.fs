@@ -356,11 +356,12 @@ and exec (env: Map<string, terminal list>) terminals  =
                 [reduce (AbsVal a :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "xrt" ->
-            let remaining, bracketedExpression = extractBrackets tail 0 []
-            let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
-            match extractedParams with
-            | [[Number baseVal];operand] ->
-                [reduce ((RootToTerminals operand baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
+            let extractedParams , remaining = extractParameters tail.[1..] [] env
+            let root = exec env extractedParams.[0] |> fst
+            let operand = exec env extractedParams.[1] |> fst
+            match root, operand with
+            | [Number _], [Number _] ->
+                [reduce ((RootToTerminals operand root) @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 exec env ((RootToTerminals operand root) @ remaining)
         | "logX" ->
