@@ -372,7 +372,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
             match extractedParams with
             | [[Number num1];[Number num2]] ->
-                [reduce ([getGCD num1 num2] @ remaining) env], (env |> Map.toSeq |> dict)
+                [reduce ([getGCDWrapper num1 num2] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
                 expandedTerminals, (env |> Map.toSeq |> dict)
         | "mod" ->
