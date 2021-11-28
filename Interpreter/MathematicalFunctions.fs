@@ -157,10 +157,10 @@ let LogWrapperToTerminal (logFunction: float->float) logVal=
 /// <returns>
 /// Returns a list of terminals equal to the value to calculate the root of to the power of 1/denominator
 /// </returns>
-let RootToTerminals (terminals: terminal list) (denominator : terminal list) =
+let RootToTerminals (terminals: terminal list) denominator =
     if not terminals.IsEmpty then
-         if denominator <> [Number 0.0] then
-             [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Lpar;] @ denominator @ [Rpar; Exponent; Number -1.0; Rpar; Rpar]
+         if denominator <> 0.0 then
+             [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide; Number denominator; Rpar; Rpar]
          else
              [Lpar; Number 1.0; Rpar]
     else
