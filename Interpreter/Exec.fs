@@ -421,6 +421,7 @@ and exec (env: Map<string, terminal list>) terminals  =
                 then [reduce ((reduce [Word a] combinedEnv) :: remainingTerminals) env], (env |> Map.toSeq |> dict)
                 else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
             else ExecError "Execution Error: Undefined function" |> raise
+    | [] -> [], env |> Map.toSeq |> dict
     | _ ->
         let isClosed, newEnv = closed env terminals
         if isClosed
