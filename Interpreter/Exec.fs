@@ -365,13 +365,21 @@ and exec (env: Map<string, terminal list>) terminals  =
             | _ ->
                 exec env ((RootToTerminals operand root) @ remaining)
         | "logX" ->
-            let remaining, bracketedExpression = extractBrackets tail 0 []
-            let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
-            match extractedParams with
-            | [[Number newBase];[Number operand]] ->
-                [reduce ([LogX newBase operand] @ remaining) env], (env |> Map.toSeq |> dict)
+            let extractedParams , remaining = extractParameters tail.[1..] [] env
+            let baseValue = exec env extractedParams.[0] |> fst
+            let operand = exec env extractedParams.[1] |> fst
+            match baseValue, operand with
+            | [Number a],[Number b] ->
+                [reduce ([LogX a b] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
-                expandedTerminals, (env |> Map.toSeq |> dict)
+                match remaining with
+                | [] -> Function "logX" :: Lpar :: baseValue @ [Comma] @ operand @ [Rpar], (env |> Map.toSeq |> dict)
+                | Plus :: tail
+                | Minus :: tail
+                | Divide :: tail
+                | Exponent :: tail
+                | Times :: tail -> Function "logX" :: Lpar :: baseValue @ [Comma] @ operand @ [Rpar] @ [remaining.[0]] @ (exec env tail |> fst), (env |> Map.toSeq |> dict)
+                | _ -> ExecError "Execution Error: Malformed expression" |> raise
         | "gcd" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
