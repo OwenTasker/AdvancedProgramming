@@ -280,14 +280,13 @@ and reduce terminals (env: Map<string, terminal list>) =
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
 and exec (env: Map<string, terminal list>) terminals  =
-    let expandedTerminals = evaluateDifferentiates terminals env []
-    match expandedTerminals with
+    match terminals with
     | Word x :: Assign :: tail ->
         match tail with
         | Word _ :: Assign :: _ -> ExecError "Execution Error: Malformed expression; an assignment may not be assigned to an assignment" |> raise
         | _ ->
             let result, _ = exec env tail
-            expandedTerminals, (env.Add(x, result) |> Map.toSeq |> dict) 
+            terminals, (env.Add(x, result) |> Map.toSeq |> dict) 
     //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
     | Function a :: tail ->
         match a with
@@ -355,7 +354,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             | [[Number baseVal];operand] ->
                 [reduce ((RootToTerminals operand baseVal) @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
-                expandedTerminals, (env |> Map.toSeq |> dict)
+                exec env ((RootToTerminals operand root) @ remaining)
         | "logX" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
@@ -379,7 +378,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             | [[Number num1];[Number num2]] ->
                 [reduce ([moduloCalc num1 num2] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
-                expandedTerminals, (env |> Map.toSeq |> dict)
+                terminals, (env |> Map.toSeq |> dict)
         | "rand" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             let extractedParams , _ = extractParameters bracketedExpression.[1..] [] env
@@ -387,7 +386,7 @@ and exec (env: Map<string, terminal list>) terminals  =
             | [[Number num1];[Number num2]] ->
                 [reduce ([pseudoRandom num1 num2] @ remaining) env], (env |> Map.toSeq |> dict)
             | _ ->
-                expandedTerminals, (env |> Map.toSeq |> dict)
+                terminals, (env |> Map.toSeq |> dict)
         | _ ->
             if env.ContainsKey a then
                 let newEnv, remainingTerminals = setArguments tail Map.empty
@@ -398,10 +397,10 @@ and exec (env: Map<string, terminal list>) terminals  =
                 else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
             else ExecError "Execution Error: Undefined function" |> raise
     | _ ->
-        let isClosed, newEnv = closed env expandedTerminals
+        let isClosed, newEnv = closed env terminals
         if isClosed
-        then [reduce expandedTerminals newEnv], (env |> Map.toSeq |> dict)
-        else expandedTerminals, (env |> Map.toSeq |> dict)
+        then [reduce terminals newEnv], (env |> Map.toSeq |> dict)
+        else terminals, (env |> Map.toSeq |> dict)
         
 and evaluateDifferentiates terminals (env : Map<string, terminal list>) out =
     match terminals with
