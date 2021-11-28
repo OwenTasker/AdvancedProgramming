@@ -293,8 +293,8 @@ and exec (env: Map<string, terminal list>) terminals  =
         | "differentiate" ->
             let extractedParams, remaining = extractParameters tail.[1..] [] env
             if extractedParams.Length > 1 then
-                let diffEnv, _ = setArguments extractedParams.[1] env
-                let diffedExpr = reduce (differentiate extractedParams.[0]) diffEnv
+                let _, diffEnv = exec env extractedParams.[1]
+                let diffedExpr = reduce (differentiate extractedParams.[0]) (toMap diffEnv)
                 [reduce (diffedExpr :: remaining) env], env |> Map.toSeq |> dict
             else
                 let diffedExpr, _ = exec env (differentiate extractedParams.[0])
