@@ -255,7 +255,6 @@ let rootToTerminalInvalidInputs =
         TestCaseData([Number 2.0], -1.0)
     ]
 
-
 [<TestCaseSource(nameof rootToTerminalValidInputs)>]
 let givenRootToTerminals_ProvidedValidInput_ReturnCorrectValues inputList denominator output =
     let rootToTerminalRes = RootToTerminals inputList denominator
@@ -263,4 +262,40 @@ let givenRootToTerminals_ProvidedValidInput_ReturnCorrectValues inputList denomi
    
 [<TestCaseSource(nameof rootToTerminalInvalidInputs)>]
 let givenRootToTerminals_ProvidedInvalidInputs_ThrowInvalidArgumentError newBase input =
-    Assert.Throws<InvalidArgumentError>(fun () -> (RootToTerminals newBase input) |> ignore) |> ignore  
+    Assert.Throws<InvalidArgumentError>(fun () -> (RootToTerminals newBase input) |> ignore) |> ignore
+    
+//FloorToTerminal Test Cases
+let floorToTerminalInputsOutputs =
+    [
+        TestCaseData(0.0, Number 0.0)
+        TestCaseData(1.1, Number 1.0)
+        TestCaseData(1.9, Number 1.0)
+        TestCaseData(-0.0, Number 0.0)
+        TestCaseData(-0.1, Number -1.0)
+        TestCaseData(-0.9, Number -1.0)
+        TestCaseData(-5.0, Number -5.0)
+        TestCaseData(-4.5, Number -5.0)
+    ]
+    
+[<TestCaseSource(nameof floorToTerminalInputsOutputs)>]
+let givenFloorToTerminal_ProvidedValidInput_ReturnCorrectResult input output =
+    Assert.That((FloorToTerminal input), Is.EqualTo(output))
+    
+//CeilToTerminal Test Cases    
+let ceilToTerminalInputsOutputs =
+    [
+        TestCaseData(0.0, Number 0.0)
+        TestCaseData(1.1, Number 2.0)
+        TestCaseData(1.9, Number 2.0)
+        TestCaseData(-0.0, Number 0.0)
+        TestCaseData(-0.1, Number 0.0)
+        TestCaseData(-0.9, Number 0.0)
+        TestCaseData(-5.0, Number -5.0)
+        TestCaseData(-4.5, Number -4.0)
+    ]
+    
+[<TestCaseSource(nameof ceilToTerminalInputsOutputs)>]
+let givenCeilToTerminal_ProvidedValidInput_ReturnCorrectResult input output =
+    Assert.That((CeilToTerminal input), Is.EqualTo(output))
+    
+//RoundToTerminal

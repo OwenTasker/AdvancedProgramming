@@ -328,13 +328,13 @@ and exec (env: Map<string, terminal list>) terminals  =
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce (FloorToNumber a :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce (FloorToTerminal a :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "ceil" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []
             match reduce bracketedExpression env with
             | Number a ->
-                [reduce (CeilToNumber a :: remaining) env], (env |> Map.toSeq |> dict)
+                [reduce (CeilToTerminal a :: remaining) env], (env |> Map.toSeq |> dict)
             | _ -> ExecError "Execution Error: Invalid " |> raise
         | "round" ->
             let remaining, bracketedExpression = extractBrackets tail 0 []

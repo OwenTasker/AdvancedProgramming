@@ -173,25 +173,33 @@ let RootToTerminals (terminals: terminal list) denominator =
 /// <param name="numToFloor">Input to floor</param>
 ///
 /// <returns>Returns the floored input</returns>
-let FloorToNumber (numToFloor:float) =
+let FloorToTerminal (numToFloor:float) =
     let isNegative = numToFloor < 0.0
-    match isNegative with
-    | false -> numToFloor |> int |> float |> Number
-    | _ -> (numToFloor |> int |> float) - 1.0 |> Number
+    let checkForInteger = numToFloor |> int |> float = numToFloor
+    match checkForInteger with
+    | true -> numToFloor |> Number
+    | _ ->
+        match isNegative with
+        | false -> numToFloor |> int |> float |> Number
+        | _ -> numToFloor - 1.0 |> int |> float |> Number
     
 /// <summary>
 /// Function to calculate the ceiling of a number, uses the fact that in F#, downcasting a float to int just truncates
 /// it and doesnt take into account anything past the decimal point.
 /// </summary>
 /// 
-/// <param name="num">Input to ceil</param>
+/// <param name="numToCeil">Input to ceil</param>
 ///
 /// <returns>Returns the ceiled input</returns>
-let CeilToNumber (num: float) =
-    let checkForInteger  = num |> int |> float = num
+let CeilToTerminal (numToCeil: float) =
+    let isNegative = numToCeil < 0.0
+    let checkForInteger  = numToCeil |> int |> float = numToCeil
     match checkForInteger with
-    | true -> num |> Number
-    | _ -> ((num |> int |> float) + 1.0) |> Number
+    | true -> numToCeil |> Number
+    | _ ->
+        match isNegative with
+        | false -> numToCeil + 1.0 |> int |> float |> Number
+        | _ -> numToCeil |> int |> float |> Number
     
 /// <summary>
 /// Function to calculate the rounding of a number
