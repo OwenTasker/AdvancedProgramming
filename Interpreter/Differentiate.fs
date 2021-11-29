@@ -298,7 +298,7 @@ type Dual =
 /// <param name="op2">A Dual for the right side of the operation.</param>
 ///
 /// <returns>A Dual containing the result of the operation.</returns>
-let performBinaryOperation operator op1 op2 =
+let private performBinaryOperation operator op1 op2 =
     match operator with
     | Plus -> op1 + op2
     | Minus -> op1 - op2
@@ -317,7 +317,7 @@ let performBinaryOperation operator op1 op2 =
 /// <param name="operand">A Dual containing the operand.</param>
 ///
 /// <returns>A Dual containing the result of the operation.</returns>
-let performUnaryOperation operator operand =
+let private performUnaryOperation operator operand =
     match operator with
     | UnaryMinus ->
         match operand with
@@ -338,7 +338,7 @@ let performUnaryOperation operator operand =
 /// <param name="numStack">A stack of Duals.</param>
 ///
 /// <returns>The number stack with the outcome of the operation prepended.</returns>
-let performOperation operator numStack =
+let private performOperation operator numStack =
     match operator with
     | Rpar
     | Lpar ->
@@ -378,7 +378,7 @@ let performOperation operator numStack =
 /// <param name="output">The as yet compiled expression.</param>
 ///
 /// <returns>A list of terminals representing a complete bracketed expression.</returns>
-let rec extractExpression terminals lparCount output =
+let rec private extractExpression terminals lparCount output =
     match terminals with
     | Comma :: tail when lparCount = 0 ->  List.rev output, tail
     | Rpar :: tail when lparCount = 0 ->  List.rev (output), tail
@@ -401,7 +401,7 @@ let rec extractExpression terminals lparCount output =
 /// <param name="numStack">A stack of Number terminals to compute the result of the infix expression.</param>
 ///
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
-let rec autoDifferentiate terminals opStack numStack =
+let rec private autoDifferentiate terminals opStack numStack =
     match terminals with
     | terminalHead :: terminalTail ->
         match terminalHead with
@@ -510,4 +510,4 @@ let rec autoDifferentiate terminals opStack numStack =
 /// <summary>Wrapper for autoDifferentiate that calls it with empty number and operator stacks</summary>
 ///
 /// <param name="terminals">A list of terminals representing a valid expression for differentiation.</param>
-let differentiate terminals = autoDifferentiate terminals [] []
+let internal differentiate terminals = autoDifferentiate terminals [] []

@@ -7,6 +7,8 @@
 /// </namespacedoc>
 module Interpreter.Util
 
+open System.Text.RegularExpressions
+
 /// <summary>Exception thrown when an error is encountered while parsing a list of terminals.</summary>
 exception ParseError of string
 /// <summary>Exception thrown when an error is encountered while scanning a list of tokens.</summary>
@@ -35,11 +37,11 @@ type terminal =
     | Lpar
     | Rpar
     | Assign
-    | Comma    
+    | Comma
     | Function of string
     | Word of string
     | Number of float
-    
+
 /// <summary>List of valid predefined functions in the Interpreter.</summary>
 let functions = [
                  ("ceil", "One Argument; A function to determine the ceiling of a decimal value, given a value of 2.1, will return 3")
@@ -61,6 +63,25 @@ let functions = [
                  ("clear", "Zero Arguments; Clears the console and user-defined variables")
                  ]
 
+/// <summary>Regex string for matching predefined functions.</summary>
+let private functionRegexString =
+    let functionRegex = [
+        for x,_ in functions -> "(^" + x + "$)|"
+    ]
+    let generateRegex = (String.concat "" functionRegex)
+    generateRegex.Remove(generateRegex.Length-1)
+
+/// <summary>Function to match functions passed to the passed to tokenize or scan.</summary>
+///
+/// <param name="input">A string to query for its composition.</param>
+///
+/// <returns>An Option containing the input string if it was a predefined function, or None otherwise.</returns>
+let (|FunctionMatch|_|) (input:string) =
+    if Regex.IsMatch(input, functionRegexString) then
+        Some(input)
+    else
+        None
+
 //https://gist.github.com/theburningmonk/3363893
 /// <summary>Function to convert a C# Dictionary to an F# Map.</summary>
 let inline toMap kvps =
@@ -77,9 +98,9 @@ let individualTerminalToString x =
     match x with
     | Times -> "*"
     | Divide -> "/"
-    | Plus 
+    | Plus
     | UnaryPlus -> "+"
-    | Minus 
+    | Minus
     | UnaryMinus -> "-"
     | Exponent -> "^"
     | Lpar -> "("
@@ -94,7 +115,7 @@ let individualTerminalToString x =
 ///
 /// <param name="str">A string containing the as yet converted terminals.</param>
 /// <param name="list">A list of terminals to convert to a string.</param>
-/// 
+///
 /// <returns>A string representation of the terminal list.</returns>
 let rec terminalListToString str list =
     match list with
@@ -104,9 +125,9 @@ let rec terminalListToString str list =
 /// <summary>
 /// Function to convert an individual Number terminal into a floating point number
 /// </summary>
-/// 
+///
 /// <param name="term">A terminal value</param>
-/// 
+///
 /// <returns>A string representation of the terminal list.</returns>
 ///
 /// <exception cref="InvalidArgumentError">Thrown when the input value is not of Number terminal type</exception>
@@ -114,7 +135,7 @@ let terminalToNum term =
     match term with
     | Number _ -> term |> individualTerminalToString |> System.Double.Parse
     | _ -> InvalidArgumentError "Cannot Parse Non Number Terminal As Number" |> raise
-    
+
 /// <summary>
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
 /// performBinaryOperation functions.
@@ -131,7 +152,7 @@ let precedenceAssociativityMap =
 /// <summary>
 /// Retrieves the precedence for an operator from the map.
 /// </summary>
-/// 
+///
 /// <param name="operator">A terminal representing an operator.</param>
 ///
 /// <returns>The precedence value of the operator.</returns>

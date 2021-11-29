@@ -9,50 +9,50 @@
 module Interpreter.Parser
 
 open Interpreter.Util
-    
+
 // https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf
 
 // statement ::= variable -> expression
 /// <summary>Function to parse a statement</summary>
-let rec statement terminals =
+let rec private statement terminals =
     match terminals with
     | Word _ :: tail ->
         match tail with
         | Assign :: tailtail -> expression tailtail
         | _ -> expression terminals
     | _ -> expression terminals
-    
+
 // expression ::= term expression' | function expression
-and expression terminals = (term >> expressionP) terminals
+and private expression terminals = (term >> expressionP) terminals
 
 // expression' ::= + term expression' | function expression' | empty
-and expressionP terminals =
+and private expressionP terminals =
     match terminals with
     | Plus :: terminalsTail
     | Minus :: terminalsTail -> (term >> expressionP) terminalsTail
     | _ -> terminals
-    
+
 // term ::= exponent term'
-and term terminals = (exponent >> termP) terminals
+and private term terminals = (exponent >> termP) terminals
 
 // term' ::= * exponent term' | empty
-and termP terminals =
+and private termP terminals =
     match terminals with
-    | Times :: terminalsTail 
+    | Times :: terminalsTail
     | Divide :: terminalsTail -> (exponent >> termP) terminalsTail
     | _ -> terminals
 
 // exponent ::= unary exponent'
-and exponent terminals = (unary >> exponentP) terminals
+and private exponent terminals = (unary >> exponentP) terminals
 
 // exponent' ::= ^ unary exponent' | empty
 and exponentP terminals =
     match terminals with
     | Exponent :: terminalsTail -> (unary >> exponentP) terminalsTail
     | _ -> terminals
-    
+
 // unary ::= -unary | +unary | factor
-and unary terminals =
+and private unary terminals =
     match terminals with
     | [UnaryMinus]
     | [UnaryPlus]
@@ -60,9 +60,9 @@ and unary terminals =
     | UnaryMinus :: terminalsTail
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
-    
-// factor ::= int | ( expression ) 
-and factor terminals =
+
+// factor ::= int | ( expression )
+and private factor terminals =
     match terminals with
     | [] -> []
     | Number _ :: terminalsTail ->
@@ -71,8 +71,8 @@ and factor terminals =
         | Number _ :: _
         | Word _ :: _ ->  ParseError "Parse Error: Missing Operator" |> raise
         | [Plus]
-        | [Minus]  
-        | [Times]  
+        | [Minus]
+        | [Times]
         | [Divide]
         | [Assign]
         | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
@@ -83,8 +83,8 @@ and factor terminals =
         | Number _ :: _
         | Word _ :: _ -> ParseError "Parse Error: Word Then Word Or Number not allowed" |> raise
         | [Plus]
-        | [Minus]  
-        | [Times]  
+        | [Minus]
+        | [Times]
         | [Divide]
         | [Assign]
         | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
@@ -113,11 +113,11 @@ and factor terminals =
     | [UnaryMinus]
     | [UnaryPlus] -> ParseError "Parse Error: Trailing Operator" |> raise
     | _ -> ParseError "Parse Error: Malformed Expression" |> raise
-    
-and arguments terminals =
+
+and private arguments terminals =
     match terminals with
     | Word _ :: Assign :: tail
-    | Comma :: tail -> expression tail |> arguments 
+    | Comma :: tail -> expression tail |> arguments
     | Number _ :: _
     | UnaryMinus :: _
     | Word _ :: _ -> expression terminals |> arguments
@@ -125,6 +125,6 @@ and arguments terminals =
     | Lpar :: _ -> expression terminals |> arguments
     | Rpar :: tail -> expressionP tail
     | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
-     
-let parse terminals =
+
+let internal parse terminals =
     if statement terminals = [] then terminals else ParseError "ParseError: Malformed expression." |> raise
