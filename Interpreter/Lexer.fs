@@ -5,7 +5,7 @@
 /// <namespacedoc>
 ///     <summary>Interpreter</summary>
 /// </namespacedoc>
-module Interpreter.Lexer
+module internal Interpreter.Lexer
 
 open System
 open System.Text.RegularExpressions

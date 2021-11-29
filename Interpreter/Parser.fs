@@ -6,7 +6,7 @@
 /// <namespacedoc>
 ///     <summary>Interpreter</summary>
 /// </namespacedoc>
-module Interpreter.Parser
+module internal Interpreter.Parser
 
 open Interpreter.Util
 

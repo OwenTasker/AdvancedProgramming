@@ -1,4 +1,4 @@
-﻿module Interpreter.Program
+﻿module public Interpreter.Program
 
 open Interpreter.Lexer
 open Interpreter.Parser
@@ -12,7 +12,3 @@ let public closed input env =
 
 let public getTerminalListFromString input =
     lexer input |> parse
-
-[<EntryPoint>]
-let main _ =
-    0

@@ -5,7 +5,7 @@
 /// <namespacedoc>
 ///     <summary>Interpreter</summary>
 /// </namespacedoc>
-module Interpreter.Exec
+module internal Interpreter.Exec
 
 open Interpreter.Util
 open Interpreter.Differentiate

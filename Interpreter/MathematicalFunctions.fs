@@ -5,7 +5,7 @@
 /// <namespacedoc>
 ///     <summary>Interpreter.MathematicalFunctions</summary>
 /// </namespacedoc>
-module Interpreter.MathematicalFunctions
+module internal Interpreter.MathematicalFunctions
 
 open Interpreter.Util
 
