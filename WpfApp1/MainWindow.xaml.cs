@@ -155,7 +155,7 @@ namespace WpfApp1
                 "differentiateButton" => ("differentiate()", -1),
                 "integralButton" => ("integral()", -1),
                 "absButton" => ("abs()", -1),
-                "moduloButton" => ("modulo()", -1),
+                "modButton" => ("mod()", -1),
                 "factorialButton" => ("factorial()", -1),
                 "piButton" => ("pi()", 0),
                 "eulerButton" => ("euler()", 0),
@@ -378,6 +378,10 @@ namespace WpfApp1
                 consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
             }
             catch (Util.InvalidArgumentError ex1)
+            {
+                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+            }
+            catch (Util.CalculateError ex1)
             {
                 consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
             }

@@ -148,11 +148,13 @@ let LogX newBase input =
 /// <returns>
 /// Returns a list of terminals equal to the value to calculate the root of to the power of 1/denominator
 /// </returns>
-let RootToTerminals (terminals: terminal list) denominator =
-    if not terminals.IsEmpty && denominator <> [Number 0.0] then
+let RootToTerminals (terminals: terminal list) (denominator:terminal list) =
+    let contentNotEmpty = terminals.Length > 0
+    let denominatorNotEmpty = denominator.Length > 0
+    if contentNotEmpty && denominatorNotEmpty then
         [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide] @ denominator @ [Rpar; Rpar]
     else
-        InvalidArgumentError "Ensure that input value is not empty and the root you are taking is not 0" |> raise
+        InvalidArgumentError "Ensure that both inputs value is not empty and the root you are taking is not 0" |> raise
     
     
 /// <summary>
@@ -199,18 +201,28 @@ let CeilToTerminal (numToCeil: float) =
 ///
 /// <returns>Returns the rounded input</returns>
 let RoundNum (num:float) =
-    let trunkNum = num |> int
-    let stringRep = string num
-    let decimalVals = stringRep.Split[|'.'|]
-    
-    if decimalVals.Length = 2 then
-        let numRep = decimalVals.[1] |> float
-        if numRep >= 5.0 then
-            trunkNum+1 |> float |> Number
+    let isInteger = (num |> int |> float = num)
+    if isInteger then
+        num |> Number
+    else
+        let trunkNum = num |> int
+        let stringRep = string num
+        let decimalVals = stringRep.Split[|'.'|]
+        
+        if decimalVals.Length = 2 then
+            let numRep = decimalVals.[1] |> float
+            if num > 0.0 then
+                if numRep >= 5.0 then
+                    trunkNum+1 |> float |> Number
+                else
+                    trunkNum |> float |> Number
+            else
+                if numRep >= 5.0 then
+                    trunkNum-1 |> float |> Number
+                else
+                    trunkNum |> float |> Number
         else
             trunkNum |> float |> Number
-    else
-        trunkNum |> float |> Number
     
 /// <summary>
 /// Function to calculate the absolute value of a number
@@ -222,10 +234,12 @@ let RoundNum (num:float) =
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let AbsVal (num:float) =
-    +num |> Number
+    match num < 0.0 with
+    | true -> -num |> Number
+    | _ -> num |> Number    
 
 /// <summary>
-/// Function to calculate the greatest common divisor of a pair of integers
+/// Function to calculate the greatest common divisor from a pair of integers
 /// </summary>
 ///
 /// <remarks>Input order is irrelevant</remarks>
@@ -233,15 +247,34 @@ let AbsVal (num:float) =
 /// <param name="num1">First value taken into account</param>
 /// <param name="num2">Second value taken into account</param>
 ///
-/// <returns>Returns the absolute value of the input</returns>
+/// <returns>Return the greatest common denominator/highest common factor of the two provided values</returns>
 let rec getGCD (num1:float) (num2:float) =
-    match num1 with
-    | _ when num1 = num2 ->
-        num1 |> Number
-    | _ when num1 > num2 ->
-        getGCD (num1-num2) num2 
-    | _ ->
-        getGCD num1 (num2-num1)
+    if num2 = 0.0 then
+        AbsVal num1
+    else
+        getGCD num2 (num1%num2)
+        
+/// <summary>
+/// Wrapper function for greatest common divisor from a pair of integers, contains logic in which to call getGCD with
+/// </summary>
+///
+/// <remarks>Input order is irrelevant</remarks>
+/// 
+/// <param name="num1">First value taken into account</param>
+/// <param name="num2">Second value taken into account</param>
+///
+/// <returns>Returns the Greatest Common Denominator/Highest Common Factor of the two provided values</returns>
+let getGCDWrapper num1 num2 =
+    let areBothInputsIntegers = (num1 |> int |> float = num1) && (num2 |> int |> float = num2)
+    let areBothIntegersNotZero = (num1 <> 0.0) && (num2 <> 0.0)
+    
+    if not areBothIntegersNotZero then
+        0.0 |> Number
+    elif areBothInputsIntegers then
+        getGCD num1 num2
+    else
+        InvalidArgumentError "Ensure both arguments are whole numbers" |> raise
+    
         
 /// <summary>
 /// Function to calculate the modulo of a number by another number
@@ -254,7 +287,16 @@ let rec getGCD (num1:float) (num2:float) =
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let moduloCalc (num1:float) (num2:float) =
-    num1%num2 |> Number
+    let isNum1Negative =  num1 < 0.0
+    let isNum2Negative =  num2 < 0.0
+    let isNum2Zero = num2 = 0.0
+    
+    let areEitherNumNegative = isNum1Negative && isNum2Negative
+    match not areEitherNumNegative && not isNum2Zero with
+    | true ->
+        num1%num2 |> Number
+    | false ->
+        InvalidArgumentError "Only pass positive values to modulo function and non-zero values as second value" |> raise
 
 /// <summary>
 /// Function to return a random whole number between specified lower and upper bound

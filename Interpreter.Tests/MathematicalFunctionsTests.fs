@@ -10,6 +10,8 @@ module Interpreter.Tests.MathematicalFunctionsTests
 open Interpreter.Util
 open NUnit.Framework
 open Interpreter.MathematicalFunctions
+open NUnit.Framework
+open NUnit.Framework
 
 //Valid Log Inputs and Outputs
 let logEGreaterThanZeroPointFiveValidInputsOutputs =
@@ -163,8 +165,7 @@ let LogXInvalidInputs =
     TestCaseData(-1.0, 0.0)
     TestCaseData(-5.0, -0.1)
     TestCaseData(-1.0, -5.0)
-    ]
-    
+    ] 
 
 //Valid Log Test Cases
 [<TestCaseSource(nameof logEGreaterThanZeroPointFiveValidInputsOutputs)>]
@@ -183,21 +184,21 @@ let givenLogELessThanOrEqualToZeroPointFive_ProvidedValidInput_ReturnCorrectValu
 
 [<TestCaseSource(nameof LogEValidInputsOutputs)>]
 let givenLogE_ProvidedValidInput_ReturnCorrectApproximation input output =
-    let logRes = LogE input
+    let logRes = LogEFloat input
     let a = logRes > (output-0.000001)
     let b = logRes < (output+0.000001)
     Assert.True(a && b)
     
 [<TestCaseSource(nameof Log2ValidInputOutputs)>]
 let givenLog2_ProvidedValidInput_ReturnCorrectApproximation input output =
-    let logRes = Log2 input
-    let a = logRes > (output-0.000001)
-    let b = logRes < (output+0.000001)
+    let logRes = (Log2 input) |> terminalToNum
+    let a = logRes > (output - 0.000001)
+    let b = logRes < (output + 0.000001)
     Assert.True(a && b)
     
 [<TestCaseSource(nameof Log10ValidInputOutputs)>]
 let givenLog10_ProvidedValidInput_ReturnCorrectApproximation input output =
-    let logRes = Log10 input
+    let logRes = (Log10 input) |> terminalToNum
     let a = logRes > (output-0.000001)
     let b = logRes < (output+0.000001)
     Assert.True(a && b)
@@ -230,7 +231,7 @@ let givenLog2_ProvidedInvalidInputs_ThrowInvalidArgumentError input =
    
 [<TestCaseSource(nameof GenericInvalidLogInputs)>]
 let givenLogE_ProvidedInvalidInputs_ThrowInvalidArgumentError input =
-    Assert.Throws<InvalidArgumentError>(fun () -> LogE input |> ignore) |> ignore
+    Assert.Throws<InvalidArgumentError>(fun () -> LogEFloat input |> ignore) |> ignore
 
 [<TestCaseSource(nameof LogXInvalidInputs)>]
 let givenLogX_ProvidedInvalidInputs_ThrowInvalidArgumentError newBase input =
@@ -241,18 +242,18 @@ let rootToTerminalValidInputs =
     [
         //order is -- Xth root of Y
         //[Number 1.0], 2.0 means the 1st root of 2
-        TestCaseData([Number 1.0], 2.0, [Lpar; Lpar;Number 1.0;Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
-        TestCaseData([Number 10.0], 2.0,[Lpar; Lpar; Number 10.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
-        TestCaseData([Number 10.0; Divide; Number 3.0], 2.0, [Lpar; Lpar; Number 10.0; Divide; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
-        TestCaseData([Word "x"; Plus; Number 3.0], 3.0, [Lpar; Lpar; Word "x"; Plus; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 3.0; Rpar; Rpar])
-        TestCaseData([Number 2.0], 2.0, [Lpar; Lpar; Number 2.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Number 1.0], [Number 2.0], [Lpar; Lpar;Number 1.0;Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Number 10.0], [Number 2.0],[Lpar; Lpar; Number 10.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Number 10.0; Divide; Number 3.0], [Number 2.0], [Lpar; Lpar; Number 10.0; Divide; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
+        TestCaseData([Word "x"; Plus; Number 3.0], [Number 3.0], [Lpar; Lpar; Word "x"; Plus; Number 3.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 3.0; Rpar; Rpar])
+        TestCaseData([Number 2.0], [Number 2.0], [Lpar; Lpar; Number 2.0; Rpar; Exponent; Lpar; Number 1.0; Divide; Number 2.0; Rpar; Rpar])
     ]
 
 let rootToTerminalInvalidInputs =
     [
         //Cannot test first argument/bases here outside of the empty case, this needs to be done via integration testing
-        TestCaseData(([]:terminal list), 2.0)
-        TestCaseData([Number 2.0], -1.0)
+        TestCaseData(([]:terminal list), [Number 1.0])
+        TestCaseData([Number 2.0], ([]:terminal list))
     ]
 
 [<TestCaseSource(nameof rootToTerminalValidInputs)>]
@@ -298,4 +299,93 @@ let ceilToTerminalInputsOutputs =
 let givenCeilToTerminal_ProvidedValidInput_ReturnCorrectResult input output =
     Assert.That((CeilToTerminal input), Is.EqualTo(output))
     
-//RoundToTerminal
+//RoundToTerminal Test Cases
+let roundNumInputsOutputs =
+    [
+        TestCaseData(0.0,Number 0.0)
+        TestCaseData(0.5,Number 1.0)
+        TestCaseData(0.4,Number 0.0)
+        TestCaseData(1.1,Number 1.0)
+        TestCaseData(-0.4,Number 0.0)
+        TestCaseData(-0.5,Number -1.0)
+        TestCaseData(-4.5,Number -5.0)
+        TestCaseData(-4.4,Number -4.0)
+        TestCaseData(4.4,Number 4.0)
+        TestCaseData(4.5,Number 5.0)
+    ]
+    
+[<TestCaseSource(nameof roundNumInputsOutputs)>]
+let givenRoundNum_ProvidedValidInput_ReturnCorrectResult input output = 
+    Assert.That((RoundNum input), Is.EqualTo(output))
+    
+//AbsVal Test Cases
+let absValInputsOutputs =
+    [
+        TestCaseData(0.0, Number 0.0)
+        TestCaseData(-0.0, Number 0.0)
+        TestCaseData(-5.0, Number 5.0)
+        TestCaseData(5.0, Number 5.0)
+        TestCaseData(-2.2, Number 2.2)
+    ]
+    
+[<TestCaseSource(nameof absValInputsOutputs)>]
+let givenAbsVal_ProvidedValidInput_ReturnCorrectResult input output =
+    Assert.That((AbsVal input), Is.EqualTo(output))
+    
+//getGCD Test Cases
+let getGCDWrapperValidInputsOutputs =
+    [
+        TestCaseData(0.0, 0.0, Number 0.0)
+        TestCaseData(0.0, 2.0, Number 0.0)
+        TestCaseData(2.0, 0.0, Number 0.0)
+        TestCaseData(2.0, 2.0, Number 2.0)
+        TestCaseData(12.0, 30.0, Number 6.0)
+        TestCaseData(30.0, 105.0, Number 15.0)
+    ]
+    
+let getGCDWrapperInvalidInputs =
+    [
+        TestCaseData(4.5, 20.2)
+        TestCaseData(-4.4, 20.2)
+        TestCaseData(-4.4, -20.2)
+        TestCaseData(4.4, -20.2)
+    ]
+    
+[<TestCaseSource(nameof getGCDWrapperValidInputsOutputs)>]
+let givenGetGCDWrapper_ProvidedValidInputs_ReturnCorrectResult input1 input2 output =
+    Assert.That(getGCDWrapper input1 input2, Is.EqualTo(output))
+    
+[<TestCaseSource(nameof getGCDWrapperInvalidInputs)>]
+let givenGetGCDWrapper_ProvidedInvalidInputs_ThrowInvalidArgumentError input1 input2 =
+    Assert.Throws<InvalidArgumentError>(fun () -> (getGCDWrapper input1 input2) |> ignore) |> ignore
+    
+//Modulo Test Cases
+let moduloValidInputsOutputs =
+    [
+        //0 in left vals
+        TestCaseData(0.0, 1.0, Number 0.0)
+        TestCaseData(0.0, 5.0, Number 0.0)
+        TestCaseData(0.0, 10.0, Number 0.0)
+        TestCaseData(0.0, 50.0, Number 0.0)
+        
+        //Positive left vals and right vals
+        TestCaseData(3.0, 2.0, Number 1.0)
+        TestCaseData(20.0, 7.0, Number 6.0)
+        TestCaseData(15.0, 5.0, Number 0.0)
+    ]
+
+let moduloInvalidInputs =
+    [
+        //Zero Right Vals
+        TestCaseData(10.0, 0.0)
+        TestCaseData(5.0, 0.0)
+    ]
+    
+    
+[<TestCaseSource(nameof moduloValidInputsOutputs)>]
+let givenModuloCalc_ProvidedValidInputs_ReturnCorrectOutput input1 input2 output =
+    Assert.That((moduloCalc input1 input2), Is.EqualTo(output))
+    
+[<TestCaseSource(nameof moduloInvalidInputs)>]
+let givenModuloCalc_ProvidedInvalidInputs_ThrowInvalidArgumentError input1 input2 =
+    Assert.Throws<InvalidArgumentError>(fun () -> (moduloCalc input1 input2) |> ignore) |> ignore
