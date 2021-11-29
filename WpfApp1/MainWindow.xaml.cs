@@ -155,7 +155,7 @@ namespace WpfApp1
                 "differentiateButton" => ("differentiate()", -1),
                 "integralButton" => ("integral()", -1),
                 "absButton" => ("abs()", -1),
-                "moduloButton" => ("modulo()", -1),
+                "modButton" => ("mod()", -1),
                 "factorialButton" => ("factorial()", -1),
                 "piButton" => ("pi()", 0),
                 "eulerButton" => ("euler()", 0),

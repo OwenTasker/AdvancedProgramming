@@ -163,8 +163,7 @@ let LogXInvalidInputs =
     TestCaseData(-1.0, 0.0)
     TestCaseData(-5.0, -0.1)
     TestCaseData(-1.0, -5.0)
-    ]
-    
+    ] 
 
 //Valid Log Test Cases
 [<TestCaseSource(nameof logEGreaterThanZeroPointFiveValidInputsOutputs)>]
@@ -252,7 +251,7 @@ let rootToTerminalInvalidInputs =
     [
         //Cannot test first argument/bases here outside of the empty case, this needs to be done via integration testing
         TestCaseData(([]:terminal list), [Number 1.0])
-        TestCaseData([Number 2.0], [Number -1.0])
+        TestCaseData([Number 2.0], ([]:terminal list))
     ]
 
 [<TestCaseSource(nameof rootToTerminalValidInputs)>]
@@ -330,3 +329,30 @@ let absValInputsOutputs =
 [<TestCaseSource(nameof absValInputsOutputs)>]
 let givenAbsVal_ProvidedValidInput_ReturnCorrectResult input output =
     Assert.That((AbsVal input), Is.EqualTo(output))
+    
+//getGCD Test Cases
+let getGCDWrapperValidInputsOutputs =
+    [
+        TestCaseData(0.0, 0.0, Number 0.0)
+        TestCaseData(0.0, 2.0, Number 0.0)
+        TestCaseData(2.0, 0.0, Number 0.0)
+        TestCaseData(2.0, 2.0, Number 2.0)
+        TestCaseData(12.0, 30.0, Number 6.0)
+        TestCaseData(30.0, 105.0, Number 15.0)
+    ]
+    
+let getGCDWrapperInvalidInputs =
+    [
+        TestCaseData(4.5, 20.2)
+        TestCaseData(-4.4, 20.2)
+        TestCaseData(-4.4, -20.2)
+        TestCaseData(4.4, -20.2)
+    ]
+    
+[<TestCaseSource(nameof getGCDWrapperValidInputsOutputs)>]
+let givenGetGCDWrapper_ProvidedValidInputs_ReturnCorrectResult input1 input2 output =
+    Assert.That(getGCDWrapper input1 input2, Is.EqualTo(output))
+    
+[<TestCaseSource(nameof getGCDWrapperInvalidInputs)>]
+let givenGetGCDWrapper_ProvidedInvalidInputs_ThrowInvalidArgumentError input1 input2 =
+    Assert.Throws<InvalidArgumentError>(fun () -> (getGCDWrapper input1 input2) |> ignore) |> ignore

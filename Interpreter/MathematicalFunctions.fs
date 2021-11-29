@@ -154,7 +154,7 @@ let RootToTerminals (terminals: terminal list) (denominator:terminal list) =
     if contentNotEmpty && denominatorNotEmpty then
         [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide] @ denominator @ [Rpar; Rpar]
     else
-        InvalidArgumentError "Ensure that input value is not empty and the root you are taking is not 0" |> raise
+        InvalidArgumentError "Ensure that both inputs value is not empty and the root you are taking is not 0" |> raise
     
     
 /// <summary>
@@ -273,7 +273,7 @@ let getGCDWrapper num1 num2 =
     elif areBothInputsIntegers then
         getGCD num1 num2
     else
-        InvalidArgumentError "Ensure both arguments are non-zero integers" |> raise
+        InvalidArgumentError "Ensure both arguments are whole numbers" |> raise
     
         
 /// <summary>
@@ -287,7 +287,17 @@ let getGCDWrapper num1 num2 =
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let moduloCalc (num1:float) (num2:float) =
-    num1%num2 |> Number
+    let isNum1NotZero =  num1 <> 0.0
+    let isNum2NotZero =  num2 <> 0.0
+    match isNum2NotZero with
+    | true ->
+        match isNum1NotZero with
+        | true ->
+            num1%num2 |> Number
+        | false ->
+            0.0 |> Number
+    | false ->
+        InvalidArgumentError "Cannot pass 0 as second argument to mod" |> raise
 
 /// <summary>
 /// Function to return a random whole number between specified lower and upper bound
