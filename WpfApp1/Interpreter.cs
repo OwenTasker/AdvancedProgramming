@@ -79,6 +79,12 @@ namespace WpfApp1
             return openVars;
         }
 
+        public string GetStringFromTerminal(Util.terminal terminal)
+        {
+            var inputList = new List<Util.terminal> {terminal};
+            return Util.terminalListToString("", ListModule.OfSeq(inputList));
+        }
+
         public FSharpList<Util.terminal> GetTerminalListFromString(string input)
         {
             var inputList = input.Select(c => c.ToString()).ToList();

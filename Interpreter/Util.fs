@@ -84,7 +84,7 @@ let internal (|FunctionMatch|_|) (input:string) =
 
 //https://gist.github.com/theburningmonk/3363893
 /// <summary>Function to convert a C# Dictionary to an F# Map.</summary>
-let inline internal toMap kvps =
+let inline public toMap kvps =
     kvps
     |> Seq.map (|KeyValue|)
     |> Map.ofSeq
