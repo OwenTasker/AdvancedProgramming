@@ -25,7 +25,7 @@ let TokenizeTestData =
         TestCaseData(["7"], ["7"])
         TestCaseData(["8"], ["8"])
         TestCaseData(["9"], ["9"])
-        TestCaseData(["0"], ["0"])        
+        TestCaseData(["0"], ["0"])
         TestCaseData(["+"], ["+"])
         TestCaseData(["*"], ["*"])
         TestCaseData(["/"], ["/"])
@@ -54,12 +54,6 @@ let TokenizeTestData =
         TestCaseData(["T";"h";"i";"s";" ";"-";">";"2";"x"],["This";"->";"2";"x"])
     ]
 
-/// <summary>Test to ensure that tokenize returns the correct output for valid inputs.</summary>
-[<TestCaseSource("TokenizeTestData")>]
-let GivenTokenize_WhenPassedInput_ReturnCorrectTokens(op1, res) =
-    let result = tokenize op1
-    Assert.That(result, Is.EqualTo(res))
-
 /// <summary>Test cases for operator inputs to scan.</summary>
 let OperatorCases =
     [
@@ -76,15 +70,15 @@ let OperatorCases =
         TestCaseData(["->"],[Assign])
     ]
 
-/// <summary>Test cases for unary inputs to scan.</summary> 
-let UnaryCases =   
+/// <summary>Test cases for unary inputs to scan.</summary>
+let UnaryCases =
     [
         TestCaseData(["+";"+";"+"], [UnaryPlus;UnaryPlus;UnaryPlus])
         TestCaseData(["-";"-";"-"], [UnaryMinus;UnaryMinus;UnaryMinus])
         TestCaseData(["-";"(";"3";"+";"4";")";"-";"3"],
                      [UnaryMinus;Lpar;Number 3.0;Plus;Number 4.0;Rpar;Minus;Number 3.0])
     ]
-    
+
 /// <summary>Test cases for predefined function inputs to scan.</summary>
 let FunctionCases =
     [
@@ -95,7 +89,7 @@ let FunctionCases =
         TestCaseData(["ceil"; "3.222"; "floor"; "3.222"],
                      [Function "ceil"; Number 3.222; Function "floor"; Number 3.222])
     ]
-    
+
 /// <summary>Test cases for assign inputs to scan.</summary>
 let AssignCases =
     [
@@ -139,29 +133,16 @@ let NumberCases =
         TestCaseData([".25"], [Number 0.25])
         TestCaseData([".252"], [Number 0.252])
     ]
-    
+
 let NumberWordCases =
     [
         TestCaseData(["10";"Word"], [Number 10.0; Times; Word "Word"])
     ]
-    
+
 let NumberFunctionCases =
     [
         TestCaseData(["10";"ceil"], [Number 10.0; Function "ceil"])
     ]
-
-/// <summary>Test to ensure that scan returns the correct output for valid inputs.</summary>
-[<TestCaseSource("OperatorCases")>]
-[<TestCaseSource("UnaryCases")>]
-[<TestCaseSource("NumberWordCases")>]
-[<TestCaseSource("NumberFunctionCases")>]
-[<TestCaseSource("FunctionCases")>]
-[<TestCaseSource("AssignCases")>]
-[<TestCaseSource("WordCases")>]
-[<TestCaseSource("NumberCases")>]
-let GivenScan_WhenPassedInput_ReturnCorrectTokens(op1, res) =
-    let result = scan op1 []
-    Assert.That(result, Is.EqualTo(res))
 
 /// <summary>List of test cases for invalid inputs to tokenize, scan and lexer.</summary>
 let ErrorCases =
@@ -196,23 +177,7 @@ let ErrorCases =
 /// <summary>Test to ensure that tokenize correctly throws an exception for invalid input.</summary>
 [<TestCaseSource("ErrorCases")>]
 let GivenTokenize_WhenPassedInvalidCharacter_ThenRaiseTokenizeError(characters: string list) =
-    Assert.Throws<TokenizeError>(fun () -> tokenize characters |> ignore) |> ignore
-
-/// <summary>Test to ensure that scan correctly throws an exception for invalid input.</summary>
-[<TestCaseSource("ErrorCases")>]
-let GivenScan_WhenPassedInvalidCharacter_ThenRaiseScanError(token: string list) =
-    Assert.Throws<ScanError>(fun () -> scan token [] |> ignore) |> ignore
-    
-let FormatExceptionCases =
-    [
-        TestCaseData("a2452Bb")
-        TestCaseData("24tps")
-    ]
-
-/// <summary>Test to ensure that scan correctly throws a FormatException for invalid input.</summary>
-[<TestCaseSource("FormatExceptionCases")>]
-let GivenScan_WhenPassedExpressionConsistingOfInvalidWordsOrLetters_ThenFailWithFormatException(token: string) =
-    Assert.Throws<System.FormatException>(fun () -> scan [token] [] |> ignore) |> ignore
+    Assert.Throws<TokenizeError>(fun () -> lexer characters |> ignore) |> ignore
 
 /// <summary>Test cases to ensure that lexer returns correct output with valid input.</summary>
 let LexerCases =
@@ -227,7 +192,7 @@ let LexerCases =
 let GivenLexer_WhenPassedValidCharacterList_ReturnCorrectTerminals(characters: string list, terminals: terminal list) =
     let result = lexer characters
     Assert.That(result, Is.EqualTo(terminals))
-    
+
 /// <summary>Test to ensure that lexer correctly throws an exception for invalid input.</summary>
 [<TestCaseSource("ErrorCases")>]
 let GivenLexer_WhenPassedCharactersRepresentingInvalidExpression_RaiseTokenizeError(characters: string list) =

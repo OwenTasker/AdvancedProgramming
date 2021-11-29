@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -17,9 +16,9 @@ namespace WpfApp1
         {
             var inputList = command.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
-            
-            var (item1, item2) = Program.interpret(inputFSharpList, Util.toMap(Environment));
-            
+
+            var (item1, item2) = PublicInterface.interpret(inputFSharpList, Util.toMap(Environment));
+
             Environment = item2;
 
             return Util.terminalListToString("", item1);
@@ -29,8 +28,8 @@ namespace WpfApp1
         {
             var inputList = command.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
-            
-            var (item1, _) = Program.interpret(inputFSharpList, Util.toMap(environment));
+
+            var (item1, _) = PublicInterface.interpret(inputFSharpList, Util.toMap(environment));
 
             return Util.terminalListToString("", item1);
         }
@@ -45,8 +44,8 @@ namespace WpfApp1
         {
             var inputList = assignment.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
-            
-            return Program.interpret(inputFSharpList, Util.toMap(Environment)).Item2;
+
+            return PublicInterface.interpret(inputFSharpList, Util.toMap(Environment)).Item2;
         }
 
         public void ClearEnvironment()
@@ -59,7 +58,7 @@ namespace WpfApp1
             var inputList = variable.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
 
-            return Program.closed(inputFSharpList, Util.toMap(Environment)).Item1;
+            return PublicInterface.closed(inputFSharpList, Util.toMap(Environment)).Item1;
         }
 
         public IEnumerable<string> GetOpenVariables(string expression)
@@ -70,14 +69,20 @@ namespace WpfApp1
 
             // Compile set of open variables
             var openVars = new List<string> {variables[0]};
-            
+
             foreach (var t in variables[1..])
             {
-                if (!(Closed(t) || openVars.Contains(t))) 
+                if (!(Closed(t) || openVars.Contains(t)))
                     openVars.Add(t);
             }
 
             return openVars;
+        }
+
+        public string GetStringFromTerminal(Util.terminal terminal)
+        {
+            var inputList = new List<Util.terminal> {terminal};
+            return Util.terminalListToString("", ListModule.OfSeq(inputList));
         }
 
         public FSharpList<Util.terminal> GetTerminalListFromString(string input)
@@ -85,10 +90,7 @@ namespace WpfApp1
             var inputList = input.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
 
-            var lexed = Lexer.lexer(inputFSharpList);
-            var parsed = Parser.parse(lexed);
-
-            return parsed;
+            return PublicInterface.getTerminalListFromString(inputFSharpList);
         }
     }
 }

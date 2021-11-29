@@ -5,11 +5,8 @@
 /// <namespacedoc>
 ///     <summary>Interpreter</summary>
 /// </namespacedoc>
-module Interpreter.Exec
+module internal Interpreter.Exec
 
-open System
-open System.Collections.Generic
-open System.Text.RegularExpressions
 open Interpreter.Util
 open Interpreter.Differentiate
 open Interpreter.MathematicalFunctions
@@ -26,14 +23,14 @@ open Interpreter.MathematicalFunctions
 /// <param name="op2">A Number terminal for the right side of the operation.</param>
 ///
 /// <returns>A Number containing the result of the operation.</returns>
-let performBinaryOperation operator op1 op2 =
+let private performBinaryOperation operator op1 op2 =
     match operator with
     | Plus -> Number (op1 + op2)
     | Minus -> Number (op1 - op2)
     | Times -> Number (op1 * op2)
     | Divide ->
         match op2 with
-        | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero." |> raise
+        | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero, this operation is undefined." |> raise
         | _ -> Number (op1 / op2)
     | Exponent -> Number (op1 ** op2)
     | _ -> CalculateError "Calculate Error: Invalid operator passed." |> raise
@@ -46,7 +43,7 @@ let performBinaryOperation operator op1 op2 =
 /// <param name="operand">A Number terminal containing the operand.</param>
 ///
 /// <returns>A Number containing the result of the operation.</returns>
-let performUnaryOperation operator operand =
+let private performUnaryOperation operator operand =
     match operator with
     | UnaryMinus -> Number -operand
     | UnaryPlus -> Number operand
@@ -63,7 +60,7 @@ let performUnaryOperation operator operand =
 /// <returns>
 /// The number stack with the outcome of the operation prepended.
 /// </returns>
-let performOperation operator numStack =
+let private performOperation operator numStack =
     match operator with
     | Rpar
     | Lpar -> ExecError "Execution Error: Parenthesis encountered as an operator." |> raise
@@ -86,7 +83,7 @@ let performOperation operator numStack =
             | Number f, Number g -> (performBinaryOperation operator g f) :: numStack.[2 .. ]
             | _ -> ExecError "Execution Error: Number stack contains non-number tokens." |> raise
 
-let rec extractBrackets terminals lparCount out =
+let rec private extractBrackets terminals lparCount out =
     match terminals with
     | Lpar :: tail -> extractBrackets tail (lparCount+1) (Lpar::out)
     | Rpar :: tail ->
@@ -109,7 +106,7 @@ let rec extractBrackets terminals lparCount out =
 /// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
 /// the output list.
 /// </returns>
-let rec extractAssignment inList outList nestCount =
+let rec private extractAssignment inList outList nestCount =
     match inList with
     | Rpar :: _ when nestCount = 0 -> inList, List.rev outList
     | [Rpar] -> inList, List.rev outList
@@ -132,7 +129,7 @@ let rec extractAssignment inList outList nestCount =
 /// A tuple containing the input list and the output list with the leftmost expression moved from the input list to
 /// the output list.
 /// </returns>
-let rec extractExpression inList outList =
+let rec private extractExpression inList outList =
     match inList with
     | [ Rpar ] -> ([], List.rev outList)
     | Comma :: inTail -> (inTail, List.rev outList)
@@ -147,7 +144,7 @@ let rec extractExpression inList outList =
 /// <param name="env">The execution environment for any variables in the expression.</param>
 ///
 /// <returns></returns>
-let rec closed (env: Map<string, terminal list>) terminals  =
+let rec internal closed (env: Map<string, terminal list>) terminals  =
     match terminals with
     | [] -> true, env
     | Word x :: tail ->
@@ -156,7 +153,7 @@ let rec closed (env: Map<string, terminal list>) terminals  =
         else false, env
     | Function a :: tail ->
         match a with
-        | Lexer.FunctionMatch _ ->
+        | FunctionMatch _ ->
             let remaining, _ = extractBrackets tail 0 []
             closed env remaining
         | _ ->
@@ -174,7 +171,7 @@ let rec closed (env: Map<string, terminal list>) terminals  =
 /// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
 ///
 /// <returns></returns>
-and setArguments terminals (env: Map<string, terminal list>) =
+and private setArguments terminals (env: Map<string, terminal list>) =
     match terminals with
     | Rpar :: tail -> env, tail
     | Word x :: Assign :: tail ->
@@ -184,7 +181,7 @@ and setArguments terminals (env: Map<string, terminal list>) =
     | Lpar :: tail -> setArguments tail env
     | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
 
-and extractParameters terminals (paramList : terminal list list) env =
+and private extractParameters terminals (paramList : terminal list list) env =
     match terminals with
     | Rpar :: tail -> List.rev paramList , tail
     | _ :: _ ->
@@ -204,7 +201,7 @@ and extractParameters terminals (paramList : terminal list list) env =
 /// <param name="env">The execution environment for any variables in the expression.</param>
 ///
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
-and reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
+and private reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
     match terminals with
     | terminalHead :: terminalTail ->
         match terminalHead with
@@ -222,7 +219,7 @@ and reduceRecursive terminals opStack numStack (env: Map<string, terminal list>)
                 reduceRecursive remainingTerminals opStack (terminalList @ numStack) env
             else
                 match a with
-                | Lexer.FunctionMatch _ ->
+                | FunctionMatch _ ->
                     let terminalList, _ = exec env (Function a :: bracketedExpression)
                     reduceRecursive remainingTerminals opStack (terminalList @ numStack) env
                 | _ -> ExecError "Execution Error: Undefined function" |> raise
@@ -267,7 +264,7 @@ and reduceRecursive terminals opStack numStack (env: Map<string, terminal list>)
 /// <param name="env">The execution environment for any variables in the expression.</param>
 ///
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
-and reduce terminals (env: Map<string, terminal list>) =
+and private reduce terminals (env: Map<string, terminal list>) =
     reduceRecursive terminals [] [] env
 
 /// <summary>
@@ -279,11 +276,12 @@ and reduce terminals (env: Map<string, terminal list>) =
 /// <param name="env">The current MyMathsPal execution environment.</param>
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
-and exec (env: Map<string, terminal list>) terminals  =
+and internal exec (env: Map<string, terminal list>) terminals  =
     match terminals with
     | Word x :: Assign :: tail ->
         match tail with
         | Word _ :: Assign :: _ -> ExecError "Execution Error: Malformed expression; an assignment may not be assigned to an assignment" |> raise
+        | [] -> ExecError "Execution Error: Malformed expression; an assignment may not be empty" |> raise
         | _ ->
             let result, _ = exec env tail
             terminals, (env.Add(x, result) |> Map.toSeq |> dict)
@@ -339,7 +337,7 @@ and exec (env: Map<string, terminal list>) terminals  =
         then [reduce terminals newEnv], (env |> Map.toSeq |> dict)
         else terminals, (env |> Map.toSeq |> dict)
 
-and handleRootFunction remaining env operand exponent =
+and private handleRootFunction remaining env operand exponent =
     match operand, exponent with
     | [Number _], [Number a] ->
         if a > 0.0 then
@@ -350,7 +348,7 @@ and handleRootFunction remaining env operand exponent =
     | _ ->
         exec env ((RootToTerminals operand exponent) @ remaining)
 
-and handleSingleArgumentFunction terminals env func funcName =
+and private handleSingleArgumentFunction terminals env func funcName =
     let remaining, bracketedExpression = extractBrackets terminals 0 []
     let value, _ = exec env bracketedExpression
     match value with
@@ -366,7 +364,7 @@ and handleSingleArgumentFunction terminals env func funcName =
         | Times :: tail -> Function funcName :: Lpar :: value @ [Rpar] @ [remaining.[0]] @ (exec env tail |> fst), (env |> Map.toSeq |> dict)
         | _ -> ExecError "Execution Error: Malformed expression" |> raise
 
-and handleTwoArgumentFunction terminals env func funcName =
+and private handleTwoArgumentFunction terminals env func funcName =
     let extractedParams , remaining = extractParameters terminals.[1..] [] env
     let baseValue = exec env extractedParams.[0] |> fst
     let operand = exec env extractedParams.[1] |> fst

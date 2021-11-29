@@ -16,7 +16,7 @@ namespace WpfApp1
         {
             _interpreter = interpreter;
         }
-        
+
         public (bool, string, IDictionary<string, FSharpList<Util.terminal>>) Load()
         {
             var loadFile = DecideFileToLoad();
@@ -28,7 +28,7 @@ namespace WpfApp1
             }
 
             var (variables, consoleContents) = ReadFile(loadFile);
-            
+
             return (true, consoleContents, variables);
         }
 
@@ -117,7 +117,7 @@ namespace WpfApp1
             return dialog.ShowDialog() != true ? null : dialog;
         }
 
-        private static string[] GenerateSavableInfo(string consoleContents,
+        private string[] GenerateSavableInfo(string consoleContents,
             IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
             var savableInfo = new string[variableContents.Count + 1];
@@ -137,7 +137,7 @@ namespace WpfApp1
             return savableInfo;
         }
 
-        private static string[] GenerateSaveVariables(IDictionary<string, FSharpList<Util.terminal>> variableContents)
+        private string[] GenerateSaveVariables(IDictionary<string, FSharpList<Util.terminal>> variableContents)
         {
             var idx = 0;
             var savedVariables = new string[variableContents.Count];
@@ -145,7 +145,7 @@ namespace WpfApp1
             foreach (var (key, value) in variableContents)
             {
                 var values = value.Aggregate("[", (current, terminalVal) =>
-                    current + Util.individualTerminalToString(terminalVal));
+                    current + _interpreter.GetStringFromTerminal(terminalVal));
                 values += "]";
                 var text = $"VARIABLE: [{key},{values}]";
                 savedVariables[idx++] = text;

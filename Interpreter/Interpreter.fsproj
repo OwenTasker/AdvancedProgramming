@@ -7,13 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="Util.fs" />
     <Compile Include="Differentiate.fs" />
     <Compile Include="MathematicalFunctions.fs" />
     <Compile Include="Lexer.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Exec.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="PublicInterface.fs" />
+    <Compile Include="Tests\UtilTests.fs" />
+    <Compile Include="Tests\MathematicalFunctionsTests.fs" />
+    <Compile Include="Tests\LexerTests.fs" />
+    <Compile Include="Tests\ParserTests.fs" />
+    <Compile Include="Tests\DifferentiateTests.fs" />
+    <Compile Include="Tests\ExecTests.fs" />
   </ItemGroup>
 
 </Project>
