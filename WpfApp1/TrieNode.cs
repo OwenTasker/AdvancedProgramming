@@ -4,66 +4,66 @@ namespace WpfApp1
 {
     public class TrieNode
     {
-        private char C;
-        private bool IsKey;
-        private bool IsEmpty;
-        private List<TrieNode> Offspring;
+        private char _c;
+        private bool _isKey;
+        private bool _isEmpty;
+        private List<TrieNode> _offspring;
 
         public TrieNode()
         {
-            IsEmpty = true;
+            _isEmpty = true;
         }
         
         public TrieNode(char c, bool isKey)
         {
-            C = c;
-            IsKey = isKey;
-            IsEmpty = false;
-            Offspring = new List<TrieNode>();
+            _c = c;
+            _isKey = isKey;
+            _isEmpty = false;
+            _offspring = new List<TrieNode>();
         }
         
         public TrieNode(char c, bool isKey, List<TrieNode> offspring)
         {
-            C = c;
-            IsKey = isKey;
-            IsEmpty = false;
-            Offspring = offspring;
+            _c = c;
+            _isKey = isKey;
+            _isEmpty = false;
+            _offspring = offspring;
         }
 
         public char GetC()
         {
-            return C;
+            return _c;
         }
         
         public bool GetIsKey()
         {
-            return IsKey;
+            return _isKey;
         }
         
         public void SetIsKey(bool k)
         {
-            IsKey = k;
+            _isKey = k;
         }
         
         public bool GetIsEmpty()
         {
-            return IsEmpty;
+            return _isEmpty;
         }
         
         public List<TrieNode> GetAllOffspring()
         {
-            return Offspring;
+            return _offspring;
         }
         
         public TrieNode GetOffspring(char c)
         {
             TrieNode t = new TrieNode();
             
-            for (int i = 0; i < Offspring.Count; i++)
+            for (int i = 0; i < _offspring.Count; i++)
             {
-                if (Offspring[i].GetC() == c)
+                if (_offspring[i].GetC() == c)
                 {
-                    t = Offspring[i];
+                    t = _offspring[i];
                     return t;
                 }
             }
@@ -73,12 +73,12 @@ namespace WpfApp1
         
         public void SetOffspring(TrieNode t)
         {
-            Offspring.Add(t);
+            _offspring.Add(t);
         }
 
         public override string ToString()
         {
-            return C + "";
+            return _c + "";
         }
     }
 }
