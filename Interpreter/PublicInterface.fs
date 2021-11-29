@@ -1,4 +1,4 @@
-﻿module public Interpreter.Program
+﻿module public Interpreter.PublicInterface
 
 open Interpreter.Lexer
 open Interpreter.Parser

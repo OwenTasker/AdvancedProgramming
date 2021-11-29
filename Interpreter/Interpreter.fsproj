@@ -19,7 +19,13 @@
     <Compile Include="Lexer.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Exec.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="PublicInterface.fs" />
+    <Compile Include="Tests\UtilTests.fs" />
+    <Compile Include="Tests\MathematicalFunctionsTests.fs" />
+    <Compile Include="Tests\LexerTests.fs" />
+    <Compile Include="Tests\ParserTests.fs" />
+    <Compile Include="Tests\DifferentiateTests.fs" />
+    <Compile Include="Tests\ExecTests.fs" />
   </ItemGroup>
 
 </Project>
