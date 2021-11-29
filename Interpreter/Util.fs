@@ -84,7 +84,7 @@ let internal (|FunctionMatch|_|) (input:string) =
 
 //https://gist.github.com/theburningmonk/3363893
 /// <summary>Function to convert a C# Dictionary to an F# Map.</summary>
-let inline public toMap kvps =
+let inline internal toMap kvps =
     kvps
     |> Seq.map (|KeyValue|)
     |> Map.ofSeq
@@ -117,7 +117,7 @@ let internal individualTerminalToString x =
 /// <param name="list">A list of terminals to convert to a string.</param>
 ///
 /// <returns>A string representation of the terminal list.</returns>
-let rec public terminalListToString str list =
+let rec internal terminalListToString str list =
     match list with
     | head :: tail -> terminalListToString (str + individualTerminalToString head ) tail
     | [] -> str
