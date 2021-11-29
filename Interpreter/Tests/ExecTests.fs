@@ -188,15 +188,6 @@ let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean(terminals: terminal li
     let result = closed env terminals |> fst
     Assert.That(result, Is.EqualTo(expected))
 
-let TestTests =
-    [
-        TestCaseData(true, true)
-    ]
-
-[<TestCaseSource("TestTests")>]
-let TestTestTests(input: bool, output: bool) =
-    Assert.That(input, Is.EqualTo(output))
-
 /// <summary>Test cases for valid assign inputs to exec.</summary>
 let ValidExecAssignCases =
     [
