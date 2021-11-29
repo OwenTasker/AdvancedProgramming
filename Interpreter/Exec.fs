@@ -30,7 +30,7 @@ let private performBinaryOperation operator op1 op2 =
     | Times -> Number (op1 * op2)
     | Divide ->
         match op2 with
-        | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero." |> raise
+        | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero, this operation is undefined." |> raise
         | _ -> Number (op1 / op2)
     | Exponent -> Number (op1 ** op2)
     | _ -> CalculateError "Calculate Error: Invalid operator passed." |> raise
@@ -281,6 +281,7 @@ and internal exec (env: Map<string, terminal list>) terminals  =
     | Word x :: Assign :: tail ->
         match tail with
         | Word _ :: Assign :: _ -> ExecError "Execution Error: Malformed expression; an assignment may not be assigned to an assignment" |> raise
+        | [] -> ExecError "Execution Error: Malformed expression; an assignment may not be empty" |> raise
         | _ ->
             let result, _ = exec env tail
             terminals, (env.Add(x, result) |> Map.toSeq |> dict)
