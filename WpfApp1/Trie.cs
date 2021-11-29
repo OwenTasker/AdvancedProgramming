@@ -5,23 +5,23 @@ namespace WpfApp1
 {
     public class Trie
     {
-        private TrieNode Root = new TrieNode('/', false);
+        private TrieNode _root = new TrieNode('/', false);
 
         public Trie()
         { }
         
         public Trie(TrieNode root)
         {
-            Root = root;
+            _root = root;
         }
 
         public TrieNode GetRoot()
         {
-            return Root;
+            return _root;
         }
         public void Add(string s)
         {
-            var t = Root;
+            var t = _root;
 
             for (var i = 0; i < s.Length; i++)
             {
@@ -31,7 +31,7 @@ namespace WpfApp1
                 {
                     nextNode.SetIsKey(true);
                 }
-                else if (nextNode.GetIsEmpty() == true)
+                else if (nextNode.GetIsEmpty())
                 {
                     if (i == s.Length - 1)
                     {
@@ -51,13 +51,13 @@ namespace WpfApp1
 
         public HashSet<string> Contains(string s)
         {
-            var t = Root;
+            var t = _root;
 
             for (var i = 0; i < s.Length; i++)
             {
                 var nextNode = t.GetOffspring(s[i]);
 
-                if (nextNode.GetIsEmpty() == true)
+                if (nextNode.GetIsEmpty())
                 {
                     return null;
                 }
