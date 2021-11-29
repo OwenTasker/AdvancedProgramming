@@ -10,6 +10,7 @@ module Interpreter.Tests.ParserTests
 open NUnit.Framework
 open Interpreter.Parser
 open Interpreter.Util
+open NUnit.Framework
 
 /// <summary>List of test cases representing valid inputs to the parser.</summary>
 let ValidCases =
@@ -60,6 +61,10 @@ let ValidCases =
         TestCaseData([UnaryMinus; UnaryMinus; Function "floor"; Lpar; Number 2.0 ; Rpar])
         TestCaseData([Function "floor"; Lpar; Number 2.0 ; Rpar])
     ]
+
+[<TestCaseSource("ValidCases")>]
+let GivenParse_WhenPassedValidStatement_Returninput(input: terminal list) =
+    Assert.That(parse input, Is.EqualTo(input))
 
 /// <summary>List of test cases representing invalid inputs to the parser.</summary>
 let InvalidCases =
@@ -112,7 +117,9 @@ let InvalidCases =
         TestCaseData([Exponent; Word "x"])
     ]
 
-
+[<TestCaseSource("InvalidCases")>]
+let GivenParse_WhenPassedInvalidStatement_RaiseParseException(input: terminal list) =
+    Assert.Throws<ParseError>(fun () -> parse input |> ignore) |> ignore
 
 
 
