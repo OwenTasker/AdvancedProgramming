@@ -14,5 +14,5 @@ let public getTerminalListFromString input =
     lexer input |> parse
 
 [<EntryPoint>]
-let main args =
+let main _ =
     0
