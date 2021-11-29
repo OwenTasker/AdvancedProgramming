@@ -10,6 +10,9 @@ let public interpret input env =
 let public closed input env =
     lexer input |> closed env
 
+let public getTerminalListFromString input =
+    lexer input |> parse
+
 [<EntryPoint>]
 let main args =
     0
