@@ -287,17 +287,16 @@ let getGCDWrapper num1 num2 =
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let moduloCalc (num1:float) (num2:float) =
-    let isNum1NotZero =  num1 <> 0.0
-    let isNum2NotZero =  num2 <> 0.0
-    match isNum2NotZero with
+    let isNum1Negative =  num1 < 0.0
+    let isNum2Negative =  num2 < 0.0
+    let isNum2Zero = num2 = 0.0
+    
+    let areEitherNumNegative = isNum1Negative && isNum2Negative
+    match not areEitherNumNegative && not isNum2Zero with
     | true ->
-        match isNum1NotZero with
-        | true ->
-            num1%num2 |> Number
-        | false ->
-            0.0 |> Number
+        num1%num2 |> Number
     | false ->
-        InvalidArgumentError "Cannot pass 0 as second argument to mod" |> raise
+        InvalidArgumentError "Only pass positive values to modulo function and non-zero values as second value" |> raise
 
 /// <summary>
 /// Function to return a random whole number between specified lower and upper bound

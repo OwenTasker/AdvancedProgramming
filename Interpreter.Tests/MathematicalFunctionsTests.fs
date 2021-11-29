@@ -10,6 +10,8 @@ module Interpreter.Tests.MathematicalFunctionsTests
 open Interpreter.Util
 open NUnit.Framework
 open Interpreter.MathematicalFunctions
+open NUnit.Framework
+open NUnit.Framework
 
 //Valid Log Inputs and Outputs
 let logEGreaterThanZeroPointFiveValidInputsOutputs =
@@ -356,3 +358,34 @@ let givenGetGCDWrapper_ProvidedValidInputs_ReturnCorrectResult input1 input2 out
 [<TestCaseSource(nameof getGCDWrapperInvalidInputs)>]
 let givenGetGCDWrapper_ProvidedInvalidInputs_ThrowInvalidArgumentError input1 input2 =
     Assert.Throws<InvalidArgumentError>(fun () -> (getGCDWrapper input1 input2) |> ignore) |> ignore
+    
+//Modulo Test Cases
+let moduloValidInputsOutputs =
+    [
+        //0 in left vals
+        TestCaseData(0.0, 1.0, Number 0.0)
+        TestCaseData(0.0, 5.0, Number 0.0)
+        TestCaseData(0.0, 10.0, Number 0.0)
+        TestCaseData(0.0, 50.0, Number 0.0)
+        
+        //Positive left vals and right vals
+        TestCaseData(3.0, 2.0, Number 1.0)
+        TestCaseData(20.0, 7.0, Number 6.0)
+        TestCaseData(15.0, 5.0, Number 0.0)
+    ]
+
+let moduloInvalidInputs =
+    [
+        //Zero Right Vals
+        TestCaseData(10.0, 0.0)
+        TestCaseData(5.0, 0.0)
+    ]
+    
+    
+[<TestCaseSource(nameof moduloValidInputsOutputs)>]
+let givenModuloCalc_ProvidedValidInputs_ReturnCorrectOutput input1 input2 output =
+    Assert.That((moduloCalc input1 input2), Is.EqualTo(output))
+    
+[<TestCaseSource(nameof moduloInvalidInputs)>]
+let givenModuloCalc_ProvidedInvalidInputs_ThrowInvalidArgumentError input1 input2 =
+    Assert.Throws<InvalidArgumentError>(fun () -> (moduloCalc input1 input2) |> ignore) |> ignore
