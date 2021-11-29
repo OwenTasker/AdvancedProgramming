@@ -10,5 +10,11 @@ let public interpret input env =
 let public closed input env =
     lexer input |> closed env
 
-let public getTerminalListFromString input =
+let public stringToTerminalList input =
     lexer input |> parse
+
+let public terminalListToString input =
+    Util.terminalListToString "" input
+
+let public toMap kvps =
+    Util.toMap kvps

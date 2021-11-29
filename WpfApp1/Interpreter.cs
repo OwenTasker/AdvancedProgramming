@@ -17,11 +17,11 @@ namespace WpfApp1
             var inputList = command.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
 
-            var (item1, item2) = PublicInterface.interpret(inputFSharpList, Util.toMap(Environment));
+            var (item1, item2) = PublicInterface.interpret(inputFSharpList, PublicInterface.toMap(Environment));
 
             Environment = item2;
 
-            return Util.terminalListToString("", item1);
+            return PublicInterface.terminalListToString(item1);
         }
 
         public string Interpret(string command, IDictionary<string, FSharpList<Util.terminal>> environment)
@@ -29,15 +29,15 @@ namespace WpfApp1
             var inputList = command.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
 
-            var (item1, _) = PublicInterface.interpret(inputFSharpList, Util.toMap(environment));
+            var (item1, _) = PublicInterface.interpret(inputFSharpList, PublicInterface.toMap(environment));
 
-            return Util.terminalListToString("", item1);
+            return PublicInterface.terminalListToString(item1);
         }
 
         public IEnumerable<KeyValuePair<string, string>> GetVariables()
         {
             return Environment.ToList().Select(a =>
-                new KeyValuePair<string, string>(a.Key, Util.terminalListToString("", a.Value)));
+                new KeyValuePair<string, string>(a.Key, PublicInterface.terminalListToString(a.Value)));
         }
 
         public IDictionary<string, FSharpList<Util.terminal>> GetTempEnvironment(string assignment)
@@ -45,7 +45,7 @@ namespace WpfApp1
             var inputList = assignment.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
 
-            return PublicInterface.interpret(inputFSharpList, Util.toMap(Environment)).Item2;
+            return PublicInterface.interpret(inputFSharpList, PublicInterface.toMap(Environment)).Item2;
         }
 
         public void ClearEnvironment()
@@ -58,7 +58,7 @@ namespace WpfApp1
             var inputList = variable.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
 
-            return PublicInterface.closed(inputFSharpList, Util.toMap(Environment)).Item1;
+            return PublicInterface.closed(inputFSharpList, PublicInterface.toMap(Environment)).Item1;
         }
 
         public IEnumerable<string> GetOpenVariables(string expression)
@@ -82,7 +82,7 @@ namespace WpfApp1
         public string GetStringFromTerminal(Util.terminal terminal)
         {
             var inputList = new List<Util.terminal> {terminal};
-            return Util.terminalListToString("", ListModule.OfSeq(inputList));
+            return PublicInterface.terminalListToString(ListModule.OfSeq(inputList));
         }
 
         public FSharpList<Util.terminal> GetTerminalListFromString(string input)
@@ -90,7 +90,7 @@ namespace WpfApp1
             var inputList = input.Select(c => c.ToString()).ToList();
             var inputFSharpList = ListModule.OfSeq(inputList);
 
-            return PublicInterface.getTerminalListFromString(inputFSharpList);
+            return PublicInterface.stringToTerminalList(inputFSharpList);
         }
     }
 }
