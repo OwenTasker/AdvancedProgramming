@@ -329,23 +329,49 @@ let moduloValidInputsOutputs =
         TestCaseData(0.0, 10.0, Number 0.0)
         TestCaseData(0.0, 50.0, Number 0.0)
 
-        //Positive left vals and right vals
+        //Positive left vals, Positive right vals
         TestCaseData(3.0, 2.0, Number 1.0)
         TestCaseData(20.0, 7.0, Number 6.0)
         TestCaseData(15.0, 5.0, Number 0.0)
+        TestCaseData(3.0, 3.0, Number 0.0)
+        
+        //Positive left vals, Negative right vals
+        TestCaseData(3.0, -2.0, Number -1.0)
+        TestCaseData(7.0, -7.0, Number 0.0)
+        TestCaseData(4.0, -8.0, Number -4.0)
+        TestCaseData(4.0, -4.0, Number 0.0)
+        
+        //Negative left vals, Negative right vals
+        TestCaseData(-4.0, -8.0, Number -4.0)
+        TestCaseData(-8.0, -4.0, Number 0.0)
+        TestCaseData(-4.0, -4.0, Number 0.0)
+        TestCaseData(-2.0, -8.0, Number -2.0)
+        
+        //Positive Non-Whole number left vals, positive right vals
+        TestCaseData(2.2, 1.0, Number 0.2)
+                
     ]
 
 let moduloInvalidInputs =
     [
         //Zero Right Vals
-        TestCaseData(10.0, 0.0)
-        TestCaseData(5.0, 0.0)
+        TestCaseData(1.0, 0.0)
+        TestCaseData(15.0, 0.0)
+        TestCaseData(0.0, 0.0)
+        TestCaseData(-1.0, 0.0)
+        TestCaseData(-15.0, 0.0)
     ]
 
 
 [<TestCaseSource(nameof moduloValidInputsOutputs)>]
 let givenModuloCalc_ProvidedValidInputs_ReturnCorrectOutput input1 input2 output =
-    Assert.That((moduloCalc input1 input2), Is.EqualTo(output))
+    let calc = moduloCalc input1 input2 |> terminalToNum
+    let outputAsNum = terminalToNum output
+    let calcGROutComp = calc > (outputAsNum - 0.000001)
+    let calcLSOutComp = calc < (outputAsNum + 0.000001)
+    let isCalcWithinRange = calcGROutComp && calcLSOutComp
+    
+    Assert.True(isCalcWithinRange)
 
 [<TestCaseSource(nameof moduloInvalidInputs)>]
 let givenModuloCalc_ProvidedInvalidInputs_ThrowInvalidArgumentError input1 input2 =

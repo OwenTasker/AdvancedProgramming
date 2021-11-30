@@ -207,20 +207,19 @@ let internal RoundNum (num:float) =
         let stringRep = string num
         let decimalVals = stringRep.Split[|'.'|]
 
-        if decimalVals.Length = 2 then
-            let numRep = decimalVals.[1] |> float
-            if num > 0.0 then
-                if numRep >= 5.0 then
-                    trunkNum+1 |> float |> Number
-                else
-                    trunkNum |> float |> Number
+        let numRep = decimalVals.[1] |> float
+        let isNumGreaterThanZeroPointZero = num > 0.0
+        match isNumGreaterThanZeroPointZero with
+        | true ->
+            if numRep >= 5.0 then
+                trunkNum+1 |> float |> Number
             else
-                if numRep >= 5.0 then
-                    trunkNum-1 |> float |> Number
-                else
-                    trunkNum |> float |> Number
-        else
-            trunkNum |> float |> Number
+                trunkNum |> float |> Number
+        | _ ->
+            if numRep >= 5.0 then
+                trunkNum-1 |> float |> Number
+            else
+                trunkNum |> float |> Number
 
 /// <summary>
 /// Function to calculate the absolute value of a number
@@ -285,16 +284,11 @@ let internal getGCDWrapper num1 num2 =
 ///
 /// <returns>Returns the absolute value of the input</returns>
 let internal moduloCalc (num1:float) (num2:float) =
-    let isNum1Negative =  num1 < 0.0
-    let isNum2Negative =  num2 < 0.0
-    let isNum2Zero = num2 = 0.0
-
-    let areEitherNumNegative = isNum1Negative && isNum2Negative
-    match not areEitherNumNegative && not isNum2Zero with
-    | true ->
-        num1%num2 |> Number
-    | false ->
-        InvalidArgumentError "Only pass positive values to modulo function and non-zero values as second value" |> raise
+    if not (num2 = 0.0) then
+        let x = (num1 % num2 + num2) % num2 |> Number
+        x
+    else
+        InvalidArgumentError "Undefined value when passed 0 as second argument; mod(x,0.0) = undef" |> raise
 
 /// <summary>
 /// Function to return a random whole number between specified lower and upper bound
