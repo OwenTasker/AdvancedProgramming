@@ -27,12 +27,10 @@ open Interpreter.Util
 /// <returns>The natural log of the input provided</returns>
 /// <exception cref="InvalidArgumentError">Thrown when the input value is less than or equal to 0.5</exception>
 let rec private LogEGreaterThanZeroPointFive (input:float) (increment:float) (sum:float) =
-        match input with
-        | _ when input > 0.5 ->
-            match increment with
-            | 2000.0 -> sum
-            | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
-        | _ -> InvalidArgumentError "Invalid input passed to function, expected value above 0.5" |> raise
+        match increment with
+        | 2000.0 -> sum
+        | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
+        
 
 /// <summary>
 /// Implements a Taylor-Series in order to approximate a value for LogE
@@ -52,9 +50,10 @@ let rec private LogEGreaterThanZeroPointFive (input:float) (increment:float) (su
 /// <returns>The natural log of the input provided</returns>
 /// <exception cref="InvalidArgumentError">Thrown when the input value is less than or equal to 0.5</exception>
 let rec private LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:float) =
-    match input > 0.5 || input <= 0.0 with
+    match input <= 0.0 with
     | true ->
-        InvalidArgumentError "Invalid input passed to function, expected value less than or equal to 0.5 " |> raise
+        InvalidArgumentError
+            "Invalid input passed to function, expected value greater than 0 and less than or equal to 5.0 " |> raise
     | false ->
         match increment with
         | 2000.0 -> sum
@@ -80,8 +79,16 @@ let private LogEFloat input =
     | true -> LogELessThanOrEqualToZeroPointFive input 1.0 0.0
     | _ -> LogEGreaterThanZeroPointFive input 1.0 0.0
 
+/// <summary>
+/// Function to call LogEFloat and convert the output to a terminal value
+/// </summary>
+///
+/// <param name="input">Input to take the logE of</param>
+///
+/// <returns>the natural log of the input provided in terminal form</returns> 
 let internal LogETerminal input =
     LogEFloat input |> Number
+    
 /// <summary>
 /// Function to dynamically calculate any given base of any given number using the change of base rule
 /// </summary>
@@ -143,7 +150,9 @@ let internal LogX newBase input =
 /// </summary>
 ///
 /// <param name="terminals">All terminal values within function call</param>
-/// <param name="denominator">Floating point value representing the root to calculate, 2 equals sqrt, 3 equals cbrt etc.</param>
+/// <param name="denominator">
+/// Floating point value representing the root to calculate, 2 equals sqrt, 3 equals cbrt etc.
+/// </param>
 ///
 /// <returns>
 /// Returns a list of terminals equal to the value to calculate the root of to the power of 1/denominator
@@ -199,17 +208,13 @@ let internal CeilToTerminal (numToCeil: float) =
 ///
 /// <returns>Returns the rounded input</returns>
 let internal RoundNum (num:float) =
-    let isInteger = (num |> int |> float = num)
-    if isInteger then
+    if (num |> int |> float = num) then
         num |> Number
     else
         let trunkNum = num |> int
-        let stringRep = string num
-        let decimalVals = stringRep.Split[|'.'|]
+        let numRep = ((string num).Split[|'.'|]).[1] |> float
 
-        let numRep = decimalVals.[1] |> float
-        let isNumGreaterThanZeroPointZero = num > 0.0
-        match isNumGreaterThanZeroPointZero with
+        match num > 0.0 with
         | true ->
             if numRep >= 5.0 then
                 trunkNum+1 |> float |> Number
@@ -282,7 +287,7 @@ let internal getGCDWrapper num1 num2 =
 /// <param name="num1">Original Number</param>
 /// <param name="num2">Number to divide num1 by</param>
 ///
-/// <returns>Returns the absolute value of the input</returns>
+/// <returns>Returns the result given num1 mod num2</returns>
 let internal moduloCalc (num1:float) (num2:float) =
     if not (num2 = 0.0) then
         let x = (num1 % num2 + num2) % num2 |> Number
@@ -299,9 +304,12 @@ let internal moduloCalc (num1:float) (num2:float) =
 ///
 /// <returns>Returns a random Number terminal between a lower and upper bound </returns>
 let internal pseudoRandom (num1:float) (num2:float) =
-    let isNum1Whole = (num1 |> int |> float) = num1
-    let isNum2Whole = (num2 |> int |> float) = num2
-    if (isNum1Whole && isNum2Whole) then
-        System.Random().Next(num1 |> int, num2 |> int) |> float |> Number
+    let areBothArgsEqual = num1 = num2
+    let isArg2Greater = num1 > num2
+    if not areBothArgsEqual && not isArg2Greater then
+        if (((num1 |> int |> float) = num1) && ((num2 |> int |> float) = num2)) then
+            System.Random().Next(num1 |> int, num2 |> int) |> float |> Number
+        else
+            InvalidArgumentError "Ensure both values passed to rand are whole numbers" |> raise
     else
-        InvalidArgumentError "Ensure both values passed to rand are whole numbers" |> raise
+        InvalidArgumentError "Ensure first argument is smaller than the second argument" |> raise

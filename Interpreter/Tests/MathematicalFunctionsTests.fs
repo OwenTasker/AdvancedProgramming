@@ -12,44 +12,22 @@ open NUnit.Framework
 open Interpreter.MathematicalFunctions
 
 //Valid Log Inputs and Outputs
-let logEGreaterThanZeroPointFiveValidInputsOutputs =
-    [
-    TestCaseData(0.6, -0.510825)
-    TestCaseData(0.75, -0.287682)
-    TestCaseData(0.9, -0.105360)
-    TestCaseData(1.0, 0.0)
-    TestCaseData(1.5, 0.405465)
-    TestCaseData(2.0, 0.693147)
-    TestCaseData(2.718281, 1.0)
-    TestCaseData(3.0, 1.098612)
-    TestCaseData(5.0, 1.609437)
-    TestCaseData(10.0, 2.302585)
-    TestCaseData(100.0, 4.605170)
-    ]
-
-let LogELessThanOrEqualToZeroPointFiveValidInputsOutputs =
-    [
-        TestCaseData(0.5, -0.693147)
-        TestCaseData(0.25, -1.386294)
-        TestCaseData(0.01, -4.605170)
-    ]
-
 let LogEValidInputsOutputs =
     [
-    TestCaseData(0.01, -4.605170)
-    TestCaseData(0.25, -1.386294)
-    TestCaseData(0.5, -0.693147)
-    TestCaseData(0.6, -0.510825)
-    TestCaseData(0.75, -0.287682)
-    TestCaseData(0.9, -0.105360)
-    TestCaseData(1.0, 0.0)
-    TestCaseData(1.5, 0.405465)
-    TestCaseData(2.0, 0.693147)
-    TestCaseData(2.718281, 1.0)
-    TestCaseData(3.0, 1.098612)
-    TestCaseData(5.0, 1.609437)
-    TestCaseData(10.0, 2.302585)
-    TestCaseData(100.0, 4.605170)
+    TestCaseData(0.01, Number -4.605170)
+    TestCaseData(0.25, Number -1.386294)
+    TestCaseData(0.5, Number -0.693147)
+    TestCaseData(0.6, Number -0.510825)
+    TestCaseData(0.75, Number -0.287682)
+    TestCaseData(0.9, Number -0.105360)
+    TestCaseData(1.0, Number 0.0)
+    TestCaseData(1.5, Number 0.405465)
+    TestCaseData(2.0, Number 0.693147)
+    TestCaseData(2.718281, Number 1.0)
+    TestCaseData(3.0, Number 1.098612)
+    TestCaseData(5.0, Number 1.609437)
+    TestCaseData(10.0, Number 2.302585)
+    TestCaseData(100.0, Number 4.605170)
     ]
 
 let Log2ValidInputOutputs =
@@ -128,20 +106,7 @@ let GenericInvalidLogInputs =
         TestCaseData(-1.0)
         TestCaseData(-5.0)
     ]
-
-let logEGreaterThanZeroPointFiveInvalidInputs =
-    [
-    TestCaseData(0.5)
-    TestCaseData(0.25)
-    ]
-
-let LogELessThanOrEqualToZeroPointFiveInvalidInputs =
-    [
-        TestCaseData(0.51)
-        TestCaseData(1.0)
-        TestCaseData(5.0)
-    ]
-
+    
 let LogXInvalidInputs =
     [
     TestCaseData(3.0, 0.0)
@@ -185,6 +150,14 @@ let givenLogX_ProvidedValidInput_ReturnCorrectApproximation logBase input output
     let a = logRes > (output - 0.000001 |> Number)
     let b = logRes < (output + 0.000001 |> Number)
     Assert.True(a && b)
+    
+[<TestCaseSource(nameof LogEValidInputsOutputs)>]
+let givenLogETerminal_ProvidedValidInputsOutputs_ReturnCorrectApproximation input output =
+    let logRes = LogETerminal input
+    let outputNumRep = terminalToNum output 
+    let a = logRes > (outputNumRep - 0.000001 |> Number)
+    let b = logRes < (outputNumRep + 0.000001 |> Number)
+    Assert.True(a && b)    
 
 [<TestCaseSource(nameof GenericInvalidLogInputs)>]
 let givenLog10_ProvidedInvalidInputs_ThrowInvalidArgumentError input =
@@ -197,6 +170,10 @@ let givenLog2_ProvidedInvalidInputs_ThrowInvalidArgumentError input =
 [<TestCaseSource(nameof LogXInvalidInputs)>]
 let givenLogX_ProvidedInvalidInputs_ThrowInvalidArgumentError newBase input =
     Assert.Throws<InvalidArgumentError>(fun () -> (LogX newBase input) |> ignore) |> ignore
+    
+[<TestCaseSource(nameof GenericInvalidLogInputs)>]
+let givenLogETerminal_ProvidedInvalidInputs_ThrowInvalidArgumentError input =
+    Assert.Throws<InvalidArgumentError>(fun () -> (LogETerminal input) |> ignore) |> ignore
 
 //RootToTerminal Test Cases
 let rootToTerminalValidInputs =
@@ -376,3 +353,38 @@ let givenModuloCalc_ProvidedValidInputs_ReturnCorrectOutput input1 input2 output
 [<TestCaseSource(nameof moduloInvalidInputs)>]
 let givenModuloCalc_ProvidedInvalidInputs_ThrowInvalidArgumentError input1 input2 =
     Assert.Throws<InvalidArgumentError>(fun () -> (moduloCalc input1 input2) |> ignore) |> ignore
+    
+//Pseudorandom testing
+let pseudoRandomValidInputs =
+    [
+        TestCaseData(-20.0, -10.0)
+        TestCaseData(0.0, 100.0)
+        TestCaseData(-100.0, 0.0)
+        TestCaseData(-20.0, 20.0)
+    ]
+
+let pseudoRandomInvalidInputs =
+    [
+        // Arg2 Less Than Arg1
+        TestCaseData(10.0, 8.0)
+        TestCaseData(5.0, 2.0)
+        TestCaseData(-13.0, -15.0)
+        
+        // Arg1 and Arg2 equal
+        TestCaseData(10.0, 10.0)
+        TestCaseData(2.0, 2.0)
+        TestCaseData(-13.0, -13.0)
+        
+        //Either args are not whole numbers
+        TestCaseData(2.5, 5.0)
+        TestCaseData(1.0, 7.5)
+        TestCaseData(5.2, 15.6)
+    ]
+    
+[<TestCaseSource(nameof pseudoRandomValidInputs)>]
+let givenPseudoRandom_ProvidedValidInputs_DoNotThrowExceptions input1 input2 =
+    Assert.DoesNotThrow(fun () -> (pseudoRandom input1 input2 |> ignore))
+    
+[<TestCaseSource(nameof pseudoRandomInvalidInputs)>]
+let givenPseudoRandom_ProvidedInvalidInputs_ThrowInvalidArgumentError input1 input2 =
+    Assert.Throws<InvalidArgumentError>(fun () -> (pseudoRandom input1 input2) |> ignore) |> ignore
