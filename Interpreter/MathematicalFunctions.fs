@@ -290,8 +290,7 @@ let internal getGCDWrapper num1 num2 =
 /// <returns>Returns the result given num1 mod num2</returns>
 let internal moduloCalc (num1:float) (num2:float) =
     if not (num2 = 0.0) then
-        let x = (num1 % num2 + num2) % num2 |> Number
-        x
+        (num1 % num2 + num2) % num2 |> Number
     else
         InvalidArgumentError "Undefined value when passed 0 as second argument; mod(x,0.0) = undef" |> raise
 
