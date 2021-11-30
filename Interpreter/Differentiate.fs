@@ -153,9 +153,7 @@ type Dual =
                     Number c
                     Rpar
                     Divide
-                    Number c
-                    Exponent
-                    Number 2.0 ]
+                    Number (c**2.0)]
             )
         | Expr (a, b), Expr (c, d) ->
             Expr(
@@ -171,15 +169,14 @@ type Dual =
                               @ c @ [ Rpar; Exponent; Number 2.0 ]
             )
 
-    // THIS IS CURRENTLY INCORRECTLY DEFINED, WHEN A VARIABLE IS AN EXPONENT IT SHOULDN'T FOLLOW THE POWER RULE.
     /// <summary>
-    /// Raises one Dual to the power of another according to the identity (a + be)^(c + de) = (a^c) + (c*a^(c-1))e
+    /// Raises one Dual to the power of another.
     /// </summary>
     ///
     /// <param name="operand1">The left hand operand, corresponding to a + be</param>
     /// <param name="operand2">The right hand operand, corresponding to c + de</param>
     ///
-    /// <returns>The result of exponentiation of two Duals (a + be)^(c + de) = (a^c) + (c*a^(c-1))e</returns>
+    /// <returns>The result of exponentiation of two Duals.</returns>
     static member Pow(operand1: Dual, operand2: Dual) =
         match operand1, operand2 with
         | Var (a, _), Const (c, _) ->
@@ -381,7 +378,7 @@ let private performOperation operator numStack =
 let rec private extractExpression terminals lparCount output =
     match terminals with
     | Comma :: tail when lparCount = 0 ->  List.rev output, tail
-    | Rpar :: tail when lparCount = 0 ->  List.rev (output), tail
+    | Rpar :: _ when lparCount = 0 ->  List.rev output, terminals
     | Rpar :: tail -> extractExpression tail (lparCount - 1) (Rpar :: output)
     | Lpar :: tail -> extractExpression tail (lparCount + 1) (Lpar :: output)
     | head :: tail -> extractExpression tail lparCount (head :: output)
@@ -421,19 +418,7 @@ let rec private autoDifferentiate terminals opStack numStack =
                          @ Rpar
                            :: Times
                               :: Lpar :: Number 1.0 :: Divide :: expression
-                           @ [ Rpar ])
-                     )
-                     :: numStack)
-            | "abs" ->
-                autoDifferentiate
-                    remainingTerminals
-                    opStack
-                    (Expr(
-                        (Function "abs" :: Lpar :: expression @ [ Rpar ]),
-                        (Lpar
-                         :: Lpar :: (autoDifferentiate expression [] [])
-                         @ Rpar :: Times :: expression
-                           @ Divide :: Function "abs" :: expression @ [ Rpar ])
+                           @ [ Rpar; ])
                      )
                      :: numStack)
             | "logTen" ->
@@ -463,6 +448,18 @@ let rec private autoDifferentiate terminals opStack numStack =
                     (Expr(
                         (Function "logX" :: Lpar :: logBase @ [Comma] @ operand @ [Rpar]),
                         (autoDifferentiate (Function "ln" :: Lpar :: operand @ [Rpar; Divide; Function "ln"; Lpar] @ logBase @ [Rpar]) [] [])
+                     )
+                     :: numStack)
+            | "abs" ->
+                autoDifferentiate
+                    remainingTerminals
+                    opStack
+                    (Expr(
+                        (Function "abs" :: Lpar :: expression @ [ Rpar ]),
+                        (Lpar
+                         :: Lpar :: (autoDifferentiate expression [] [])
+                         @ Rpar :: Times :: expression
+                           @ Divide :: Function "abs" :: expression @ [ Rpar ])
                      )
                      :: numStack)
             | _ ->
