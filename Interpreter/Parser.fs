@@ -79,7 +79,6 @@ and private factor terminals =
         | _ -> terminalsTail
     | Word _ :: terminalsTail ->
         match terminalsTail with
-        | Lpar :: tailTail -> arguments tailTail
         | Number _ :: _
         | Word _ :: _ -> ParseError "Parse Error: Word Then Word Or Number not allowed" |> raise
         | [Plus]
@@ -89,6 +88,7 @@ and private factor terminals =
         | [Assign]
         | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
         | _ -> terminalsTail
+    | Function _ :: Lpar :: Rpar :: terminalsTail -> expressionP terminalsTail
     | Function _ :: Lpar :: terminalsTail ->
         match terminalsTail with
         | Word _ :: Assign :: _ -> arguments terminalsTail

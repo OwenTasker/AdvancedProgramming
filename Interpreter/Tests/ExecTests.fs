@@ -7,7 +7,6 @@
 /// </namespacedoc>
 module Interpreter.Tests.ExecTests
 
-open System.Collections.Generic
 open NUnit.Framework
 open Interpreter.Exec
 open Interpreter.Util
@@ -164,61 +163,6 @@ let InvalidReduceCases =
 let GivenExed_WhenPassedInvalidTokens_RaiseExecError(tokens: terminal list) =
     Assert.Throws<ExecError>(fun () -> exec Map.empty tokens  |> ignore) |> ignore
 
-
-/// <summary>Test cases for valid input to getPrecedence.</summary>
-let ValidGetPrecedenceData =
-    [
-        TestCaseData(UnaryMinus, 4)
-        TestCaseData(UnaryPlus, 4)
-        TestCaseData(Exponent, 3)
-        TestCaseData(Times, 2)
-        TestCaseData(Divide, 2)
-        TestCaseData(Plus, 1)
-        TestCaseData(Minus, 1)
-    ]
-
-/// <summary>Test cases for valid input to getAssociativity.</summary>
-let ValidGetAssociativityData =
-    [
-        TestCaseData(UnaryMinus, "r")
-        TestCaseData(UnaryPlus, "r")
-        TestCaseData(Exponent, "r")
-        TestCaseData(Times, "l")
-        TestCaseData(Divide, "l")
-        TestCaseData(Plus, "l")
-        TestCaseData(Minus, "l")
-    ]
-
-/// <summary>Test to ensure that getPrecedence performs correctly under valid input.</summary>
-[<TestCaseSource("ValidGetPrecedenceData")>]
-let GivenGetPrecedence_WhenPassedOperatorWithPrecedence_ReturnCorrectPrecedence(operator: terminal, precedence: int) =
-    let result = getPrecedence operator
-    Assert.That(result, Is.EqualTo(precedence))
-
-/// <summary>Test to ensure that getAssociativity performs correctly under valid input.</summary>
-[<TestCaseSource("ValidGetAssociativityData")>]
-let GivenGetAssociativity_WhenPassedOperatorWithAssociativity_ReturnCorrectAssociativity(operator: terminal, associativity: string) =
-    let result = getAssociativity operator
-    Assert.That(result, Is.EqualTo(associativity))
-
-/// <summary>Test cases for invalid input to getPrecedence and getAssociativity.</summary>
-let InvalidGetPrecedenceAssociativityCases =
-    [
-        TestCaseData(Lpar)
-        TestCaseData(Rpar)
-        TestCaseData(Number 1.0)
-    ]
-
-/// <summary>Test to ensure that getPrecedence correctly throws exception with invalid input.</summary>
-[<TestCaseSource("InvalidGetPrecedenceAssociativityCases")>]
-let GivenGetPrecedence_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(operator: terminal) =
-    Assert.Throws<KeyNotFoundException>(fun () -> getPrecedence operator |> ignore) |> ignore
-
-/// <summary>Test to ensure that getAssociativity correctly throws exception with invalid input.</summary>
-[<TestCaseSource("InvalidGetPrecedenceAssociativityCases")>]
-let GivenGetAssociativity_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(operator: terminal) =
-    Assert.Throws<KeyNotFoundException>(fun () -> getAssociativity operator |> ignore) |> ignore
-
 /// <summary>Example environment for testing.</summary>
 let env = Map [("x", [Number 2.0])
                ("y", [Number 1.0; Plus; Word "x"])
@@ -243,15 +187,6 @@ let ClosedCases =
 let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean(terminals: terminal list, expected: bool) =
     let result = closed env terminals |> fst
     Assert.That(result, Is.EqualTo(expected))
-
-let TestTests =
-    [
-        TestCaseData(true, true)
-    ]
-
-[<TestCaseSource("TestTests")>]
-let TestTestTests(input: bool, output: bool) =
-    Assert.That(input, Is.EqualTo(output))
 
 /// <summary>Test cases for valid assign inputs to exec.</summary>
 let ValidExecAssignCases =
