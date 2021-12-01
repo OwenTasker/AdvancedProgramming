@@ -16,10 +16,7 @@ open Interpreter.Util
 /// <summary>Function to parse a statement</summary>
 let rec private statement terminals =
     match terminals with
-    | Word _ :: tail ->
-        match tail with
-        | Assign :: tailtail -> expression tailtail
-        | _ -> expression terminals
+    | Word _ :: Assign :: tail -> expression tail
     | _ -> expression terminals
 
 // expression ::= term expression' | function expression
@@ -65,22 +62,11 @@ and private unary terminals =
 and private factor terminals =
     match terminals with
     | [] -> []
-    | Number _ :: terminalsTail ->
-        match terminalsTail with
-        | Lpar :: _
-        | Number _ :: _
-        | Word _ :: _ ->  ParseError "Parse Error: Missing Operator" |> raise
-        | [Plus]
-        | [Minus]
-        | [Times]
-        | [Divide]
-        | [Assign]
-        | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
-        | _ -> terminalsTail
+    | Number _ :: terminalsTail
     | Word _ :: terminalsTail ->
         match terminalsTail with
         | Number _ :: _
-        | Word _ :: _ -> ParseError "Parse Error: Word Then Word Or Number not allowed" |> raise
+        | Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
         | [Plus]
         | [Minus]
         | [Times]
@@ -88,27 +74,12 @@ and private factor terminals =
         | [Assign]
         | [Exponent] -> ParseError "Parse Error: Trailing Operator" |> raise
         | _ -> terminalsTail
-    | Function _ :: Lpar :: Rpar :: terminalsTail -> expressionP terminalsTail
-    | Function _ :: Lpar :: terminalsTail ->
-        match terminalsTail with
-        | Word _ :: Assign :: _ -> arguments terminalsTail
-        | _ ->
-            match expression terminalsTail with
-            | Rpar :: terminalsTail ->
-                match terminalsTail with
-                | Number _ :: _
-                | Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
-                | _ -> terminalsTail
-            | Comma :: terminalsTailTail -> arguments terminalsTailTail
-            | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
+    | Function _ :: Lpar :: terminalsTail -> arguments terminalsTail
     | Lpar :: terminalsTail ->
-        let x = expression terminalsTail
-        match x with
-        | Rpar :: terminalsTail ->
-            match terminalsTail with
-            | Number _ :: _
-            | Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
-            | _ -> terminalsTail
+        match expression terminalsTail with
+        | Rpar :: Number _ :: _
+        | Rpar :: Word _ :: _ -> ParseError "Parse Error: Missing Operator" |> raise
+        | Rpar :: terminalsTailTail -> terminalsTailTail
         | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
     | [UnaryMinus]
     | [UnaryPlus] -> ParseError "Parse Error: Trailing Operator" |> raise
@@ -116,14 +87,15 @@ and private factor terminals =
 
 and private arguments terminals =
     match terminals with
-    | Word _ :: Assign :: tail
-    | Comma :: tail -> expression tail |> arguments
+    | Word _ :: Assign :: tail -> expression tail |> arguments
+    | Comma :: tail -> arguments tail
     | Number _ :: _
     | UnaryMinus :: _
+    | UnaryPlus :: _
     | Word _ :: _ -> expression terminals |> arguments
     | Function _ :: _ -> factor terminals |> arguments
     | Lpar :: _ -> expression terminals |> arguments
-    | Rpar :: tail -> expressionP tail
+    | Rpar :: tail -> tail
     | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
 
 let internal parse terminals =
