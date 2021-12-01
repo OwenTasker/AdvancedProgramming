@@ -163,7 +163,6 @@ let rec private scan tokens output  =
         | IntegerOrFloatMatch _ ->
             if tokensTail.Length > 0 then
                 match tokensTail.[0] with
-                | FunctionMatch _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
                 | AlphabetMatch _ -> scan ("*" :: tokensTail) (Number(Double.Parse tokenHead) :: output)
                 | _ -> scan tokensTail (Number(Double.Parse tokenHead) :: output)
             else

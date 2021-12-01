@@ -11,49 +11,6 @@ open NUnit.Framework
 open Interpreter.Lexer
 open Interpreter.Util
 
-/// <summary>List of test cases for valid inputs to tokenize.</summary>
-let TokenizeTestData =
-    [
-        TestCaseData([""], [])
-        TestCaseData([" "], [])
-        TestCaseData(["1"], ["1"])
-        TestCaseData(["2"], ["2"])
-        TestCaseData(["3"], ["3"])
-        TestCaseData(["4"], ["4"])
-        TestCaseData(["5"], ["5"])
-        TestCaseData(["6"], ["6"])
-        TestCaseData(["7"], ["7"])
-        TestCaseData(["8"], ["8"])
-        TestCaseData(["9"], ["9"])
-        TestCaseData(["0"], ["0"])
-        TestCaseData(["+"], ["+"])
-        TestCaseData(["*"], ["*"])
-        TestCaseData(["/"], ["/"])
-        TestCaseData(["-"], ["-"])
-        TestCaseData(["^"], ["^"])
-        TestCaseData(["("], ["("])
-        TestCaseData([")"], [")"])
-        TestCaseData([">"], [">"])
-        TestCaseData(["-";">"], ["->"])
-        TestCaseData(["+";"+"], ["+";"+"])
-        TestCaseData(["*";"*"], ["*";"*"])
-        TestCaseData(["+";"*"], ["+";"*"])
-        TestCaseData(["+";"*";"/"], ["+";"*";"/"])
-        TestCaseData(["a"], ["a"])
-        TestCaseData(["A"], ["A"])
-        TestCaseData(["a";"b"], ["ab"])
-        TestCaseData(["A";"B"], ["AB"])
-        TestCaseData(["a";"b";"c"], ["abc"])
-        TestCaseData(["1";"+";"1";"*";"1";"/";"1";"-";"1";"^";"1";"(";"1";")"],
-                     ["1";"+";"1";"*";"1";"/";"1";"-";"1";"^";"1";"(";"1";")"])
-        TestCaseData(["T";"h";"i";"s";" ";"i";"s";" ";"a";" ";"s";"e";"n";"t";"e";"n";"c";"e"],
-                     ["This";"is";"a";"sentence"])
-        TestCaseData(["1";".";"2";"5";"+";"1"], ["1.25"; "+"; "1"])
-        TestCaseData(["1";".";"2";"5";"+";"1";"2";"5"], ["1.25"; "+"; "125"])
-        TestCaseData([".";"2";"5";"+";"1";"2";"5"], [".25"; "+"; "125"])
-        TestCaseData(["T";"h";"i";"s";" ";"-";">";"2";"x"],["This";"->";"2";"x"])
-    ]
-
 /// <summary>Test cases for operator inputs to scan.</summary>
 let OperatorCases =
     [
@@ -75,28 +32,50 @@ let UnaryCases =
     [
         TestCaseData(["+";"+";"+"], [UnaryPlus;UnaryPlus;UnaryPlus])
         TestCaseData(["-";"-";"-"], [UnaryMinus;UnaryMinus;UnaryMinus])
+        TestCaseData(["-";"-";"-"], [UnaryMinus;UnaryMinus;UnaryMinus])
+        TestCaseData(["-";"/";"-"], [UnaryMinus;Divide;UnaryMinus])
         TestCaseData(["-";"(";"3";"+";"4";")";"-";"3"],
                      [UnaryMinus;Lpar;Number 3.0;Plus;Number 4.0;Rpar;Minus;Number 3.0])
+    ]
+
+/// <summary>Test cases implicit times when encountering a number then word</summary>
+let ImplicitTimesCases =
+    [
+        TestCaseData(["3";"a"],[Number 3.0; Times; Word "a"])
+        TestCaseData(["3";"a";"b"],[Number 3.0; Times; Word "ab"])
+        TestCaseData(["3";"c";"e";"i";"l"],[Number 3.0; Times; Function "ceil"])
     ]
 
 /// <summary>Test cases for predefined function inputs to scan.</summary>
 let FunctionCases =
     [
-        TestCaseData(["ceil"], [Function "ceil"])
-        TestCaseData(["floor"], [Function "floor"])
-        TestCaseData(["sqrt"], [Function "sqrt"])
-        TestCaseData(["round"], [Function "round"])
-        TestCaseData(["ceil"; "3.222"; "floor"; "3.222"],
-                     [Function "ceil"; Number 3.222; Function "floor"; Number 3.222])
+        //text to function
+        TestCaseData(["c";"e";"i";"l"], [Function "ceil"])
+        TestCaseData(["f";"l";"o";"o";"r"], [Function "floor"])
+        TestCaseData(["s";"q";"r";"t"], [Function "sqrt"])
+        TestCaseData(["c";"b";"r";"t"], [Function "cbrt"])
+        TestCaseData(["r";"o";"u";"n";"d"], [Function "round"])
+        TestCaseData(["p";"l";"o";"t"], [Function "plot"])
+        
+        //text to function with parenthesis
+        TestCaseData(["c";"e";"i";"l";"(";")"], [Function "ceil";Lpar;Rpar])
+        TestCaseData(["f";"l";"o";"o";"r";"(";")"], [Function "floor";Lpar;Rpar])
+        
+        ///text to function with parenthesis and spaces
+        TestCaseData(["c";"e";"i";"l";" ";"(";")"], [Function "ceil";Lpar;Rpar])
+        TestCaseData(["f";"l";"o";"o";"r";" ";"(";")"], [Function "floor";Lpar;Rpar])
+        
+        //text to word to function with parenthesis
+        TestCaseData(["t";"e";"s";"t";"(";")"], [Function "test";Lpar;Rpar])
+        TestCaseData(["n";"o";"t";"A";"F";"u";"n";"c";"t";"i";"o";"n";"(";")"], [Function "notAFunction";Lpar;Rpar])
+        
     ]
 
 /// <summary>Test cases for assign inputs to scan.</summary>
 let AssignCases =
     [
-        TestCaseData(["Word";"->";"54"],[Word "Word"; Assign; Number 54.0])
-        TestCaseData(["->";"->";"->";],[Assign; Assign; Assign])
-        TestCaseData(["->";"-";"-";"->";],[Assign; UnaryMinus; UnaryMinus; Assign])
-        TestCaseData(["54";"->";"Word";],[Number 54.0; Assign; Word "Word"])
+        TestCaseData(["W";"o";"r";"d";"-";">";"5";"4"],[Word "Word"; Assign; Number 54.0])
+        TestCaseData(["-";"-";">";"5";"4"],[UnaryMinus; Assign; Number 54.0])
     ]
 
 /// <summary>Test cases for word inputs to scan.</summary>
@@ -112,8 +91,8 @@ let WordCases =
         TestCaseData(["C"], [Word "C"])
         TestCaseData(["D"], [Word "D"])
         TestCaseData(["E"], [Word "E"])
-        TestCaseData(["Word";"Word"], [Word "Word"; Word "Word"])
-        TestCaseData(["Word";"5";"Word"], [Word "Word"; Number 5.0; Times; Word "Word"])
+        TestCaseData(["W";"o";"r";"d";" ";"W";"o";"r";"d"], [Word "Word"; Word "Word"])
+        TestCaseData(["W";"o";"r";"d";"5";"W";"o";"r";"d"], [Word "Word"; Number 5.0; Times; Word "Word"])
     ]
 
 /// <summary>Test cases for number inputs to scan.</summary>
@@ -129,20 +108,37 @@ let NumberCases =
         TestCaseData(["8"], [Number 8.0])
         TestCaseData(["9"], [Number 9.0])
         TestCaseData(["0"], [Number 0.0])
-        TestCaseData([".2"], [Number 0.2])
-        TestCaseData([".25"], [Number 0.25])
-        TestCaseData([".252"], [Number 0.252])
+        TestCaseData([".";"2"], [Number 0.2])
+        TestCaseData([".";"2";"5"], [Number 0.25])
+        TestCaseData([".";"2";"5";"2"], [Number 0.252])
     ]
 
+/// <summary>Test cases for number then word inputs to scan.</summary>
 let NumberWordCases =
     [
-        TestCaseData(["10";"Word"], [Number 10.0; Times; Word "Word"])
+        TestCaseData(["1";"0";"W";"o";"r";"d"], [Number 10.0; Times; Word "Word"])
     ]
 
-let NumberFunctionCases =
+/// <summary>Test cases to ensure that lexer returns correct output with valid input.</summary>
+let LexerCases =
     [
-        TestCaseData(["10";"ceil"], [Number 10.0; Function "ceil"])
+        TestCaseData(([]: string list), ([]: terminal list))
+        TestCaseData([""], ([]: terminal list))
+        TestCaseData(["1"; "0"; "+"; "1";], [Number 10.0; Plus; Number 1.0;])
     ]
+
+[<TestCaseSource(nameof FunctionCases)>]
+[<TestCaseSource(nameof LexerCases)>]
+[<TestCaseSource(nameof ImplicitTimesCases)>]
+[<TestCaseSource(nameof UnaryCases)>]
+[<TestCaseSource(nameof WordCases)>]
+[<TestCaseSource(nameof NumberCases)>]
+[<TestCaseSource(nameof NumberWordCases)>]
+[<TestCaseSource(nameof OperatorCases)>]
+[<TestCaseSource(nameof AssignCases)>]
+let GivenLexer_WhenPassedValidCharacterList_ReturnCorrectTerminals(characters: string list, terminals: terminal list) =
+    let result = lexer characters
+    Assert.That(result, Is.EqualTo(terminals))
 
 /// <summary>List of test cases for invalid inputs to tokenize, scan and lexer.</summary>
 let ErrorCases =
@@ -171,29 +167,9 @@ let ErrorCases =
         TestCaseData(["¬"])
         TestCaseData(["`"])
         TestCaseData(["1"; "?"])
-        TestCaseData(["1"; "?"])
     ]
-
-/// <summary>Test to ensure that tokenize correctly throws an exception for invalid input.</summary>
-[<TestCaseSource("ErrorCases")>]
-let GivenTokenize_WhenPassedInvalidCharacter_ThenRaiseTokenizeError(characters: string list) =
-    Assert.Throws<TokenizeError>(fun () -> lexer characters |> ignore) |> ignore
-
-/// <summary>Test cases to ensure that lexer returns correct output with valid input.</summary>
-let LexerCases =
-    [
-        TestCaseData(([]: string list), ([]: terminal list))
-        TestCaseData([""], ([]: terminal list))
-        TestCaseData(["1"; "0"; "+"; "1";], [Number 10.0; Plus; Number 1.0;])
-    ]
-
-/// <summary>Test to ensure that lexer returns correct output with valid input.</summary>
-[<TestCaseSource("LexerCases")>]
-let GivenLexer_WhenPassedValidCharacterList_ReturnCorrectTerminals(characters: string list, terminals: terminal list) =
-    let result = lexer characters
-    Assert.That(result, Is.EqualTo(terminals))
-
+    
 /// <summary>Test to ensure that lexer correctly throws an exception for invalid input.</summary>
-[<TestCaseSource("ErrorCases")>]
+[<TestCaseSource(nameof ErrorCases)>]
 let GivenLexer_WhenPassedCharactersRepresentingInvalidExpression_RaiseTokenizeError(characters: string list) =
     Assert.Throws<TokenizeError>(fun () -> lexer characters |> ignore) |> ignore
