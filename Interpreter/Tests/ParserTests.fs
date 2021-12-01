@@ -10,7 +10,6 @@ module Interpreter.Tests.ParserTests
 open NUnit.Framework
 open Interpreter.Parser
 open Interpreter.Util
-open NUnit.Framework
 
 /// <summary>List of test cases representing valid inputs to the parser.</summary>
 let ValidCases =
