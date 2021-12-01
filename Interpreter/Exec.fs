@@ -323,7 +323,7 @@ and internal exec (env: Map<string, terminal list>) terminals  =
         | "rand" -> handleTwoArgumentFunction tail env pseudoRandom a
         | _ ->
             if env.ContainsKey a then
-                let newEnv, remainingTerminals = setArguments tail Map.empty
+                let newEnv, remainingTerminals = setArguments tail env
                 let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
 
                 if closed combinedEnv [Word a] |> fst
