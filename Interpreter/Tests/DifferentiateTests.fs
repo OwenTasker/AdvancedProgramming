@@ -40,23 +40,19 @@ let SimplePlusCases =
     [ TestCaseData([ Number 2.0; Plus; Number 4.0 ], [ Number 0.0 ])
       TestCaseData([ Number 2.0; Plus; Word "x" ], [ Number 1.0 ])
       TestCaseData([ Word "^"; Plus; Number 12.0 ], [ Number 1.0 ])
-      TestCaseData([ Word "^"; Plus; Word "^" ], [ Number 2.0 ])
-      TestCaseData([ Word "^"; Plus; Word "g" ], [ Number 2.0 ]) ]
+      TestCaseData([ Word "^"; Plus; Word "^" ], [ Number 2.0 ]) ]
 
 let SimpleMinusCases =
     [ TestCaseData([ Number 2.0; Minus; Number 4.0 ], [ Number 0.0 ])
       TestCaseData([ Number 2.0; Minus; Word "x" ], [ Number -1.0 ])
       TestCaseData([ Word "^"; Minus; Number 12.0 ], [ Number 1.0 ])
-      TestCaseData([ Word "^"; Minus; Word "^" ], [ Number 0.0 ])
-      TestCaseData([ Word "^"; Minus; Word "g" ], [ Number 0.0 ]) ]
+      TestCaseData([ Word "^"; Minus; Word "^" ], [ Number 0.0 ]) ]
 
 let SimpleTimesCases =
     [ TestCaseData([ Number 2.0; Times; Number 4.0 ], [ Number 0.0 ])
       TestCaseData([ Number 2.0; Times; Word "x" ], [ Number 2.0 ])
       TestCaseData([ Word "^"; Times; Number 12.0 ], [ Number 12.0 ])
-      TestCaseData([ Word "^"; Times; Word "^" ], [ Word "^"; Plus; Word "^" ])
-      TestCaseData([ Word "^"; Times; Word "g" ], [ Word "^"; Plus; Word "g" ])
-      TestCaseData([ Word "g"; Times; Word "^" ], [ Word "g"; Plus; Word "^" ]) ]
+      TestCaseData([ Word "^"; Times; Word "^" ], [ Word "^"; Plus; Word "^" ]) ]
 
 let SimpleDivideCases =
     [ TestCaseData([ Number 2.0; Divide; Number 4.0 ], [ Number 0.0 ])
@@ -70,9 +66,7 @@ let SimpleDivideCases =
             Number 2.0 ]
       )
       TestCaseData([ Word "^"; Divide; Number 12.0 ], [ Number(1.0 / 12.0) ])
-      TestCaseData([ Word "^"; Divide; Word "^" ], [ Number 0.0 ])
-      TestCaseData([ Word "^"; Divide; Word "g" ], [ Number 0.0 ])
-      TestCaseData([ Word "g"; Divide; Word "^" ], [ Number 0.0 ]) ]
+      TestCaseData([ Word "^"; Divide; Word "^" ], [ Number 0.0 ]) ]
 
 let SimpleExponentCases =
     [ TestCaseData([ Number 2.0; Exponent; Number 4.0 ], [ Number 0.0 ])
@@ -105,36 +99,6 @@ let SimpleExponentCases =
             Function "ln"
             Lpar
             Word "^"
-            Rpar
-            Plus
-            Number 1.0
-            Rpar ]
-      )
-      TestCaseData(
-          [ Word "^"; Exponent; Word "g" ],
-          [ Word "^"
-            Exponent
-            Word "g"
-            Times
-            Lpar
-            Function "ln"
-            Lpar
-            Word "^"
-            Rpar
-            Plus
-            Number 1.0
-            Rpar ]
-      )
-      TestCaseData(
-          [ Word "g"; Exponent; Word "^" ],
-          [ Word "g"
-            Exponent
-            Word "^"
-            Times
-            Lpar
-            Function "ln"
-            Lpar
-            Word "g"
             Rpar
             Plus
             Number 1.0

@@ -32,7 +32,11 @@ let private performBinaryOperation operator op1 op2 =
         match op2 with
         | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero, this operation is undefined." |> raise
         | _ -> Number (op1 / op2)
-    | Exponent -> Number (op1 ** op2)
+    | Exponent ->
+        if op1 <= 0.0 && 0.0 < op2 && op2 < 1.0 then
+            Number (-((-op1)**op2))
+        else
+            Number (op1 ** op2)
     | _ -> CalculateError "Calculate Error: Invalid operator passed." |> raise
 
 /// <summary>
@@ -114,7 +118,7 @@ let rec private extractAssignment inList outList nestCount =
     | Lpar :: inTail -> extractAssignment inTail (Lpar :: outList) (nestCount+1)
     | Rpar :: inTail -> extractAssignment inTail (Rpar :: outList) (nestCount-1)
     | any :: inTail -> extractAssignment inTail (any :: outList) nestCount
-    | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
+    | [] -> inList, List.rev outList
 
 /// <summary>
 /// Creates an environment from a list of terminals representing Comma separate assignments.
@@ -131,10 +135,11 @@ and private setArguments terminals (env: Map<string, terminal list>) =
     | Rpar :: tail -> env, tail
     | Word x :: Assign :: tail ->
         match extractAssignment tail [] 0 with
-        | name, expression ->
-            setArguments name (env.Add(x, expression))
+        | remaining, expression ->
+            setArguments remaining (env.Add(x, expression))
+    | Comma :: tail
     | Lpar :: tail -> setArguments tail env
-    | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
+    | _ -> env, terminals
 
 and private extractParameters terminals (paramList : terminal list list) env =
     match terminals with
@@ -198,7 +203,7 @@ let rec internal closed (env: Map<string, terminal list>) terminals  =
             let newEnv, _ = setArguments bracketedExpression env
             if closed newEnv [Word a] then
                 closed env remaining
-            else false
+            else ExecError "Execution Error: User defined function is not closed by provided assignments" |> raise
     | _ :: tail -> closed env tail
 
 and private differentiationClosed (parameters: terminal list list) (env: Map<string, terminal list>) =
@@ -309,11 +314,11 @@ and private handleRootFunction (env : Map<string, terminal list>) (operand: term
     let reducedOperand = reduce operand env
     let reducedExponent = reduce exponent env
     match reducedOperand, reducedExponent with
-    | Number _, Number a ->
-        if a > 0.0 then
-            reduce (RootToTerminals [reducedOperand] [reducedExponent]) env
+    | Number a, Number b ->
+        if a < 0.0 && (b < 0.0 || (b % 2.0) <> 1.0) then
+            InvalidArgumentError "First argument to root function must be positive to take an even numbered root." |> raise
         else
-            InvalidArgumentError "First argument to root function must be positive." |> raise
+            reduce (RootToTerminals [reducedOperand] [reducedExponent]) env
     | _ ->
         ExecError "error" |> raise
 
@@ -375,6 +380,9 @@ let rec internal exec (env: Map<string, terminal list>) terminals : terminal lis
             terminals, (env.Add(x, result) |> Map.toSeq |> dict)
     | [] -> [], env |> Map.toSeq |> dict
     | _ ->
-        if closed env terminals
-        then [reduce terminals env], (env |> Map.toSeq |> dict)
-        else expandDifferentiates terminals [] env, (env |> Map.toSeq |> dict)
+        if closed env terminals then
+            let result = [reduce terminals env]
+            result, (env |> Map.toSeq |> dict)
+        else
+            let result = expandDifferentiates terminals [] env
+            result, (env |> Map.toSeq |> dict)

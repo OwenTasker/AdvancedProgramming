@@ -58,7 +58,7 @@ let SimpleExponentiationCases =
       TestCaseData([ Number 0.0; Exponent; Number 11.0 ], Number 0.0)
       TestCaseData([ Number 11.0; Exponent; Number 0.0 ], Number 1.0)
       TestCaseData([ Number 0.0; Exponent; Number 0.0 ], Number 1.0)
-      TestCaseData([ Number -10.0; Exponent; Number -10.0 ], Number(-10.0 ** -10.00))
+      TestCaseData([ Number -27.0; Exponent; Number -10.0 ], Number(-27.0 ** -10.0))
       TestCaseData([ Number 10.0; Exponent; Number 2.0 ], Number 100.0)
       TestCaseData([ Number -10.0; Exponent; Number 2.0 ], Number 100.0)
       TestCaseData([ Number 10.0; Exponent; Number 3.0 ], Number 1000.0)
@@ -730,14 +730,791 @@ let GivenExec_WhenPassedInvalidUserFunctionCall_RaiseExecError
     Assert.Throws<ExecError>(fun () -> exec env terminals |> ignore)
     |> ignore
 
-let SystemFunctionsCases =
-    [
-        TestCaseData([Function "differentiate"; Lpar; Rpar;], [])
-        TestCaseData([Function "differentiate"; Lpar; Rpar;], [])
-        TestCaseData([Function "differentiate"; Lpar; Rpar;], [])
-        TestCaseData([Function "differentiate"; Lpar; Rpar;], [])
-        TestCaseData([Function "differentiate"; Lpar; Rpar;], [])
-        TestCaseData([Function "differentiate"; Lpar; Rpar;], [])
-        TestCaseData([Function "differentiate"; Lpar; Rpar;], [])
-        TestCaseData([Function "differentiate"; Lpar; Rpar;], [])
-    ]
+let SystemFunctionCases =
+    [ TestCaseData(
+        [ Function "sqrt"
+          Lpar
+          Number 4.0
+          Rpar ],
+        [ Number 2.0 ]
+      )
+      TestCaseData(
+          [ Function "sqrt"
+            Lpar
+            Number 0.0
+            Rpar ],
+          [ Number 0.0 ]
+      )
+      TestCaseData(
+          [ Function "sqrt"
+            Lpar
+            Word "x"
+            Plus
+            Number 1.0
+            Rpar ],
+          [ Number(3.0 ** (1.0 / 2.0)) ]
+      )
+      TestCaseData(
+          [ Number 2.0
+            Plus
+            Function "sqrt"
+            Lpar
+            Number 4.0
+            Rpar ],
+          [ Number 4.0 ]
+      )
+      TestCaseData(
+          [ Function "sqrt"
+            Lpar
+            Number 4.0
+            Rpar
+            Plus
+            Number 5.7 ],
+          [ Number 7.7 ]
+      )
+      TestCaseData(
+          [ Function "cbrt"
+            Lpar
+            Number 8.0
+            Rpar ],
+          [ Number 2.0 ]
+      )
+      TestCaseData(
+          [ Function "cbrt"
+            Lpar
+            Number -27.0
+            Rpar ],
+          [ Number -3.0 ]
+      )
+      TestCaseData(
+          [ Function "cbrt"
+            Lpar
+            Number 0.0
+            Rpar ],
+          [ Number 0.0 ]
+      )
+      TestCaseData(
+          [ Function "cbrt"
+            Lpar
+            Number 3.0
+            Times
+            Word "x"
+            Rpar ],
+          [ Number(6.0 ** (1.0 / 3.0)) ]
+      )
+      TestCaseData(
+          [ Number 2.0
+            Plus
+            Function "cbrt"
+            Lpar
+            Number 8.0
+            Rpar ],
+          [ Number 4.0 ]
+      )
+      TestCaseData(
+          [ Function "cbrt"
+            Lpar
+            Number 8.0
+            Rpar
+            Plus
+            Number 5.7 ],
+          [ Number 7.7 ]
+      )
+      TestCaseData(
+          [ Function "xrt"
+            Lpar
+            Number 8.0
+            Comma
+            Number 3.0
+            Rpar ],
+          [ Number 2.0 ]
+      )
+      TestCaseData(
+          [ Function "xrt"
+            Lpar
+            Number 0.0
+            Comma
+            Number 8.0
+            Rpar ],
+          [ Number 0.0 ]
+      )
+      TestCaseData(
+          [ Function "xrt"
+            Lpar
+            Number 125.0
+            Comma
+            Number -3.0
+            Rpar ],
+          [ Number 0.2 ]
+      )
+      TestCaseData(
+          [ Function "xrt"
+            Lpar
+            Number -64.0
+            Comma
+            Number 1.0
+            Rpar ],
+          [ Number -64.0 ]
+      )
+      TestCaseData(
+          [ Function "xrt"
+            Lpar
+            Number 8.0
+            Comma
+            Word "x"
+            Plus
+            Number 1.0
+            Rpar ],
+          [ Number 2.0 ]
+      )
+      TestCaseData(
+          [ Function "xrt"
+            Lpar
+            Number 8.0
+            Comma
+            Number 3.0
+            Rpar
+            Plus
+            Number 5.7 ],
+          [ Number 7.7 ]
+      )
+      TestCaseData(
+          [ Number 5.7
+            Plus
+            Function "xrt"
+            Lpar
+            Number 8.0
+            Comma
+            Number 3.0
+            Rpar ],
+          [ Number 7.7 ]
+      )
+      TestCaseData(
+          [ Function "floor"
+            Lpar
+            Number 8.0
+            Rpar ],
+          [ Number 8.0 ]
+      )
+      TestCaseData(
+          [ Function "floor"
+            Lpar
+            Number -27.0
+            Rpar ],
+          [ Number -27.0 ]
+      )
+      TestCaseData(
+          [ Function "floor"
+            Lpar
+            Number 8.5
+            Rpar ],
+          [ Number 8.0 ]
+      )
+      TestCaseData(
+          [ Function "floor"
+            Lpar
+            Number -3.3
+            Rpar ],
+          [ Number -4.0 ]
+      )
+      TestCaseData(
+          [ Number 2.0
+            Plus
+            Function "floor"
+            Lpar
+            Number 8.1
+            Rpar ],
+          [ Number 10.0 ]
+      )
+      TestCaseData(
+          [ Function "floor"
+            Lpar
+            Number 8.1
+            Rpar
+            Plus
+            Number 5.7 ],
+          [ Number 13.7 ]
+      )
+      TestCaseData(
+          [ Function "ceil"
+            Lpar
+            Number 8.0
+            Rpar ],
+          [ Number 8.0 ]
+      )
+      TestCaseData(
+          [ Function "ceil"
+            Lpar
+            Number -27.0
+            Rpar ],
+          [ Number -27.0 ]
+      )
+      TestCaseData(
+          [ Function "ceil"
+            Lpar
+            Number 8.5
+            Rpar ],
+          [ Number 9.0 ]
+      )
+      TestCaseData(
+          [ Function "ceil"
+            Lpar
+            Number -3.3
+            Rpar ],
+          [ Number -3.0 ]
+      )
+      TestCaseData(
+          [ Number 2.0
+            Plus
+            Function "ceil"
+            Lpar
+            Number 8.1
+            Rpar ],
+          [ Number 11.0 ]
+      )
+      TestCaseData(
+          [ Function "ceil"
+            Lpar
+            Number 8.1
+            Rpar
+            Plus
+            Number 5.7 ],
+          [ Number 14.7 ]
+      )
+      TestCaseData(
+          [ Function "round"
+            Lpar
+            Number 8.0
+            Rpar ],
+          [ Number 8.0 ]
+      )
+      TestCaseData(
+          [ Function "round"
+            Lpar
+            Number -27.0
+            Rpar ],
+          [ Number -27.0 ]
+      )
+      TestCaseData(
+          [ Function "round"
+            Lpar
+            Number 8.5
+            Rpar ],
+          [ Number 9.0 ]
+      )
+      TestCaseData(
+          [ Function "round"
+            Lpar
+            Number -3.3
+            Rpar ],
+          [ Number -3.0 ]
+      )
+      TestCaseData(
+          [ Function "round"
+            Lpar
+            Number 8.4
+            Rpar ],
+          [ Number 8.0 ]
+      )
+      TestCaseData(
+          [ Function "round"
+            Lpar
+            Number -3.6
+            Rpar ],
+          [ Number -4.0 ]
+      )
+      TestCaseData(
+          [ Number 2.0
+            Plus
+            Function "round"
+            Lpar
+            Number 8.1
+            Rpar ],
+          [ Number 10.0 ]
+      )
+      TestCaseData(
+          [ Function "round"
+            Lpar
+            Number 8.7
+            Rpar
+            Plus
+            Number 5.7 ],
+          [ Number 14.7 ]
+      )
+      TestCaseData(
+          [ Function "abs"
+            Lpar
+            Number 8.4
+            Rpar ],
+          [ Number 8.4 ]
+      )
+      TestCaseData(
+          [ Function "abs"
+            Lpar
+            Number -3.6
+            Rpar ],
+          [ Number 3.6 ]
+      )
+      TestCaseData(
+          [ Number 2.0
+            Plus
+            Function "abs"
+            Lpar
+            Number 8.1
+            Rpar ],
+          [ Number 10.1 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 1.0
+            Comma
+            Number 8.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number -1.0
+            Comma
+            Number 14.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 12.0
+            Comma
+            Number 1.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 1247.0
+            Comma
+            Number -1.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 29.0
+            Comma
+            Number 13.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 29.0
+            Comma
+            Number 12.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 12.0
+            Comma
+            Number 29.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 27.0
+            Comma
+            Number 16.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 256.0
+            Comma
+            Number 248.0
+            Rpar ],
+          [ Number 8.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 256.0
+            Comma
+            Number 248.0
+            Rpar ],
+          [ Number 8.0 ]
+      )
+      TestCaseData(
+          [ Number 12.0
+            Plus
+            Function "gcd"
+            Lpar
+            Number 256.0
+            Comma
+            Number 248.0
+            Rpar ],
+          [ Number 20.0 ]
+      )
+      TestCaseData(
+          [ Function "gcd"
+            Lpar
+            Number 256.0
+            Comma
+            Number 248.0
+            Rpar
+            Times
+            Number 8.0 ],
+          [ Number 64.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number 3.0
+            Comma
+            Number 8.0
+            Rpar ],
+          [ Number 3.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number 7.0
+            Comma
+            Number 7.0
+            Rpar ],
+          [ Number 0.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number 13.0
+            Comma
+            Number 12.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number -3.0
+            Comma
+            Number 8.0
+            Rpar ],
+          [ Number 5.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number -15.0
+            Comma
+            Number 8.0
+            Rpar ],
+          [ Number 1.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number 0.0
+            Comma
+            Number 8.0
+            Rpar ],
+          [ Number 0.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number 3.0
+            Comma
+            Number -6.0
+            Rpar ],
+          [ Number -3.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number 8.0
+            Comma
+            Number -3.0
+            Rpar ],
+          [ Number -1.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number -13.0
+            Comma
+            Number -8.0
+            Rpar ],
+          [ Number -5.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number -7.0
+            Comma
+            Number -7.0
+            Rpar ],
+          [ Number 0.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number -7.0
+            Comma
+            Number -8.0
+            Rpar ],
+          [ Number -7.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number -4.0
+            Comma
+            Number -9.0
+            Rpar ],
+          [ Number -4.0 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number 0.0
+            Comma
+            Number -8.0
+            Rpar ],
+          [ Number 0.0 ]
+      )
+      TestCaseData(
+          [ Number 2.5
+            Plus
+            Function "mod"
+            Lpar
+            Number 3.0
+            Comma
+            Number 8.0
+            Rpar ],
+          [ Number 5.5 ]
+      )
+      TestCaseData(
+          [ Function "mod"
+            Lpar
+            Number 3.0
+            Comma
+            Number 8.0
+            Rpar
+            Plus
+            Number 6.0 ],
+          [ Number 9.0 ]
+      ) ]
+
+[<TestCaseSource("SystemFunctionCases")>]
+let GivenExec_WhenPassedValidSystemFunctionExpression_ReturnCorrectResult
+    (
+        input: terminal list,
+        expected: terminal list
+    ) =
+    let result, _ = exec env input
+    Assert.That(result, Is.EqualTo(expected))
+
+let LogarithmCases =
+    [ TestCaseData(
+        [ Function "ln"
+          Lpar
+          Number 2.0
+          Rpar ],
+        0.693146,
+        0.693148
+      )
+      TestCaseData(
+          [ Number 2.0
+            Plus
+            Function "ln"
+            Lpar
+            Number 2.0
+            Rpar ],
+          2.693146,
+          2.693148
+      )
+      TestCaseData(
+          [ Function "ln"
+            Lpar
+            Number 8.0
+            Rpar
+            Plus
+            Number 3.0 ],
+          5.079440,
+          5.079442
+      )
+      TestCaseData(
+          [ Function "logTen"
+            Lpar
+            Number 2.0
+            Rpar ],
+          0.301028,
+          0.30103
+      )
+      TestCaseData(
+          [ Function "logTwo"
+            Lpar
+            Number 2.0
+            Rpar ],
+          0.999999,
+          1.000001
+      )
+      TestCaseData(
+          [ Function "logX"
+            Lpar
+            Number 8.0
+            Comma
+            Number 64.0
+            Rpar ],
+          1.99999,
+          2.000002
+      )
+      TestCaseData(
+          [ Function "logX"
+            Lpar
+            Number 0.0
+            Comma
+            Number 8.0
+            Rpar ],
+          -0.99999,
+          0.000002
+      ) ]
+
+[<TestCaseSource("LogarithmCases")>]
+let GivenExec_WhenPassedValidLogarithmExpression_ReturnResultWithinBounds
+    (
+        input: terminal list,
+        lower: float,
+        upper: float
+    ) =
+    let result, _ = exec env input
+
+    match result with
+    | [ Number a ] ->
+        Assert.That(a, Is.LessThan(upper))
+        Assert.That(a, Is.GreaterThan(lower))
+    | _ -> ()
+
+let DifferentiateCases =
+    [ TestCaseData(
+        [ Word "x"
+          Plus
+          Function "differentiate"
+          Lpar
+          Number 9.0
+          Plus
+          Number 17.0
+          Rpar ],
+        [ Word "x"
+          Plus
+          Lpar
+          Number 0.0
+          Rpar ]
+      )
+      TestCaseData(
+          [ Function "differentiate"
+            Lpar
+            Word "y"
+            Plus
+            Number 17.0
+            Rpar
+            Plus
+            Word "x" ],
+          [ Lpar
+            Number 1.0
+            Rpar
+            Plus
+            Word "x" ]
+      )
+      TestCaseData(
+          [ Function "differentiate"
+            Lpar
+            Word "y"
+            Exponent
+            Number 2.0
+            Rpar ],
+          [ Lpar
+            Number 2.0
+            Times
+            Word "y"
+            Exponent
+            Number 1.0
+            Rpar ]
+      )
+      TestCaseData(
+          [ Function "differentiate"
+            Lpar
+            Word "y"
+            Exponent
+            Number 2.0
+            Comma
+            Word "y"
+            Assign
+            Number 2.0
+            Rpar ],
+          [ Number 4.0 ]
+      )
+      TestCaseData(
+          [ Number 4.0
+            Plus
+            Function "differentiate"
+            Lpar
+            Word "y"
+            Exponent
+            Number 2.0
+            Comma
+            Word "y"
+            Assign
+            Number 2.0
+            Rpar ],
+          [ Number 8.0 ]
+      )
+      TestCaseData(
+          [ Function "differentiate"
+            Lpar
+            Word "y"
+            Exponent
+            Number 2.0
+            Comma
+            Word "y"
+            Assign
+            Number 2.0
+            Rpar
+            Plus
+            Number 8.0 ],
+          [ Number 12.0 ]
+      )
+      TestCaseData(
+          [ Function "differentiate"
+            Lpar
+            Function "logX"
+            Lpar
+            Number 5.0
+            Comma
+            Word "x"
+            Exponent
+            Number 12.0
+            Rpar
+            Comma
+            Word "x"
+            Assign
+            Number 2.0
+            Rpar ],
+          [ Number 2.316342605425184 ]
+      ) ]
+
+[<TestCaseSource("DifferentiateCases")>]
+let GivenExec_WhenPassedValidDifferentiation_ReturnCorrectResult (input: terminal list, expected: terminal list) =
+    let result, _ = exec Map.empty input
+    Assert.That(result, Is.EqualTo(expected))
