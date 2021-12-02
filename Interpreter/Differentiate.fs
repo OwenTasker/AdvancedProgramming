@@ -504,7 +504,20 @@ let rec private autoDifferentiate terminals opStack numStack =
                 |> raise
         | head :: tail -> autoDifferentiate terminals tail (performOperation head numStack)
 
+let rec checkUniqueVariables terminals (vars: Set<string>) =
+    match terminals with
+    | head :: tail ->
+        match head with
+        | Word a -> checkUniqueVariables tail (vars.Add a)
+        | _ -> checkUniqueVariables tail vars
+    | [] -> vars.Count > 1
+
+
 /// <summary>Wrapper for autoDifferentiate that calls it with empty number and operator stacks</summary>
 ///
 /// <param name="terminals">A list of terminals representing a valid expression for differentiation.</param>
-let internal differentiate terminals = autoDifferentiate terminals [] []
+let internal differentiate terminals =
+    if checkUniqueVariables terminals Set.empty then
+        ExecError "Execution Error: Partial Differentiation is not supported, please ensure only one variable is contained within differentiation" |> raise
+    else
+        autoDifferentiate terminals [] []

@@ -1482,6 +1482,11 @@ let ErrorCases =
             Lpar
             Number 1.0
             Rpar ]
+      )
+      TestCaseData(
+          [ Word "x"
+            Plus
+            Word "y" ]
       ) ]
 
 [<TestCaseSource("ErrorCases")>]
