@@ -117,6 +117,36 @@ let rec private extractAssignment inList outList nestCount =
     | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
 
 /// <summary>
+/// Creates an environment from a list of terminals representing Comma separate assignments.
+/// </summary>
+///
+/// <param name="terminals">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
+///
+/// <returns></returns>
+and private setArguments terminals (env: Map<string, terminal list>) =
+    match terminals with
+    | Rpar :: tail -> env, tail
+    | Word x :: Assign :: tail ->
+        match extractAssignment tail [] 0 with
+        | name, expression ->
+            setArguments name (env.Add(x, expression))
+    | Lpar :: tail -> setArguments tail env
+    | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
+
+and private extractParameters terminals (paramList : terminal list list) env =
+    match terminals with
+    | Rpar :: tail -> List.rev paramList, tail
+    | Comma :: tail
+    | Lpar :: tail ->
+        let remaining, parameter = extractAssignment tail [] 0
+        extractParameters remaining (parameter :: paramList) env
+    | [] -> ExecError "Execution Error: Unmatched left parenthesis" |> raise
+    | _ -> ExecError "Execution Error: Unmatched right parenthesis" |> raise
+
+/// <summary>
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or final Rpar terminal
 /// </summary>
 ///
@@ -186,36 +216,6 @@ and private systemFunctionClosed (parameters: terminal list list) (env: Map<stri
         closed env head && systemFunctionClosed tail env
 
 /// <summary>
-/// Creates an environment from a list of terminals representing Comma separate assignments.
-/// </summary>
-///
-/// <param name="terminals">
-/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
-/// </param>
-/// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
-///
-/// <returns></returns>
-and private setArguments terminals (env: Map<string, terminal list>) =
-    match terminals with
-    | Rpar :: tail -> env, tail
-    | Word x :: Assign :: tail ->
-        match extractAssignment tail [] 0 with
-        | name, expression ->
-            setArguments name (env.Add(x, expression))
-    | Lpar :: tail -> setArguments tail env
-    | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
-
-and private extractParameters terminals (paramList : terminal list list) env =
-    match terminals with
-    | Rpar :: tail -> List.rev paramList, tail
-    | Comma :: tail
-    | Lpar :: tail ->
-        let remaining, parameter = extractAssignment tail [] 0
-        extractParameters remaining (parameter :: paramList) env
-    | [] -> ExecError "Execution Error: Unmatched left parenthesis" |> raise
-    | _ -> ExecError "Execution Error: Unmatched right parenthesis" |> raise
-
-/// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
 /// expression into an operator stack and a number stack. Performs calculations depending on precedence and
 /// associativity rather than producing a reverse Polish notation output.
@@ -227,7 +227,7 @@ and private extractParameters terminals (paramList : terminal list list) env =
 /// <param name="env">The execution environment for any variables in the expression.</param>
 ///
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
-and private reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
+let rec private reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
     match terminals with
     | terminalHead :: terminalTail ->
         match terminalHead with
@@ -273,18 +273,7 @@ and private reduceRecursive terminals opStack numStack (env: Map<string, termina
         | Lpar :: _ -> ExecError "Execution Error: Unmatched left parenthesis." |> raise
         | head :: tail -> reduceRecursive terminals tail (performOperation head numStack) env
 
-/// <summary>
-/// Wrapper for reduceRecursive to call it with empty operator and number stacks.
-/// </summary>
-///
-/// <param name="terminals">A list of terminals representing an expression in infix notation.</param>
-/// <param name="env">The execution environment for any variables in the expression.</param>
-///
-/// <returns>A Number terminal containing the outcome of the expression.</returns>
-and private reduce terminals (env: Map<string, terminal list>) =
-    reduceRecursive terminals [] [] env
-
-and handleFunction funcName bracketedExpression env : terminal=
+and private handleFunction funcName bracketedExpression env : terminal=
     match funcName with
     | "differentiate" ->
         let extractedParams, _ = extractParameters bracketedExpression [] env
@@ -343,7 +332,18 @@ and private handleTwoArgumentFunction env func expression : terminal=
     | _ ->
         ExecError "error" |> raise
 
-let rec expandDifferentiates (terminalsIn: terminal list) (terminalsOut: terminal list) env : terminal list=
+/// <summary>
+/// Wrapper for reduceRecursive to call it with empty operator and number stacks.
+/// </summary>
+///
+/// <param name="terminals">A list of terminals representing an expression in infix notation.</param>
+/// <param name="env">The execution environment for any variables in the expression.</param>
+///
+/// <returns>A Number terminal containing the outcome of the expression.</returns>
+and private reduce terminals (env: Map<string, terminal list>) =
+    reduceRecursive terminals [] [] env
+
+let rec private expandDifferentiates (terminalsIn: terminal list) (terminalsOut: terminal list) env : terminal list=
     match terminalsIn with
     | head :: tail when head = Function "differentiate" ->
         let parameters, remaining = extractParameters tail [] env
