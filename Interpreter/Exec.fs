@@ -32,7 +32,11 @@ let private performBinaryOperation operator op1 op2 =
         match op2 with
         | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero, this operation is undefined." |> raise
         | _ -> Number (op1 / op2)
-    | Exponent -> Number (op1 ** op2)
+    | Exponent ->
+        if op1 <= 0.0 && 0.0 < op2 && op2 < 1.0 then
+            Number (-((-op1)**op2))
+        else
+            Number (op1 ** op2)
     | _ -> CalculateError "Calculate Error: Invalid operator passed." |> raise
 
 /// <summary>
@@ -110,11 +114,42 @@ let rec private extractAssignment inList outList nestCount =
     match inList with
     | Rpar :: _ when nestCount = 0 -> inList, List.rev outList
     | [Rpar] -> inList, List.rev outList
-    | Comma :: inTail when nestCount = 0 -> (inTail, List.rev outList)
+    | Comma :: _ when nestCount = 0 -> (inList, List.rev outList)
     | Lpar :: inTail -> extractAssignment inTail (Lpar :: outList) (nestCount+1)
     | Rpar :: inTail -> extractAssignment inTail (Rpar :: outList) (nestCount-1)
     | any :: inTail -> extractAssignment inTail (any :: outList) nestCount
-    | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
+    | [] -> inList, List.rev outList
+
+/// <summary>
+/// Creates an environment from a list of terminals representing Comma separate assignments.
+/// </summary>
+///
+/// <param name="terminals">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
+///
+/// <returns></returns>
+and private setArguments terminals (env: Map<string, terminal list>) =
+    match terminals with
+    | Rpar :: tail -> env, tail
+    | Word x :: Assign :: tail ->
+        match extractAssignment tail [] 0 with
+        | remaining, expression ->
+            setArguments remaining (env.Add(x, expression))
+    | Comma :: tail
+    | Lpar :: tail -> setArguments tail env
+    | _ -> env, terminals
+
+and private extractParameters terminals (paramList : terminal list list) env =
+    match terminals with
+    | Rpar :: tail -> List.rev paramList, tail
+    | Comma :: tail
+    | Lpar :: tail ->
+        let remaining, parameter = extractAssignment tail [] 0
+        extractParameters remaining (parameter :: paramList) env
+    | [] -> ExecError "Execution Error: Unmatched left parenthesis" |> raise
+    | _ -> ExecError "Execution Error: Unmatched right parenthesis" |> raise
 
 /// <summary>
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or final Rpar terminal
@@ -146,48 +181,44 @@ let rec private extractExpression inList outList =
 /// <returns></returns>
 let rec internal closed (env: Map<string, terminal list>) terminals  =
     match terminals with
-    | [] -> true, env
+    | [] -> true
     | Word x :: tail ->
-        if env.ContainsKey x && closed env env.[x] |> fst
+        if env.ContainsKey x && closed env env.[x]
         then closed env tail
-        else false, env
+        else false
     | Function a :: tail ->
         match a with
+        | "differentiate" ->
+            let parameters, remaining = extractParameters tail [] env
+            if differentiationClosed parameters env then
+                closed env remaining
+            else false
         | FunctionMatch _ ->
-            let remaining, _ = extractBrackets tail 0 []
-            closed env remaining
+            let parameters, remaining = extractParameters tail [] env
+            if systemFunctionClosed parameters env then
+                closed env remaining
+            else false
         | _ ->
-            let newEnv, remainingTerminals = setArguments tail env
-            closed newEnv remainingTerminals
+            let remaining, bracketedExpression = extractBrackets tail 0 []
+            let newEnv, _ = setArguments bracketedExpression env
+            if closed newEnv [Word a] then
+                closed env remaining
+            else ExecError "Execution Error: User defined function is not closed by provided assignments" |> raise
     | _ :: tail -> closed env tail
 
-/// <summary>
-/// Creates an environment from a list of terminals representing Comma separate assignments.
-/// </summary>
-///
-/// <param name="terminals">
-/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
-/// </param>
-/// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
-///
-/// <returns></returns>
-and private setArguments terminals (env: Map<string, terminal list>) =
-    match terminals with
-    | Rpar :: tail -> env, tail
-    | Word x :: Assign :: tail ->
-        match extractAssignment tail [] 0 with
-        | name, expression ->
-            setArguments name (env.Add(x, (exec env expression |> fst)) )
-    | Lpar :: tail -> setArguments tail env
-    | _ -> ExecError "Execution Error: Function call contains non-assignment expression." |> raise
+and private differentiationClosed (parameters: terminal list list) (env: Map<string, terminal list>) =
+    if parameters.Length > 1 then
+        let newEnv, _ = setArguments parameters.[1] env
+        let diffedExpr = differentiate parameters.[0]
+        closed (toMap newEnv) diffedExpr
+    else
+        closed env (differentiate parameters.[0])
 
-and private extractParameters terminals (paramList : terminal list list) env =
-    match terminals with
-    | Rpar :: tail -> List.rev paramList , tail
-    | _ :: _ ->
-        let remaining, parameter = extractAssignment terminals [] 0
-        extractParameters remaining ((exec env parameter |> fst) :: paramList) env
-    | [] -> ExecError "Execution Error: Unmatched left parenthesis" |> raise
+and private systemFunctionClosed (parameters: terminal list list) (env: Map<string, terminal list>) =
+    match parameters with
+    | [] -> true
+    | head :: tail ->
+        closed env head && systemFunctionClosed tail env
 
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
@@ -201,7 +232,7 @@ and private extractParameters terminals (paramList : terminal list list) env =
 /// <param name="env">The execution environment for any variables in the expression.</param>
 ///
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
-and private reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
+let rec private reduceRecursive terminals opStack numStack (env: Map<string, terminal list>) =
     match terminals with
     | terminalHead :: terminalTail ->
         match terminalHead with
@@ -212,17 +243,8 @@ and private reduceRecursive terminals opStack numStack (env: Map<string, termina
             else ExecError "Execution Error: Expression with unbound variables passed to reduce." |> raise
         | Function a ->
             let remainingTerminals, bracketedExpression = extractBrackets terminalTail 0 []
-
-            if env.ContainsKey a
-            then
-                let terminalList, _ = exec env (Function a :: bracketedExpression)
-                reduceRecursive remainingTerminals opStack (terminalList @ numStack) env
-            else
-                match a with
-                | FunctionMatch _ ->
-                    let terminalList, _ = exec env (Function a :: bracketedExpression)
-                    reduceRecursive remainingTerminals opStack (terminalList @ numStack) env
-                | _ -> ExecError "Execution Error: Undefined function" |> raise
+            let value = handleFunction a bracketedExpression env
+            reduceRecursive remainingTerminals opStack (value :: numStack) env
         | Lpar -> reduceRecursive terminalTail (terminalHead :: opStack) numStack env
         | Rpar ->
             match evaluateBrackets opStack numStack performOperation with
@@ -256,6 +278,65 @@ and private reduceRecursive terminals opStack numStack (env: Map<string, termina
         | Lpar :: _ -> ExecError "Execution Error: Unmatched left parenthesis." |> raise
         | head :: tail -> reduceRecursive terminals tail (performOperation head numStack) env
 
+and private handleFunction funcName bracketedExpression env : terminal=
+    match funcName with
+    | "differentiate" ->
+        let extractedParams, _ = extractParameters bracketedExpression [] env
+        if extractedParams.Length > 1 then
+            let diffEnv, _ = setArguments extractedParams.[1] env
+            reduce (differentiate extractedParams.[0]) (toMap diffEnv)
+        else
+            reduce (differentiate extractedParams.[0]) env
+    | "sqrt" -> handleRootFunction env bracketedExpression [Number 2.0]
+    | "cbrt" -> handleRootFunction env bracketedExpression [Number 3.0]
+    | "xrt" ->
+        let extractedParams, _ = extractParameters bracketedExpression [] env
+        handleRootFunction env extractedParams.[0] extractedParams.[1]
+    | "ln" -> handleSingleArgumentFunction env LogETerminal bracketedExpression
+    | "logTwo" -> handleSingleArgumentFunction env Log2 bracketedExpression
+    | "logTen" -> handleSingleArgumentFunction env Log10 bracketedExpression
+    | "floor" -> handleSingleArgumentFunction env FloorToTerminal bracketedExpression
+    | "ceil" -> handleSingleArgumentFunction env CeilToTerminal bracketedExpression
+    | "round" -> handleSingleArgumentFunction env RoundNum bracketedExpression
+    | "abs" -> handleSingleArgumentFunction env AbsVal bracketedExpression
+    | "logX" -> handleTwoArgumentFunction env LogX bracketedExpression
+    | "gcd" -> handleTwoArgumentFunction env getGCDWrapper bracketedExpression
+    | "mod" -> handleTwoArgumentFunction env moduloCalc bracketedExpression
+    | "rand" -> handleTwoArgumentFunction env pseudoRandom bracketedExpression
+    | _ ->
+        if env.ContainsKey funcName then
+            let newEnv, _ = setArguments bracketedExpression env
+            let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
+            (reduce [Word funcName] combinedEnv)
+        else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
+
+and private handleRootFunction (env : Map<string, terminal list>) (operand: terminal list) (exponent: terminal list) =
+    let reducedOperand = reduce operand env
+    let reducedExponent = reduce exponent env
+    match reducedOperand, reducedExponent with
+    | Number a, Number b ->
+        if a < 0.0 && (b < 0.0 || (b % 2.0) <> 1.0) then
+            InvalidArgumentError "First argument to root function must be positive to take an even numbered root." |> raise
+        else
+            reduce (RootToTerminals [reducedOperand] [reducedExponent]) env
+    | _ ->
+        ExecError "error" |> raise
+
+and private handleSingleArgumentFunction env func expression =
+    match reduce expression env with
+    | Number a -> func a
+    | _ -> ExecError "error" |> raise
+
+and private handleTwoArgumentFunction env func expression : terminal=
+    let extractedParams, _ = extractParameters expression [] env
+    let baseValue = reduce extractedParams.[0] env
+    let operand = reduce extractedParams.[1] env
+    match baseValue, operand with
+    | Number a, Number b ->
+        reduce [func a b] env
+    | _ ->
+        ExecError "error" |> raise
+
 /// <summary>
 /// Wrapper for reduceRecursive to call it with empty operator and number stacks.
 /// </summary>
@@ -267,6 +348,18 @@ and private reduceRecursive terminals opStack numStack (env: Map<string, termina
 and private reduce terminals (env: Map<string, terminal list>) =
     reduceRecursive terminals [] [] env
 
+let rec private expandDifferentiates (terminalsIn: terminal list) (terminalsOut: terminal list) env : terminal list=
+    match terminalsIn with
+    | head :: tail when head = Function "differentiate" ->
+        let parameters, remaining = extractParameters tail [] env
+        if parameters.Length = 1 then
+            expandDifferentiates remaining (terminalsOut @ [Lpar] @ (differentiate parameters.[0]) @ [Rpar]) env
+        else
+            let reduction = reduce (Function "differentiate" :: (extractBrackets tail 0 [] |> fst)) env
+            expandDifferentiates remaining (terminalsOut @ [reduction]) env
+    | head :: tail -> expandDifferentiates tail (terminalsOut @ [head]) env
+    | [] -> terminalsOut
+
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
 /// a valid statement and an execution environment.
@@ -276,7 +369,7 @@ and private reduce terminals (env: Map<string, terminal list>) =
 /// <param name="env">The current MyMathsPal execution environment.</param>
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
-and internal exec (env: Map<string, terminal list>) terminals  =
+let rec internal exec (env: Map<string, terminal list>) terminals : terminal list * System.Collections.Generic.IDictionary<string,terminal list>=
     match terminals with
     | Word x :: Assign :: tail ->
         match tail with
@@ -285,98 +378,11 @@ and internal exec (env: Map<string, terminal list>) terminals  =
         | _ ->
             let result, _ = exec env tail
             terminals, (env.Add(x, result) |> Map.toSeq |> dict)
-    //https://stackoverflow.com/questions/3974758/in-f-how-do-you-merge-2-collections-map-instances
-    | Function a :: tail ->
-        match a with
-        | "differentiate" ->
-            let extractedParams, remaining = extractParameters tail.[1..] [] env
-            if extractedParams.Length > 1 then
-                let _, diffEnv = exec env extractedParams.[1]
-                let diffedExpr = reduce (differentiate extractedParams.[0]) (toMap diffEnv)
-                [reduce (diffedExpr :: remaining) env], env |> Map.toSeq |> dict
-            else
-                let diffedExpr, _ = exec env (differentiate extractedParams.[0])
-                exec env (diffedExpr @ remaining)
-        | "sqrt" ->
-            let remaining, bracketedExpression = extractBrackets terminals 0 []
-            let reducedRes, _ = exec env bracketedExpression
-            handleRootFunction remaining env reducedRes [Number 2.0]
-        | "cbrt" ->
-            let remaining, bracketedExpression = extractBrackets terminals 0 []
-            let reducedRes, _ = exec env bracketedExpression
-            handleRootFunction remaining env reducedRes [Number 3.0]
-        | "xrt" ->
-            let extractedParams, remaining = extractParameters tail.[1..] [] env
-            let root = exec env extractedParams.[0] |> fst
-            let operand = exec env extractedParams.[1] |> fst
-            handleRootFunction remaining env operand root
-        | "ln" -> handleSingleArgumentFunction tail env LogETerminal a
-        | "logTwo" -> handleSingleArgumentFunction tail env Log2 a
-        | "logTen" -> handleSingleArgumentFunction tail env Log10 a
-        | "floor" -> handleSingleArgumentFunction tail env FloorToTerminal a
-        | "ceil" -> handleSingleArgumentFunction tail env CeilToTerminal a
-        | "round" -> handleSingleArgumentFunction tail env RoundNum a
-        | "abs" -> handleSingleArgumentFunction tail env AbsVal a
-        | "logX" -> handleTwoArgumentFunction tail env LogX a
-        | "gcd" -> handleTwoArgumentFunction tail env getGCDWrapper a
-        | "mod" -> handleTwoArgumentFunction tail env moduloCalc a
-        | "rand" -> handleTwoArgumentFunction tail env pseudoRandom a
-        | _ ->
-            if env.ContainsKey a then
-                let newEnv, remainingTerminals = setArguments tail env
-                let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
-
-                if closed combinedEnv [Word a] |> fst
-                then [reduce ((reduce [Word a] combinedEnv) :: remainingTerminals) env], (env |> Map.toSeq |> dict)
-                else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
-            else ExecError "Execution Error: Undefined function" |> raise
     | [] -> [], env |> Map.toSeq |> dict
     | _ ->
-        let isClosed, newEnv = closed env terminals
-        if isClosed
-        then [reduce terminals newEnv], (env |> Map.toSeq |> dict)
-        else terminals, (env |> Map.toSeq |> dict)
-
-and private handleRootFunction remaining env operand exponent =
-    match operand, exponent with
-    | [Number _], [Number a] ->
-        if a > 0.0 then
-            let reducedExponent = reduce exponent env
-            exec env ((reduce (RootToTerminals operand [reducedExponent]) env) :: remaining)
+        if closed env terminals then
+            let result = [reduce terminals env]
+            result, (env |> Map.toSeq |> dict)
         else
-            InvalidArgumentError "First argument to root function must be positive." |> raise
-    | _ ->
-        exec env ((RootToTerminals operand exponent) @ remaining)
-
-and private handleSingleArgumentFunction terminals env func funcName =
-    let remaining, bracketedExpression = extractBrackets terminals 0 []
-    let value, _ = exec env bracketedExpression
-    match value with
-    | [Number a] ->
-        exec env ((func a) :: remaining)
-    | _ ->
-        match remaining with
-        | [] -> Function funcName :: Lpar :: value @ [Rpar], (env |> Map.toSeq |> dict)
-        | Plus :: tail
-        | Minus :: tail
-        | Divide :: tail
-        | Exponent :: tail
-        | Times :: tail -> Function funcName :: Lpar :: value @ [Rpar] @ [remaining.[0]] @ (exec env tail |> fst), (env |> Map.toSeq |> dict)
-        | _ -> ExecError "Execution Error: Malformed expression" |> raise
-
-and private handleTwoArgumentFunction terminals env func funcName =
-    let extractedParams , remaining = extractParameters terminals.[1..] [] env
-    let baseValue = exec env extractedParams.[0] |> fst
-    let operand = exec env extractedParams.[1] |> fst
-    match baseValue, operand with
-    | [Number a],[Number b] ->
-        [reduce ([func a b] @ remaining) env], (env |> Map.toSeq |> dict)
-    | _ ->
-        match remaining with
-        | [] -> Function funcName :: Lpar :: baseValue @ [Comma] @ operand @ [Rpar], (env |> Map.toSeq |> dict)
-        | Plus :: tail
-        | Minus :: tail
-        | Divide :: tail
-        | Exponent :: tail
-        | Times :: tail -> Function funcName :: Lpar :: baseValue @ [Comma] @ operand @ [Rpar] @ [remaining.[0]] @ (exec env tail |> fst), (env |> Map.toSeq |> dict)
-        | _ -> ExecError "Execution Error: Malformed expression" |> raise
+            let result = expandDifferentiates terminals [] env
+            result, (env |> Map.toSeq |> dict)
