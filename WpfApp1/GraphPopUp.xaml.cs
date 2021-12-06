@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Brushes = System.Drawing.Brushes;
+using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
@@ -45,6 +46,9 @@ namespace WpfApp1
 
         //List of all plotted functions and their arrays (starts as just one)
         private readonly List<(string, (double[], double[]))> _functions = new();
+        
+        //Create cursor for hovering
+        Label cursor = new Label();
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -137,6 +141,14 @@ namespace WpfApp1
             
             //Add mouse tracking for displaying coordinates
             CompositionTarget.Rendering += OnRendering;
+            
+            //Set up cursor for hovering
+            cursor.Content = "x";
+            cursor.FontFamily = new FontFamily("Courier New");
+            cursor.FontSize = 10;
+            cursor.Foreground = System.Windows.Media.Brushes.Red;
+            cursor.Opacity = 0;
+            mainGrid.Children.Add(cursor);
         }
 
         /// <summary>
@@ -561,17 +573,22 @@ namespace WpfApp1
         /// </summary>
         private void OnRendering(object sender, EventArgs e)
         {
+            mainGrid.Children.Remove(cursor);
+            
             var coords = Mouse.GetPosition(ImageGraph);
             var xCoord = Math.Floor(coords.X);
             var yCoord = Math.Floor(coords.Y);
-            yCoord = (ImageHeight - yCoord) / 400 * 750;
 
-            if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 749)
+            if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 399)
             {
                 var (_, (xArray, yArray)) = _functions.Last();
 
                 TextBoxXCoord.Text = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
                 TextBoxYCoord.Text = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+
+                cursor.Opacity = 1;
+                cursor.Margin = new Thickness(xCoord + 22, yCoord, 0, 0);
+                mainGrid.Children.Add(cursor);
             }
         }
     }
