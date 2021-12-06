@@ -1518,3 +1518,45 @@ let DifferentiateCases =
 let GivenExec_WhenPassedValidDifferentiation_ReturnCorrectResult (input: terminal list, expected: terminal list) =
     let result, _ = exec Map.empty input
     Assert.That(result, Is.EqualTo(expected))
+
+let GeneralErrorCases =
+    [
+        TestCaseData([Number 1.0; Number 1.0;])
+        TestCaseData([UnaryMinus; Minus;])
+        TestCaseData([UnaryMinus; UnaryMinus])
+        TestCaseData([Minus; Minus;])
+        TestCaseData([Rpar;])
+        TestCaseData([Function "ln"; Number 2.0; Times; Number 2.0; Rpar;])
+        TestCaseData([Lpar; Number 2.0; Times; Number 2.0;])
+        TestCaseData([Lpar; Number 2.0; Times; Number 2.0; Rpar; Rpar;])
+        TestCaseData([Lpar;])
+        TestCaseData([Function "ln"; Lpar; Number 2.0; Times; Number 2.0;])
+        TestCaseData([Lpar; Number 2.0; Times; Number 2.0;])
+        TestCaseData([Lpar; Lpar; Number 2.0; Times; Number 2.0; Rpar;])
+        TestCaseData([Function "ln"; Lpar; Rpar;])
+        TestCaseData([Function "ln"; Lpar; Number 2.0; Times; Number 2.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "logX"; Lpar; Number 2.0; Times; Number 2.0; Rpar;])
+        TestCaseData([Function "logX"; Lpar; Number 2.0; Times; Number 2.0; Comma; Number 2.0; Times; Number 2.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "test"; Lpar; Number 2.0; Times; Number 2.0; Rpar;])
+        TestCaseData([Function "differentiate"; Lpar; Function "y"; Lpar; Word "z"; Assign; Number 2.0; Rpar; Rpar;])
+        TestCaseData([Function "differentiate"; Lpar; Function "ceil"; Lpar; Number 2.0; Rpar; Rpar;])
+        TestCaseData([Function "sqrt"; Lpar; Plus; Rpar;])
+        TestCaseData([Function "y"; Lpar; Word "z"; Assign; Plus; Comma; Word "x"; Assign; Lpar; Rpar;])
+        TestCaseData([Word "x"; Assign; Word "y"; Assign; Number 2.0])
+        TestCaseData([Word "x"; Assign;])
+    ]
+
+let RootErrorCases =
+    [
+        TestCaseData([Function "xrt"; Lpar; Number -12.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "sqrt"; Lpar; Number -2.0; Rpar;])
+        TestCaseData([Function "sqrt"; Lpar; UnaryMinus; Number 2.0; Rpar;])
+    ]
+
+[<TestCaseSource("GeneralErrorCases")>]
+let GivenExec_WhenPassedInvalidStatement_RaiseExecError(input: terminal list) =
+    Assert.Throws<ExecError>(fun () -> exec env input |> ignore) |> ignore
+
+[<TestCaseSource("RootErrorCases")>]
+let GivenExec_WhenPassedRootWithInvalidArgument_RaiseInvalidArgumentError(input: terminal list) =
+    Assert.Throws<InvalidArgumentError>(fun () -> exec env input |> ignore) |> ignore
