@@ -310,7 +310,7 @@ and private handleFunction funcName bracketedExpression env : terminal=
             (reduce [Word funcName] combinedEnv)
         else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
 
-and private handleRootFunction (env : Map<string, terminal list>) (operand: terminal list) (exponent: terminal list) =
+and private handleRootFunction (env : Map<string, terminal list>) operand exponent =
     let reducedOperand = reduce operand env
     let reducedExponent = reduce exponent env
     match reducedOperand, reducedExponent with
@@ -327,7 +327,7 @@ and private handleSingleArgumentFunction env func expression =
     | Number a -> func a
     | _ -> ExecError "error" |> raise
 
-and private handleTwoArgumentFunction env func expression : terminal=
+and private handleTwoArgumentFunction env func expression =
     let extractedParams, _ = extractParameters expression [] env
     let baseValue = reduce extractedParams.[0] env
     let operand = reduce extractedParams.[1] env
@@ -348,7 +348,7 @@ and private handleTwoArgumentFunction env func expression : terminal=
 and private reduce terminals (env: Map<string, terminal list>) =
     reduceRecursive terminals [] [] env
 
-let rec private expandDifferentiates (terminalsIn: terminal list) (terminalsOut: terminal list) env : terminal list=
+let rec private expandDifferentiates terminalsIn terminalsOut env =
     match terminalsIn with
     | head :: tail when head = Function "differentiate" ->
         let parameters, remaining = extractParameters tail [] env
@@ -369,7 +369,7 @@ let rec private expandDifferentiates (terminalsIn: terminal list) (terminalsOut:
 /// <param name="env">The current MyMathsPal execution environment.</param>
 ///
 /// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
-let rec internal exec (env: Map<string, terminal list>) terminals : terminal list * System.Collections.Generic.IDictionary<string,terminal list>=
+let rec internal exec (env: Map<string, terminal list>) terminals =
     match terminals with
     | Word x :: Assign :: tail ->
         match tail with
