@@ -1,24 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace WpfApp1
 {
-    public class Trie
+    public class Trie : IPrefixTree
     {
-        private TrieNode _root = new TrieNode('/', false);
+        private TrieNode _root = new() {Data = '/', IsKey = false};
 
-        public Trie()
-        { }
-        
-        public Trie(TrieNode root)
+        public void Clear()
         {
-            _root = root;
+            _root = new TrieNode {Data = '/', IsKey = false};
         }
 
-        public TrieNode GetRoot()
-        {
-            return _root;
-        }
         public void Add(string s)
         {
             var t = _root;
@@ -27,102 +20,99 @@ namespace WpfApp1
             {
                 var nextNode = t.GetOffspring(s[i]);
 
-                if (nextNode.GetIsEmpty() == false && i == s.Length - 1) // probably works?
+                switch (nextNode.IsEmpty)
                 {
-                    nextNode.SetIsKey(true);
-                }
-                else if (nextNode.GetIsEmpty())
-                {
-                    if (i == s.Length - 1)
-                    {
-                        nextNode = new TrieNode(s[i], true);
-                        t.SetOffspring(nextNode);
-                    }
-                    else
-                    {
-                        nextNode = new TrieNode(s[i], false);
-                        t.SetOffspring(nextNode);
-                    }
+                    case false when i == s.Length - 1:
+                        nextNode.IsKey = true;
+                        break;
+                    case true when i == s.Length - 1:
+                        nextNode = new TrieNode {Data = s[i], IsKey = true};
+                        t.Offspring.Add(nextNode);
+                        break;
+                    case true:
+                        nextNode = new TrieNode {Data = s[i], IsKey = false};
+                        t.Offspring.Add(nextNode);
+                        break;
                 }
 
                 t = nextNode;
             }
         }
 
-        public HashSet<string> Contains(string s)
+        public IEnumerable<string> Contains(string s)
         {
             var t = _root;
 
-            for (var i = 0; i < s.Length; i++)
+            foreach (var nextNode in s.Select(t1 => t.GetOffspring(t1)))
             {
-                var nextNode = t.GetOffspring(s[i]);
-
-                if (nextNode.GetIsEmpty())
+                if (nextNode.IsEmpty)
                 {
                     return null;
                 }
-                
+
                 t = nextNode;
             }
-            
-            var subtrie = new Trie(t);
+
+            var subTrie = new Trie {_root = t};
 
             var matches = new HashSet<string>();
-            
+
             if (s.Length != 0)
             {
-                matches = DfsTraversal(s[..^1], subtrie.GetRoot(), new HashSet<string>());
+                matches = DfsTraversal(s[..^1], subTrie._root, new HashSet<string>());
             }
 
             return matches;
         }
 
-        public TrieNode DfsTraversal(TrieNode t)
-        {
-            if(t == null)
-            {
-                return null;
-            }
-            else
-            {
-                // PREORDER
-                Console.Write(t);
-                var offspring = t.GetAllOffspring();
-
-                for(int i = 0; i < offspring.Count; i++)
-                {
-                    DfsTraversal(offspring[i]);
-                }
-            }
-            // POSTORDER c.wl(t)
-            return t;
-        }
-        
         private HashSet<string> DfsTraversal(string search, TrieNode t, HashSet<string> matches)
         {
             if(t == null)
             {
                 return null;
             }
-            else
+
+            // PREORDER
+            search += t.Data;
+
+            if (t.IsKey)
             {
-                // PREORDER
-                search = search + t.GetC();
+                matches.Add(search);
+            }
 
-                if (t.GetIsKey())
-                {
-                    matches.Add(search);
-                }
+            var offspring = t.Offspring;
 
-                var offspring = t.GetAllOffspring();
-
-                for (int i = 0; i < offspring.Count; i++)
-                {
-                    matches.UnionWith(DfsTraversal(search, offspring[i], matches)); // https://stackoverflow.com/questions/15267034/is-there-an-addrange-equivalent-for-a-hashset-in-c-sharp
-                }
+            foreach (var t1 in offspring)
+            {
+                matches.UnionWith(DfsTraversal(search, t1, matches)); // https://stackoverflow.com/questions/15267034/is-there-an-addrange-equivalent-for-a-hashset-in-c-sharp
             }
             // POSTORDER c.wl(t)
             return matches;
+        }
+
+        private class TrieNode
+        {
+            public char Data { get; init; }
+            public bool IsKey { get; set; }
+            public bool IsEmpty { get; private init; }
+            public List<TrieNode> Offspring { get; } = new();
+
+            public TrieNode GetOffspring(char c)
+            {
+                var t = new TrieNode {IsEmpty = true};
+
+                foreach (var t1 in Offspring.Where(t1 => t1.Data == c))
+                {
+                    return t1;
+                }
+
+                return t;
+            }
+
+            public override string ToString()
+            {
+                return Data.ToString();
+            }
         }
     }
 }
