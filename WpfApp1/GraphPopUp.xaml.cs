@@ -118,9 +118,8 @@ namespace WpfApp1
             yArray[yMinIndex] -= 2;
             yArray[yMaxIndex] += 2;
 
-            Console.WriteLine(trimmedArgsArray[0]);
+            //If y is constant, modify axis range
             var functionRight = trimmedArgsArray[0].Split(">")[^1];
-            
             var isNumber = false;
             var isPositive = false;
             try
@@ -130,7 +129,6 @@ namespace WpfApp1
                 if (number >= 0)
                 {
                     isPositive = true;
-                    Console.WriteLine("piss");
                 }
             }
             catch (Exception)
