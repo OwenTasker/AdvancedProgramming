@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Imaging;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.IO;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using Brushes = System.Drawing.Brushes;
 using Image = System.Drawing.Image;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace WpfApp1
 {
@@ -22,6 +24,7 @@ namespace WpfApp1
     /// Free BitmapImage for deletion: https://stackoverflow.com/questions/8352787/how-to-free-the-memory-after-the-bitmapimage-is-no-longer-needed
     /// Copy image file to save it: https://stackoverflow.com/questions/7462997/copy-file-to-a-different-directory
     /// Overlay text on image: https://stackoverflow.com/questions/6826921/write-text-on-an-image-in-c-sharp
+    /// Get mouse coordinates: https://getandplay.github.io/2019/05/13/How-does-WPF-application-get-mouse-position-when-mouse-stay-outside-window/
     /// </summary>
     public partial class GraphPopUp : IGraphPopUp
     {
@@ -40,8 +43,8 @@ namespace WpfApp1
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
 
-        //List of all plotted functions (starts as just one)
-        private readonly List<string> _functions = new();
+        //List of all plotted functions and their arrays (starts as just one)
+        private readonly List<(string, (double[], double[]))> _functions = new();
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -56,7 +59,7 @@ namespace WpfApp1
 
             //Show window
             InitializeComponent();
-            
+
             Show();
         }
 
@@ -70,14 +73,15 @@ namespace WpfApp1
 
             //Compute evenly spaced values for x axis between given bounds
             var xArray =
-                _graphDataCalculator.ComputeXArray(double.Parse(trimmedArgsArray[1]), double.Parse(trimmedArgsArray[2]));
-            
+                _graphDataCalculator.ComputeXArray(double.Parse(trimmedArgsArray[1]),
+                    double.Parse(trimmedArgsArray[2]));
+
             //Compute values for y axis based on given function and calculated x array 
             var yArray = _graphDataCalculator.ComputeYArray(trimmedArgsArray, xArray, _interpreter);
 
-            //Add initial function to list
-            _functions.Add(trimmedArgsArray[0]);
-            
+            //Add initial function and its number arrays to list
+            _functions.Add((trimmedArgsArray[0],((double[]) xArray.Clone(), (double[]) yArray.Clone())));
+
             //Pre-fill x range boxes
             TextBoxXMin.Text = "" + xArray.Min();
             TextBoxXMax.Text = "" + xArray.Max();
@@ -91,17 +95,16 @@ namespace WpfApp1
             //Add some padding to top and bottom of graph
             yArray[0] = yArray.Min() - 2;
             yArray[749] = yArray.Max() + 2;
-            
+
             //Draw axis and get axis positions
             int yZero;
             int xZero;
             (yZero, xZero) = DrawAxis(xArray, yArray);
-            
+
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
-            var tempYArray = (double[]) yArray.Clone();
-            GenerateLine(tempYArray);
-            
+            GenerateLine((double[]) yArray.Clone());
+
             //Invert graph due to coordinate system
             InvertGraph();
 
@@ -117,7 +120,7 @@ namespace WpfApp1
                     image.Save(path + "MyMathsPal\\graph" + _thisImageId + ".png");
                 }
             }
-            
+
             //Add axis labels to graph
             AddLabels(yZero, xZero, xArray, yArray);
 
@@ -131,6 +134,9 @@ namespace WpfApp1
             ImageGraph.Source = graph;
             stream.Close();
             stream.Dispose();
+            
+            //Add mouse tracking for displaying coordinates
+            CompositionTarget.Rendering += OnRendering;
         }
 
         /// <summary>
@@ -170,7 +176,7 @@ namespace WpfApp1
         private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray)
         {
             //This method uses inverted y axis
-            
+
             //Create axis labels
             var yMaxLabel = "" + Math.Ceiling(yArray.Max());
             var yMinLabel = "" + Math.Floor(yArray.Min());
@@ -187,9 +193,10 @@ namespace WpfApp1
                 yMaxPointX -= (yMaxLabel.Length - 3) * 9 + 5;
                 yMinPointX -= yMinLabel.Length * 9 + 5;
             }
+
             var yMaxPoint = new PointF(yMaxPointX, 0);
             var yMinPoint = new PointF(yMinPointX, ImageHeight - 16);
-            
+
             //Find x axis label locations:
             var xMaxPointY = yZero;
             var xMinPointY = yZero;
@@ -198,9 +205,10 @@ namespace WpfApp1
                 xMaxPointY += 18;
                 xMinPointY += 18;
             }
+
             var xMaxPoint = new PointF(ImageWidth - (xMaxLabel.Length * 9 + 5), ImageHeight - xMaxPointY);
             var xMinPoint = new PointF(0, ImageHeight - xMinPointY);
-            
+
             //Find zero label location:
             var zeroPointX = xZero;
             var zeroPointY = ImageHeight - yZero;
@@ -208,26 +216,28 @@ namespace WpfApp1
             {
                 zeroPointX -= zeroLabel.Length * 9 + 5;
             }
+
             if (yZero < ImageHeight / 2)
             {
                 zeroPointY -= 18;
             }
+
             var zeroPoint = new PointF(zeroPointX, zeroPointY);
-            
+
             //Don't draw zero label if it will overlap
             if (yZero is < 10 or > ImageHeight - 10 || xZero is < 10 or > ImageWidth - 10)
             {
                 zeroLabel = "";
             }
-            
+
             //Draw labels in graph
             Bitmap newBitmap;
             var path = Path.GetTempPath();
-            using (var bitmap = (Bitmap)Image.FromFile(path + "MyMathsPal\\graph" + _thisImageId + ".png"))
+            using (var bitmap = (Bitmap) Image.FromFile(path + "MyMathsPal\\graph" + _thisImageId + ".png"))
             {
-                using(var graphics = Graphics.FromImage(bitmap))
+                using (var graphics = Graphics.FromImage(bitmap))
                 {
-                    using (var font =  new Font("Courier New", 14, GraphicsUnit.Pixel))
+                    using (var font = new Font("Courier New", 14, GraphicsUnit.Pixel))
                     {
                         graphics.DrawString(yMaxLabel, font, Brushes.Black, yMaxPoint);
                         graphics.DrawString(yMinLabel, font, Brushes.Black, yMinPoint);
@@ -236,6 +246,7 @@ namespace WpfApp1
                         graphics.DrawString(zeroLabel, font, Brushes.Black, zeroPoint);
                     }
                 }
+
                 newBitmap = new Bitmap(bitmap);
             }
 
@@ -392,6 +403,9 @@ namespace WpfApp1
             }
             else
             {
+                //Remove mouse tracking for displaying coordinates
+                CompositionTarget.Rendering -= OnRendering;
+                
                 //Delete temp image of graph before closing
                 ImageGraph.Source = new BitmapImage(new Uri("Images/graph.png", UriKind.Relative));
                 var path = Path.GetTempPath();
@@ -463,7 +477,8 @@ namespace WpfApp1
 
             try
             {
-                GenerateGraph("plot(" + _functions[0] + "," + TextBoxXMin.Text + "," + TextBoxXMax.Text + ")");
+                var (function, (_, _)) = _functions.Last();
+                GenerateGraph("plot(" + function + "," + TextBoxXMin.Text + "," + TextBoxXMax.Text + ")");
             }
             catch (Exception plottingException)
             {
@@ -539,6 +554,25 @@ namespace WpfApp1
             }
 
             PlotButton_OnClick(this, new RoutedEventArgs());
+        }
+        
+        /// <summary>
+        /// Display mouse coordinates on graph in boxes at top of screen.
+        /// </summary>
+        private void OnRendering(object sender, EventArgs e)
+        {
+            var coords = Mouse.GetPosition(ImageGraph);
+            var xCoord = Math.Floor(coords.X);
+            var yCoord = Math.Floor(coords.Y);
+            yCoord = (ImageHeight - yCoord) / 400 * 750;
+
+            if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 749)
+            {
+                var (_, (xArray, yArray)) = _functions.Last();
+
+                TextBoxXCoord.Text = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                TextBoxYCoord.Text = yArray[(int) yCoord].ToString(CultureInfo.InvariantCulture);
+            }
         }
     }
 }
