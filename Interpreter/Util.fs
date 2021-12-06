@@ -61,6 +61,8 @@ let public functions = [
                  ("mod", "Two Arguments; Calculates the modulo value of a pair of floating point values")
                  ("rand", "Two Arguments; Returns a random integer based on a specified lower and upper bound")
                  ("clear", "Zero Arguments; Clears the console and user-defined variables")
+                 ("pi", "Zero Arguments: Constant variable PI")
+                 ("euler", "Zero Arguments: Constant variable Eulers Number")
                  ]
 
 /// <summary>Regex string for matching predefined functions.</summary>

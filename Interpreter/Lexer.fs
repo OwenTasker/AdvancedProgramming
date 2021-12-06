@@ -22,7 +22,7 @@ let private alphabet = ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";
 
 /// <summary>Regex string for matching acceptable symbols.</summary>
 let private symbolRegexString =
-    let symbols = ["+";"*";"-";"^";"/";"=";"(";")";">";","]
+    let symbols = ["+";"*";"-";"^";"/";"(";")";">";","]
     let symbolRegex = [
         for i in symbols -> "(^\\" + i + "$)|"
     ]
@@ -95,7 +95,6 @@ let rec private tokenize input =
             match tail with
             | ">" :: tailTail -> head + ">" :: tokenize tailTail
             | _ -> head :: tokenize tail
-        | "=" -> raise (TokenizeError "Invalid Operator. The Assignment Operator is \"->\"")
         | SymbolMatch _ ->  head :: tokenize tail
         | IntegerOrPeriodMatch _ ->
             if tail.Length > 0 then(
