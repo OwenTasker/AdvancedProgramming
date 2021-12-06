@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Interpreter;
 using Microsoft.FSharp.Collections;
+using Ninject.Infrastructure.Language;
 
 namespace WpfApp1
 {
@@ -83,6 +84,11 @@ namespace WpfApp1
         {
             var inputList = new List<Util.terminal> {terminal};
             return PublicInterface.terminalListToString(ListModule.OfSeq(inputList));
+        }
+
+        public IEnumerable<Tuple<string, string>> GetFunctions()
+        {
+            return Util.functions.ToEnumerable();
         }
 
         public FSharpList<Util.terminal> GetTerminalListFromString(string input)

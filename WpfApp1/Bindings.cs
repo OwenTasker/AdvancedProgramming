@@ -10,7 +10,9 @@ namespace WpfApp1
             Bind<IGraphPopUp>().To<GraphPopUp>().InTransientScope();
             Bind<IGraphDataCalculator>().To<GraphDataCalculator>().InSingletonScope();
             Bind<ISaverLoader>().To<SaverLoader>().InSingletonScope();
+            Bind<IAutoCompleter>().To<AutoCompleter>().InSingletonScope();
+            Bind<IPrefixTree>().To<Trie>().InSingletonScope();
         }
-        
+
     }
 }

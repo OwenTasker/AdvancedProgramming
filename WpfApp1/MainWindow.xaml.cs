@@ -25,6 +25,8 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow
     {
+        private readonly StandardKernel _kernel;
+
         /// <summary>
         /// Execution environment for this session.
         /// </summary>
@@ -32,12 +34,7 @@ namespace WpfApp1
 
         private readonly ISaverLoader _saverLoader;
 
-        private readonly StandardKernel _kernel;
-
-        /// <summary>
-        /// Collection of mathematical functions. 
-        /// </summary>
-        private Trie _functions;
+        private readonly IAutoCompleter _autoCompleter;
 
         /// <summary>
         /// Entry point, initializes the app window.
@@ -48,27 +45,16 @@ namespace WpfApp1
 
             _kernel = new StandardKernel();
             _kernel.Load(Assembly.GetExecutingAssembly());
-            
+
             _interpreter = _kernel.Get<IInterpreter>();
             _saverLoader = _kernel.Get<ISaverLoader>();
+            _autoCompleter = _kernel.Get<IAutoCompleter>();
 
-            InitialiseSuggestionTrie();
+            _autoCompleter.InitialiseSuggestions();
 
             inputText.Text = "Enter query here..."; // initialise prompt text for input terminal
         }
 
-        /// <summary>
-        /// Method to initialise trie used for suggestion dropdown.
-        /// </summary>
-        private void InitialiseSuggestionTrie()
-        {
-            _functions = new Trie();
-
-            foreach (var (function, description) in Util.functions)
-            {
-                _functions.Add(function + " : " + description);
-            }
-        }
 
         /// <summary>
         /// Method to refresh the variable pane, to be called whenever an action might cause the environment to update.
@@ -197,7 +183,7 @@ namespace WpfApp1
                 _interpreter.Environment = dictionary;
                 consoleText.Text = item2;
                 UpdateVariableWindow();
-                UpdateSuggestionTrie();
+                _autoCompleter.UpdateSuggestions();
             }
             catch (Exception e)
             {
@@ -213,7 +199,7 @@ namespace WpfApp1
             consoleText.Text = ">>";
             _interpreter.ClearEnvironment();
             UpdateVariableWindow();
-            UpdateSuggestionTrie();
+            _autoCompleter.UpdateSuggestions();
         }
 
         /// <summary>
@@ -221,23 +207,9 @@ namespace WpfApp1
         /// </summary>
         private void inputText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var input = inputText.Text;
-            var split = Regex.Split(input, @"[^a-zA-Z]");
+            var matches = _autoCompleter.GetMatches(inputText.Text);
 
-            var partialMatch = "";
-
-            for (var i = split.Length - 1; i >= 0; i--)
-            {
-                if (!split[i].Equals(""))
-                {
-                    partialMatch = split[i];
-                    break;
-                }
-            }
-
-            var matches = _functions.Contains(partialMatch);
-
-            if (input.Equals("Enter query here...") || input.Equals(""))
+            if (inputText.Text.Equals("Enter query here...") || inputText.Text.Equals(""))
             {
                 suggestionDropDown.Visibility = Visibility.Collapsed;
                 suggestionDropDown.ItemsSource = new List<string>();
@@ -317,21 +289,6 @@ namespace WpfApp1
             }
         }
 
-        /// <summary>
-        /// Method to refresh suggestion trie.
-        /// </summary>
-        private void UpdateSuggestionTrie()
-        {
-            // reinitialise trie
-            InitialiseSuggestionTrie();
-
-            // add var list to trie
-            foreach (var (key, _) in _interpreter.GetVariables().ToList())
-            {
-                _functions.Add(key);
-            }
-        }
-
         private void ShowGraph()
         {
             try
@@ -359,7 +316,7 @@ namespace WpfApp1
                 consoleText.AppendText(_interpreter.Interpret(input) + "\n>>");
 
                 UpdateVariableWindow();
-                UpdateSuggestionTrie();
+                _autoCompleter.UpdateSuggestions();
 
                 inputText.Text = "Enter query here...";
             }

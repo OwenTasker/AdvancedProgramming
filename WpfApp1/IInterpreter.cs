@@ -23,5 +23,7 @@ namespace WpfApp1
         public FSharpList<Util.terminal> GetTerminalListFromString(string input);
 
         public string GetStringFromTerminal(Util.terminal terminal);
+
+        public IEnumerable<System.Tuple<string, string>> GetFunctions();
     }
 }
