@@ -190,10 +190,10 @@ namespace WpfApp1
             //This method uses inverted y axis
 
             //Create axis labels
-            var yMaxLabel = "" + Math.Ceiling(yArray.Max());
-            var yMinLabel = "" + Math.Floor(yArray.Min());
-            var xMaxLabel = "" + Math.Ceiling(xArray.Max());
-            var xMinLabel = "" + Math.Floor(xArray.Min());
+            var yMaxLabel = "" + Math.Round(yArray.Max(), 2);
+            var yMinLabel = "" + Math.Round(yArray.Min(), 2);
+            var xMaxLabel = "" + Math.Round(xArray.Max(), 2);
+            var xMinLabel = "" + Math.Round(xArray.Min(), 2);
             var zeroLabel = "0";
 
             //Find axis label locations
@@ -587,8 +587,8 @@ namespace WpfApp1
                 var (_, (xArray, yArray)) = _functions.Last();
 
                 //Set coordinate labels
-                var xCoordText = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
-                var yCoordText = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                var xCoordText = Math.Round(xArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
+                var yCoordText = Math.Round(yArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
                 TextBoxXCoord.Text = xCoordText;
                 TextBoxYCoord.Text = yCoordText;
 
