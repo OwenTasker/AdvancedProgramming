@@ -583,11 +583,30 @@ namespace WpfApp1
             {
                 var (_, (xArray, yArray)) = _functions.Last();
 
-                TextBoxXCoord.Text = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
-                TextBoxYCoord.Text = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                var xCoordText = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                var yCoordText = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                TextBoxXCoord.Text = xCoordText;
+                TextBoxYCoord.Text = yCoordText;
 
+                //Create clone of y array to manipulate to calculate cursor position
+                var yArrayClone = (double[]) yArray.Clone();
+
+                //Scale y values to size of graph
+                var yMin = yArrayClone.Min() - 2;
+                for (var i = 0; i < ImageWidth; i++)
+                {
+                    yArrayClone[i] -= yMin;
+                }
+
+                var yMax = yArrayClone.Max() + 2;
+                var scale = (ImageHeight - 1) / yMax;
+                for (var i = 0; i < ImageWidth; i++)
+                {
+                    yArrayClone[i] *= scale;
+                }
+                
                 cursor.Opacity = 1;
-                cursor.Margin = new Thickness(xCoord + 22, yCoord, 0, 0);
+                cursor.Margin = new Thickness(xCoord + 22, ImageHeight - yArrayClone[(int) xCoord] + 19, 0, 0);
                 mainGrid.Children.Add(cursor);
             }
         }
