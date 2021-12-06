@@ -329,13 +329,16 @@ and private handleSingleArgumentFunction env func expression =
 
 and private handleTwoArgumentFunction env func expression =
     let extractedParams, _ = extractParameters expression [] env
-    let baseValue = reduce extractedParams.[0] env
-    let operand = reduce extractedParams.[1] env
-    match baseValue, operand with
-    | Number a, Number b ->
-        reduce [func a b] env
-    | _ ->
-        ExecError "error" |> raise
+
+    if extractedParams.Length <> 2 then ExecError "Execution Error: Function requires two arguments." |> raise
+    else
+        let baseValue = reduce extractedParams.[0] env
+        let operand = reduce extractedParams.[1] env
+        match baseValue, operand with
+        | Number a, Number b ->
+            reduce [func a b] env
+        | _ ->
+            ExecError "error" |> raise
 
 /// <summary>
 /// Wrapper for reduceRecursive to call it with empty operator and number stacks.
