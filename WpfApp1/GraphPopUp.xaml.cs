@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Brushes = System.Drawing.Brushes;
+using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
@@ -45,6 +46,9 @@ namespace WpfApp1
 
         //List of all plotted functions and their arrays (starts as just one)
         private readonly List<(string, (double[], double[]))> _functions = new();
+        
+        //Create cursor for hovering
+        private readonly Label _cursor = new();
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -137,6 +141,14 @@ namespace WpfApp1
             
             //Add mouse tracking for displaying coordinates
             CompositionTarget.Rendering += OnRendering;
+            
+            //Set up cursor for hovering
+            _cursor.Content = "x";
+            _cursor.FontFamily = new FontFamily("Courier New");
+            _cursor.FontSize = 14;
+            _cursor.Foreground = System.Windows.Media.Brushes.Red;
+            _cursor.Opacity = 0;
+            mainGrid.Children.Add(_cursor);
         }
 
         /// <summary>
@@ -561,17 +573,45 @@ namespace WpfApp1
         /// </summary>
         private void OnRendering(object sender, EventArgs e)
         {
+            //Remove cursor added in previous frame
+            mainGrid.Children.Remove(_cursor);
+            
+            //Get mouse coordinates relative to graph
             var coords = Mouse.GetPosition(ImageGraph);
             var xCoord = Math.Floor(coords.X);
             var yCoord = Math.Floor(coords.Y);
-            yCoord = (ImageHeight - yCoord) / 400 * 750;
 
-            if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 749)
+            //Calculate coordinates and display cursor if mouse over graph
+            if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 399)
             {
                 var (_, (xArray, yArray)) = _functions.Last();
 
-                TextBoxXCoord.Text = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
-                TextBoxYCoord.Text = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                //Set coordinate labels
+                var xCoordText = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                var yCoordText = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                TextBoxXCoord.Text = xCoordText;
+                TextBoxYCoord.Text = yCoordText;
+
+                //Create clone of y array to manipulate to calculate cursor position
+                var yArrayClone = (double[]) yArray.Clone();
+
+                //Scale y values to size of graph
+                var yMin = yArrayClone.Min() - 2;
+                for (var i = 0; i < ImageWidth; i++)
+                {
+                    yArrayClone[i] -= yMin;
+                }
+                var yMax = yArrayClone.Max() + 2;
+                var scale = (ImageHeight - 1) / yMax;
+                for (var i = 0; i < ImageWidth; i++)
+                {
+                    yArrayClone[i] *= scale;
+                }
+                
+                //Set cursor location and display it
+                _cursor.Opacity = 1;
+                _cursor.Margin = new Thickness(xCoord + 20, ImageHeight - yArrayClone[(int) xCoord] + 17, 0, 0);
+                mainGrid.Children.Add(_cursor);
             }
         }
     }
