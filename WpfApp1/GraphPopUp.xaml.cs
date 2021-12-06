@@ -84,6 +84,10 @@ namespace WpfApp1
                 _imageBuffer[i] = 255;
             }
 
+            //Add some padding to top and bottom of graph
+            yArray[0] = yArray.Min() - 2;
+            yArray[749] = yArray.Max() + 2;
+            
             //Draw axis and get axis positions
             int yZero;
             int xZero;
