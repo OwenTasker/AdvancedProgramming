@@ -55,6 +55,7 @@ let public functions = [
                  ("logTen", "One Argument; A function to determine the base 10 logarithm of the provided argument to 6 accurate decimal points")
                  ("logX", "Two Arguments; A function to determine the base X logarithm of the second provided argument to 6 accurate decimal points")
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
+                 ("integrate", "Three Arguments; A function to estimate the area beneath a graph between given bounds")
                  ("abs", "One Argument; A function to determine the absolute value of an expression, given a value of -12, returns 12")
                  ("xrt", "Two Arguments; determines the xth root of a given value")
                  ("gcd", "Two Arguments; Calculates the greatest common divisor of two integer values")
@@ -192,3 +193,11 @@ let rec internal evaluateBrackets opStack (numStack : 'a list) (performOperation
         | _ :: _ -> tail, numStack
         | [] -> ExecError "Execution Error: Empty number stack following evaluation of bracketed expression." |> raise
     | head :: tail -> evaluateBrackets tail (performOperation head numStack) performOperation
+
+let rec checkUniqueVariables terminals (vars: Set<string>) =
+    match terminals with
+    | head :: tail ->
+        match head with
+        | Word a -> checkUniqueVariables tail (vars.Add a)
+        | _ -> checkUniqueVariables tail vars
+    | [] -> vars.Count > 1

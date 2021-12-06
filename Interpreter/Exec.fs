@@ -7,6 +7,7 @@
 /// </namespacedoc>
 module internal Interpreter.Exec
 
+open Interpreter
 open Interpreter.Util
 open Interpreter.Differentiate
 open Interpreter.MathematicalFunctions
@@ -188,6 +189,9 @@ let rec internal closed (env: Map<string, terminal list>) terminals  =
         else false
     | Function a :: tail ->
         match a with
+        | "integrate" ->
+            let _, remaining = extractParameters tail [] env
+            closed env remaining
         | "differentiate" ->
             let parameters, remaining = extractParameters tail [] env
             if differentiationClosed parameters env then
@@ -219,6 +223,12 @@ and private systemFunctionClosed (parameters: terminal list list) (env: Map<stri
     | [] -> true
     | head :: tail ->
         closed env head && systemFunctionClosed tail env
+
+let rec getVariable expression =
+    match expression with
+    | Word a :: tail -> a
+    | [] -> "!"
+    | _ :: tail -> getVariable tail
 
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
@@ -280,6 +290,26 @@ let rec private reduceRecursive terminals opStack numStack (env: Map<string, ter
 
 and private handleFunction funcName bracketedExpression env : terminal=
     match funcName with
+    | "integrate" ->
+        let extractedParams, _ = extractParameters bracketedExpression [] env
+
+        if extractedParams.Length <> 3 then ExecError "Execution Error: Integration requires three arguments" |> raise
+        else
+            let expression = extractedParams.[0]
+            if checkUniqueVariables expression Set.empty then
+                ExecError "Execution Error: Integration can only take place with respect to at most one variable, prior variable assignments are not recognised for this purpose" |> raise
+            else
+                let lowerBound = reduce extractedParams.[1] Map.empty
+                let upperBound = reduce extractedParams.[2] Map.empty
+
+                if lowerBound > upperBound then
+                    ExecError "Execution Error: Lower bound must be less than upper bound" |> raise
+                else
+                    let variable = getVariable expression
+                    match lowerBound, upperBound with
+                    | Number a, Number b ->
+                        calculateIntegral expression variable (int a) (int b) 0.0
+                    | _ -> ExecError "Execution Error: Reduction did not result in Number." |> raise
     | "differentiate" ->
         let extractedParams, _ = extractParameters bracketedExpression [] env
         if extractedParams.Length > 1 then
@@ -311,6 +341,15 @@ and private handleFunction funcName bracketedExpression env : terminal=
             let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
             (reduce [Word funcName] combinedEnv)
         else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
+
+and calculateIntegral expression variable lowerBound (current : int) sum =
+    if current = lowerBound then Number sum
+    else
+        let resultA = reduce expression (Map.empty.Add (variable, [Number (float current)]))
+        let resultB = reduce expression (Map.empty.Add (variable, [Number (float (current-1))]))
+        match resultA, resultB with
+        | Number a, Number b -> calculateIntegral expression variable lowerBound (current-1) (sum + (a - ((a - b)/2.0)))
+        | _ -> ExecError "Execution Error: Reduction did not result in Numbers" |> raise
 
 and private handleRootFunction (env : Map<string, terminal list>) operand exponent =
     let reducedOperand = reduce operand env

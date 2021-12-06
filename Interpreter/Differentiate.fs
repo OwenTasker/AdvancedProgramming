@@ -504,15 +504,6 @@ let rec private autoDifferentiate terminals opStack numStack =
                 |> raise
         | head :: tail -> autoDifferentiate terminals tail (performOperation head numStack)
 
-let rec checkUniqueVariables terminals (vars: Set<string>) =
-    match terminals with
-    | head :: tail ->
-        match head with
-        | Word a -> checkUniqueVariables tail (vars.Add a)
-        | _ -> checkUniqueVariables tail vars
-    | [] -> vars.Count > 1
-
-
 /// <summary>Wrapper for autoDifferentiate that calls it with empty number and operator stacks</summary>
 ///
 /// <param name="terminals">A list of terminals representing a valid expression for differentiation.</param>
