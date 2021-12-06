@@ -168,9 +168,9 @@ namespace WpfApp1
             //This method uses inverted y axis
             
             //Create axis labels
-            var yMaxLabel = "(y)\n" + Math.Ceiling(yArray.Max());
+            var yMaxLabel = "" + Math.Ceiling(yArray.Max());
             var yMinLabel = "" + Math.Floor(yArray.Min());
-            var xMaxLabel = "" + Math.Ceiling(xArray.Max()) + " (x)";
+            var xMaxLabel = "" + Math.Ceiling(xArray.Max());
             var xMinLabel = "" + Math.Floor(xArray.Min());
             var zeroLabel = "0";
 
@@ -209,6 +209,12 @@ namespace WpfApp1
                 zeroPointY -= 18;
             }
             var zeroPoint = new PointF(zeroPointX, zeroPointY);
+            
+            //Don't draw zero label if it will overlap
+            if (yZero is < 10 or > ImageHeight - 10 || xZero is < 10 or > ImageWidth - 10)
+            {
+                zeroLabel = "";
+            }
             
             //Draw labels in graph
             Bitmap newBitmap;
