@@ -97,17 +97,66 @@ namespace WpfApp1
             }
 
             //Add some padding to top and bottom of graph
-            yArray[0] = yArray.Min() - 2;
-            yArray[749] = yArray.Max() + 2;
+            var yMin = yArray[0];
+            var yMax = yArray[^1];
+            var yMinIndex = 0;
+            var yMaxIndex = yArray.Length - 1;
+            for (var i = 0; i < yArray.Length; i++)
+            {
+                if (yArray[i] < yMin)
+                {
+                    yMin = yArray[i];
+                    yMinIndex = i;
+                }
 
+                if (yArray[i] > yMax)
+                {
+                    yMax = yArray[i];
+                    yMaxIndex = i;
+                }
+            }
+            yArray[yMinIndex] -= 2;
+            yArray[yMaxIndex] += 2;
+
+            Console.WriteLine(trimmedArgsArray[0]);
+            var functionRight = trimmedArgsArray[0].Split(">")[^1];
+            
+            var isNumber = false;
+            var isPositive = false;
+            try
+            {
+                var number = Convert.ToDouble(functionRight);
+                isNumber = true;
+                if (number >= 0)
+                {
+                    isPositive = true;
+                    Console.WriteLine("piss");
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            if (isNumber && isPositive)
+            {
+                yArray[yMinIndex] = 0;
+            }
+
+            if (isNumber && !isPositive)
+            {
+                yArray[yMaxIndex] = 0;
+            }
+                
             //Draw axis and get axis positions
             int yZero;
             int xZero;
-            (yZero, xZero) = DrawAxis(xArray, yArray);
+            int yZeroUnPadded;
+            ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
-            GenerateLine((double[]) yArray.Clone());
+            GenerateLine((double[]) yArray.Clone(), yZeroUnPadded);
 
             //Invert graph due to coordinate system
             InvertGraph();
@@ -202,7 +251,7 @@ namespace WpfApp1
             var yMinPointX = xZero;
             if (xZero > ImageWidth / 2 - 1)
             {
-                yMaxPointX -= (yMaxLabel.Length - 3) * 9 + 5;
+                yMaxPointX -= yMaxLabel.Length  * 9 + 5;
                 yMinPointX -= yMinLabel.Length * 9 + 5;
             }
 
@@ -241,6 +290,12 @@ namespace WpfApp1
             {
                 zeroLabel = "";
             }
+            
+            //Don't draw yMin label if it would be a positive or 0 below the x axis 
+            if (yZero < ImageHeight - 16 && yArray.Min() >= 0)
+            {
+                yMinLabel = "";
+            }
 
             //Draw labels in graph
             Bitmap newBitmap;
@@ -269,7 +324,7 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot a graph from arrays of x and y values
         /// </summary>
-        private void GenerateLine(IList<double> yArray)
+        private void GenerateLine(IList<double> yArray, int yZero)
         {
             //Scale y values to size of graph
             var yMin = yArray.Min();
@@ -279,10 +334,22 @@ namespace WpfApp1
             }
 
             var yMax = yArray.Max();
-            var scale = (ImageHeight - 1) / yMax;
+            double scale;
+            if (yZero < 20)
+            {
+                scale = (ImageHeight - 41) / yMax;
+            }
+            else
+            {
+                scale = (ImageHeight - 1) / yMax;
+            }
             for (var i = 0; i < ImageWidth; i++)
             {
                 yArray[i] *= scale;
+                if (yZero < 20)
+                {
+                    yArray[i] += 20;
+                }
             }
 
             //Plot line
@@ -295,9 +362,9 @@ namespace WpfApp1
         /// <summary>
         /// Method to draw x and y axis in correct locations
         /// </summary>
-        private (int yZero, int xZero) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
+        private ((int yZero, int xZero), int yZeroUnPadded) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
         {
-            //Find yArray index of y=0, default to below graph
+            //Find yArray index of y=0, x axis, default to below graph
             var yZero = 0;
             if (yArray.Min() > 0.0)
             {
@@ -338,13 +405,24 @@ namespace WpfApp1
             temp *= ImageHeight;
             yZero = (int) temp;
 
+            //Pad yZero if it would be too close to edge of screen
+            var yZeroUnPadded = yZero;
+            if (yZero < 20)
+            {
+                yZero += 20;
+            }
+            else if (yZero > ImageHeight - 20)
+            {
+                yZero -= 20;
+            }
+
             //Draw y=0 line
             for (var i = 0; i < ImageWidth; i++)
             {
                 PlotPixel(i, yZero);
             }
 
-            //Find xArray index of x=0, default to left of graph
+            //Find xArray index of x=0, y axis, default to left of graph
             var xZero = 0;
             if (xArray.Min() > 0.0)
             {
@@ -391,7 +469,7 @@ namespace WpfApp1
                 PlotPixel(xZero, i);
             }
 
-            return (yZero, xZero);
+            return ((yZero, xZero), yZeroUnPadded);
         }
 
         /// <summary>
@@ -487,6 +565,9 @@ namespace WpfApp1
                 return;
             }
 
+            //Remove cursor before redrawing
+            mainGrid.Children.Remove(_cursor);
+            
             try
             {
                 var (function, (_, _)) = _functions.Last();
@@ -514,15 +595,9 @@ namespace WpfApp1
                 input = TextBoxXMin.Text;
             }
             //If xMax is modified
-            else if (sender.Equals(TextBoxXMax))
-            {
-                input = TextBoxXMax.Text;
-            }
-            //This should never happen:
             else
             {
-                Console.WriteLine("How did we get here?");
-                return;
+                input = TextBoxXMax.Text;
             }
 
             //Check if entry is a valid double, do not allow key-press if not
@@ -541,15 +616,10 @@ namespace WpfApp1
                         TextBoxXMin.CaretIndex = int.MaxValue;
                     }
                     //If xMax is invalid
-                    else if (sender.Equals(TextBoxXMax))
+                    else
                     {
                         TextBoxXMax.Text = TextBoxXMax.Text[..^1];
                         TextBoxXMax.CaretIndex = int.MaxValue;
-                    }
-                    //This should never happen:
-                    else
-                    {
-                        Console.WriteLine("How did we get here?");
                     }
                 }
             }
