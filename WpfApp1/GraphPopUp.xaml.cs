@@ -48,7 +48,7 @@ namespace WpfApp1
         private readonly List<(string, (double[], double[]))> _functions = new();
         
         //Create cursor for hovering
-        Label cursor = new Label();
+        private readonly Label _cursor = new();
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -143,12 +143,12 @@ namespace WpfApp1
             CompositionTarget.Rendering += OnRendering;
             
             //Set up cursor for hovering
-            cursor.Content = "x";
-            cursor.FontFamily = new FontFamily("Courier New");
-            cursor.FontSize = 10;
-            cursor.Foreground = System.Windows.Media.Brushes.Red;
-            cursor.Opacity = 0;
-            mainGrid.Children.Add(cursor);
+            _cursor.Content = "x";
+            _cursor.FontFamily = new FontFamily("Courier New");
+            _cursor.FontSize = 14;
+            _cursor.Foreground = System.Windows.Media.Brushes.Red;
+            _cursor.Opacity = 0;
+            mainGrid.Children.Add(_cursor);
         }
 
         /// <summary>
@@ -573,16 +573,20 @@ namespace WpfApp1
         /// </summary>
         private void OnRendering(object sender, EventArgs e)
         {
-            mainGrid.Children.Remove(cursor);
+            //Remove cursor added in previous frame
+            mainGrid.Children.Remove(_cursor);
             
+            //Get mouse coordinates relative to graph
             var coords = Mouse.GetPosition(ImageGraph);
             var xCoord = Math.Floor(coords.X);
             var yCoord = Math.Floor(coords.Y);
 
+            //Calculate coordinates and display cursor if mouse over graph
             if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 399)
             {
                 var (_, (xArray, yArray)) = _functions.Last();
 
+                //Set coordinate labels
                 var xCoordText = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
                 var yCoordText = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
                 TextBoxXCoord.Text = xCoordText;
@@ -597,7 +601,6 @@ namespace WpfApp1
                 {
                     yArrayClone[i] -= yMin;
                 }
-
                 var yMax = yArrayClone.Max() + 2;
                 var scale = (ImageHeight - 1) / yMax;
                 for (var i = 0; i < ImageWidth; i++)
@@ -605,9 +608,10 @@ namespace WpfApp1
                     yArrayClone[i] *= scale;
                 }
                 
-                cursor.Opacity = 1;
-                cursor.Margin = new Thickness(xCoord + 22, ImageHeight - yArrayClone[(int) xCoord] + 19, 0, 0);
-                mainGrid.Children.Add(cursor);
+                //Set cursor location and display it
+                _cursor.Opacity = 1;
+                _cursor.Margin = new Thickness(xCoord + 20, ImageHeight - yArrayClone[(int) xCoord] + 17, 0, 0);
+                mainGrid.Children.Add(_cursor);
             }
         }
     }
