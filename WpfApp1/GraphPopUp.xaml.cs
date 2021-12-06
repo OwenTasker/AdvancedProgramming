@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.IO;
@@ -42,8 +43,8 @@ namespace WpfApp1
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
 
-        //List of all plotted functions (starts as just one)
-        private readonly List<string> _functions = new();
+        //List of all plotted functions and their arrays (starts as just one)
+        private readonly List<(string, (double[], double[]))> _functions = new();
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -78,8 +79,8 @@ namespace WpfApp1
             //Compute values for y axis based on given function and calculated x array 
             var yArray = _graphDataCalculator.ComputeYArray(trimmedArgsArray, xArray, _interpreter);
 
-            //Add initial function to list
-            _functions.Add(trimmedArgsArray[0]);
+            //Add initial function and its number arrays to list
+            _functions.Add((trimmedArgsArray[0],((double[]) xArray.Clone(), (double[]) yArray.Clone())));
 
             //Pre-fill x range boxes
             TextBoxXMin.Text = "" + xArray.Min();
@@ -102,8 +103,7 @@ namespace WpfApp1
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
-            var tempYArray = (double[]) yArray.Clone();
-            GenerateLine(tempYArray);
+            GenerateLine((double[]) yArray.Clone());
 
             //Invert graph due to coordinate system
             InvertGraph();
@@ -477,7 +477,8 @@ namespace WpfApp1
 
             try
             {
-                GenerateGraph("plot(" + _functions[0] + "," + TextBoxXMin.Text + "," + TextBoxXMax.Text + ")");
+                var (function, (_, _)) = _functions.Last();
+                GenerateGraph("plot(" + function + "," + TextBoxXMin.Text + "," + TextBoxXMax.Text + ")");
             }
             catch (Exception plottingException)
             {
@@ -560,7 +561,18 @@ namespace WpfApp1
         /// </summary>
         private void OnRendering(object sender, EventArgs e)
         {
-            Console.WriteLine(_thisImageId + "   " + Mouse.GetPosition(ImageGraph));
+            var coords = Mouse.GetPosition(ImageGraph);
+            var xCoord = Math.Floor(coords.X);
+            var yCoord = Math.Floor(coords.Y);
+            yCoord = (ImageHeight - yCoord) / 400 * 750;
+
+            if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 749)
+            {
+                var (_, (xArray, yArray)) = _functions.Last();
+
+                TextBoxXCoord.Text = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                TextBoxYCoord.Text = yArray[(int) yCoord].ToString(CultureInfo.InvariantCulture);
+            }
         }
     }
 }

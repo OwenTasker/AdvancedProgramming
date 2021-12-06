@@ -56,6 +56,18 @@
                     </Button.Resources>
                 </Button>
                 <Separator Background="#8FAADC" />
+                <Label Content="X Coordinate:" Margin="5,0,0,0" FontFamily="Courier New" FontSize="14" />
+                <Separator Background="#8FAADC" />
+                <TextBox x:Name="TextBoxXCoord" Width="50" Margin="5,0,0,0" FontFamily="Courier New" 
+                         FontSize="14" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px" 
+                         VerticalContentAlignment="Center" IsReadOnly="true"/>
+                <Separator Background="#8FAADC" />
+                <Label Content="Y Coordinate:" Margin="5,0,0,0" FontFamily="Courier New" FontSize="14" />
+                <Separator Background="#8FAADC" />
+                <TextBox x:Name="TextBoxYCoord" Width="50" Margin="5,0,0,0" FontFamily="Courier New" 
+                         FontSize="14" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px" 
+                         VerticalContentAlignment="Center" IsReadOnly="true"/>
+                <Separator Background="#8FAADC" />
             </WrapPanel>
         </WrapPanel>
 
