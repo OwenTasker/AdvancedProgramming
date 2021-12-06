@@ -135,12 +135,10 @@ namespace WpfApp1
             {
                 // ignored
             }
-
             if (isNumber && isPositive)
             {
                 yArray[yMinIndex] = 0;
             }
-
             if (isNumber && !isPositive)
             {
                 yArray[yMaxIndex] = 0;
@@ -294,6 +292,12 @@ namespace WpfApp1
             {
                 yMinLabel = "";
             }
+            
+            //Don't draw yMax label if it would be a negative or 0 above the x axis
+            if (yZero > 0 && yArray.Max() <= 0)
+            {
+                yMaxLabel = "";
+            }
 
             //Draw labels in graph
             Bitmap newBitmap;
@@ -330,10 +334,10 @@ namespace WpfApp1
             {
                 yArray[i] -= yMin;
             }
-
             var yMax = yArray.Max();
             double scale;
-            if (yZero < 20)
+            //Add some padding if x axis is near edge of screen
+            if (yZero is < 20 or > ImageHeight - 20)
             {
                 scale = (ImageHeight - 41) / yMax;
             }
@@ -344,7 +348,7 @@ namespace WpfApp1
             for (var i = 0; i < ImageWidth; i++)
             {
                 yArray[i] *= scale;
-                if (yZero < 20)
+                if (yZero is < 20 or > ImageHeight - 20)
                 {
                     yArray[i] += 20;
                 }
@@ -585,40 +589,28 @@ namespace WpfApp1
         /// </summary>
         private void xRange_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string input;
-
             //If xMin is modified
-            if (sender.Equals(TextBoxXMin))
-            {
-                input = TextBoxXMin.Text;
-            }
-            //If xMax is modified
-            else
-            {
-                input = TextBoxXMax.Text;
-            }
+            var input = sender.Equals(TextBoxXMin) ? TextBoxXMin.Text : TextBoxXMax.Text;
 
             //Check if entry is a valid double, do not allow key-press if not
-            if (input.Length > 0 && input != "-" && input != "." && input != "-.")
+            if (input.Length <= 0 || input is "-" or "." or "-.") return;
+            try
             {
-                try
+                _ = Convert.ToDouble(input);
+            }
+            catch (Exception)
+            {
+                //If xMin is invalid
+                if (sender.Equals(TextBoxXMin))
                 {
-                    _ = Convert.ToDouble(input);
+                    TextBoxXMin.Text = TextBoxXMin.Text[..^1];
+                    TextBoxXMin.CaretIndex = int.MaxValue;
                 }
-                catch (Exception)
+                //If xMax is invalid
+                else
                 {
-                    //If xMin is invalid
-                    if (sender.Equals(TextBoxXMin))
-                    {
-                        TextBoxXMin.Text = TextBoxXMin.Text[..^1];
-                        TextBoxXMin.CaretIndex = int.MaxValue;
-                    }
-                    //If xMax is invalid
-                    else
-                    {
-                        TextBoxXMax.Text = TextBoxXMax.Text[..^1];
-                        TextBoxXMax.CaretIndex = int.MaxValue;
-                    }
+                    TextBoxXMax.Text = TextBoxXMax.Text[..^1];
+                    TextBoxXMax.CaretIndex = int.MaxValue;
                 }
             }
         }
