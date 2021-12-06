@@ -39,6 +39,10 @@ namespace WpfApp1
 
             try
             {
+                if (!loadFile[^4..].Equals(".mmp"))
+                {
+                    throw new SaveLoadException("Invalid File Opened: " + loadFile);
+                }   
                 foreach (var loadedLine in File.ReadLines(loadFile))
                 {
                     if (loadedLine.StartsWith("VARIABLE")) // If line marked as variable, add to variables
