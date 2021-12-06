@@ -571,7 +571,7 @@ namespace WpfApp1
                 var (_, (xArray, yArray)) = _functions.Last();
 
                 TextBoxXCoord.Text = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
-                TextBoxYCoord.Text = yArray[(int) yCoord].ToString(CultureInfo.InvariantCulture);
+                TextBoxYCoord.Text = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
             }
         }
     }
