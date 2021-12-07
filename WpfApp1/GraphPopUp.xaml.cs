@@ -64,6 +64,8 @@ namespace WpfApp1
         /// </summary>
         public GraphPopUp(IInterpreter interpreter, IGraphDataCalculator graphDataCalculator)
         {
+            _isDataDirty = false;
+            
             _interpreter = interpreter;
             _graphDataCalculator = graphDataCalculator;
 
