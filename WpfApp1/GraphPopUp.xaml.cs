@@ -152,11 +152,22 @@ namespace WpfApp1
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
             _yProcessed.Add((yZeroUnPadded, functionRight));
 
-            //Get steps for grid lines
-            var (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
+            
+            double xGridStep;
+            double yGridStep;
+            if (isNumber)
+            {
+                //Get steps for grid lines
+                (xGridStep, yGridStep) = CalculateConstantGridStep(xArray, Convert.ToDouble(functionRight));
+            }
+            else
+            {
+                //Get steps for grid lines
+                (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
+            }
             
             //Generate grid lines - y grid lines are parallel with y axis, xZero
-            GenerateGridLines(xZero, yGridStep, xArray, yZeroUnPadded, xGridStep, yArray);
+            GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
@@ -204,7 +215,10 @@ namespace WpfApp1
             mainGrid.Children.Add(_cursor);
         }
 
-        private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord, double xGridStep, double[] yArray)
+        /// <summary>
+        /// Method to plot grid lines on the graph.
+        /// </summary>
+        private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord, int xAxisYCoordUnPadded, double xGridStep, double[] yArray)
         {
             //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
@@ -242,6 +256,14 @@ namespace WpfApp1
             
             //Get number of pixels per number along the y axis
             var yRange = yArray.Max() - yArray.Min();
+            //Account for padding that is sometimes added to top and bottom of y axis
+            if (xAxisYCoord != xAxisYCoordUnPadded)
+            {
+                var max = Math.Max(xAxisYCoord, xAxisYCoordUnPadded);
+                var min = Math.Min(xAxisYCoord, xAxisYCoordUnPadded);
+
+                yRange += (max - min) / 2 + 2;
+            }
             var pixelsPerYNumber = ImageHeight / yRange;
             
             //Plot horizontal grid lines above y axis
@@ -274,18 +296,18 @@ namespace WpfApp1
                 }
             }
         }
-
+        
         /// <summary>
-        /// Method to calculate step of grid lines for both x and y axis.
+        /// Method to calculate step of grid lines for both x and y axis when y is constant.
         /// </summary>
-        private (double xGridStep, double yGridStep) CalculateGridStep(double[] xArray, double[] yArray)
+        private (double xGridStep, double yGridStep) CalculateConstantGridStep(double[] xArray, double y)
         {
             double xGridStep;
             double yGridStep;
             
             //X grid line step
-            var xRange = xArray.Max() - xArray.Min();
-            switch (xRange)
+            //TODO: This shouldn't be y, but I haven't figured out what should be there yet.
+            switch (Math.Abs(y))
             {
                 //Special case for range <= 1
                 case <= 1:
@@ -298,16 +320,16 @@ namespace WpfApp1
                 //Default step is a magnitude smaller than range
                 default:
                 {
-                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
-                    var xRangeStringLength = xRangeString.Length - 1;
-                    xGridStep = Math.Pow(10, xRangeStringLength) / 5;
+                    var yRangeString = ((int) Math.Ceiling(y)).ToString();
+                    var yRangeStringLength = yRangeString.Length - 1;
+                    xGridStep = Math.Pow(10, yRangeStringLength) / 5;
                     break;
                 }
             }
             
             //Y grid line step
-            var yRange = yArray.Max() - yArray.Min();
-            switch (yRange)
+            var xRange = xArray.Max() - xArray.Min();
+            switch (xRange)
             {
                 //Special case for range <= 1
                 case <= 1:
@@ -320,9 +342,64 @@ namespace WpfApp1
                 //Default step is a magnitude smaller than range
                 default:
                 {
+                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
+                    var xRangeStringLength = xRangeString.Length - 1;
+                    yGridStep = Math.Pow(10, xRangeStringLength) / 5;
+                    break;
+                }
+            }
+
+            return (xGridStep, yGridStep);
+        }
+
+        /// <summary>
+        /// Method to calculate step of grid lines for both x and y axis.
+        /// </summary>
+        private (double xGridStep, double yGridStep) CalculateGridStep(double[] xArray, double[] yArray)
+        {
+            double xGridStep;
+            double yGridStep;
+            
+            //X grid line step
+            var yRange = yArray.Max() - yArray.Min();
+            switch (yRange)
+            {
+                //Special case for range <= 1
+                case <= 1:
+                    xGridStep = 0.1;
+                    break;
+                //Special case for range <= 10
+                case <= 10:
+                    xGridStep = 1;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
                     var yRangeString = ((int) Math.Ceiling(yRange)).ToString();
                     var yRangeStringLength = yRangeString.Length - 1;
-                    yGridStep = Math.Pow(10, yRangeStringLength) / 5;
+                    xGridStep = Math.Pow(10, yRangeStringLength) / 5;
+                    break;
+                }
+            }
+            
+            //Y grid line step
+            var xRange = xArray.Max() - xArray.Min();
+            switch (xRange)
+            {
+                //Special case for range <= 1
+                case <= 1:
+                    yGridStep = 0.1;
+                    break;
+                //Special case for range <= 10
+                case <= 10:
+                    yGridStep = 1;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
+                    var xRangeStringLength = xRangeString.Length - 1;
+                    yGridStep = Math.Pow(10, xRangeStringLength) / 5;
                     break;
                 }
             }
