@@ -52,6 +52,9 @@ namespace WpfApp1
         
         //Create cursor for hovering
         private readonly Label _cursor = new();
+        
+        //Int to store location of click for zooming
+        private int mouseDownXCoord = 0;
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -214,6 +217,9 @@ namespace WpfApp1
             _cursor.FontSize = 14;
             _cursor.Foreground = System.Windows.Media.Brushes.Red;
             _cursor.Opacity = 0;
+            //Add mouse event handlers to label as is appears in front of and blocks the graph image
+            _cursor.MouseLeftButtonDown += new MouseButtonEventHandler(ImageGraph_OnMouseLeftButtonDown);
+            _cursor.MouseLeftButtonUp += new MouseButtonEventHandler(ImageGraph_OnMouseLeftButtonUp);
             mainGrid.Children.Add(_cursor);
 
             // mark graph as unsaved
@@ -954,14 +960,22 @@ namespace WpfApp1
             Close();
         }
 
+        /// <summary>
+        /// Detect when user presses mouse on graph as part of zooming.
+        /// </summary>
         private void ImageGraph_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            throw new NotImplementedException();
+            mouseDownXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
+            Console.WriteLine(mouseDownXCoord);
         }
 
+        /// <summary>
+        /// Detect when user releases mouse on graph, re-plot using new x range.
+        /// </summary>
         private void ImageGraph_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            throw new NotImplementedException();
+            var mouseUpXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
+            Console.WriteLine(mouseUpXCoord);
         }
     }
 }
