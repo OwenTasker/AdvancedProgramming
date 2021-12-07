@@ -20,6 +20,8 @@ exception public CalculateError of string
 /// <summary>Exception thrown when an error is encountered while computing a unary operation.</summary>
 exception public UnaryError of string
 /// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
+exception public GraphingError of string
+/// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
 exception public ExecError of string
 /// <summary>Exception thrown when an error is encountered while executing a function, used specifically for enforcing
 /// more stringent parameters</summary>
@@ -85,8 +87,13 @@ let internal (|FunctionMatch|_|) (input:string) =
     else
         None
 
-//https://gist.github.com/theburningmonk/3363893
 /// <summary>Function to convert a C# Dictionary to an F# Map.</summary>
+///
+/// <remarks>reference: https://gist.github.com/theburningmonk/3363893</remarks>
+/// 
+/// <param name="kvps">Sequence Of Generic Key-Value Pairs</param>
+///
+/// <returns>Returns a generic map of Key-Value Pairs</returns>
 let inline internal toMap kvps =
     kvps
     |> Seq.map (|KeyValue|)
@@ -94,11 +101,11 @@ let inline internal toMap kvps =
 
 /// <summary>Function to convert a terminal to its string representation.</summary>
 ///
-/// <param name="x">A terminal represented by the terminal type.</param>
+/// <param name="terminalVal">A terminal represented by the terminal type.</param>
 ///
 /// <returns>A string representation of the terminal.</returns>
-let internal individualTerminalToString x =
-    match x with
+let internal individualTerminalToString terminalVal =
+    match terminalVal with
     | Times -> "*"
     | Divide -> "/"
     | Plus
@@ -137,7 +144,7 @@ let rec internal terminalListToString str list =
 let internal terminalToNum term =
     match term with
     | Number _ -> term |> individualTerminalToString |> System.Double.Parse
-    | _ -> InvalidArgumentError "Cannot Parse Non Number Terminal As Number" |> raise
+    | _ -> InvalidArgumentError "Invalid Argument Error: Cannot Parse Non Number Terminal As Number" |> raise
 
 /// <summary>
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
@@ -194,6 +201,15 @@ let rec internal evaluateBrackets opStack (numStack : 'a list) (performOperation
         | [] -> ExecError "Execution Error: Empty number stack following evaluation of bracketed expression." |> raise
     | head :: tail -> evaluateBrackets tail (performOperation head numStack) performOperation
 
+/// <summary>
+/// Takes in a terminal list and adds each word to a set, if there are more than one unique word among the input
+/// list, return true, else false .
+/// </summary>
+///
+/// <param name="terminals">A list of terminals representing an input.</param>
+/// <param name="vars">A set of strings representing a list of all unique words encountered.</param>
+///
+/// <returns>Returns true if there is more than one unique word in the terminal list provided.</returns>
 let rec checkUniqueVariables terminals (vars: Set<string>) =
     match terminals with
     | head :: tail ->

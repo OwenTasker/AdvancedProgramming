@@ -19,7 +19,7 @@ namespace WpfApp1
             
             if (openVars.Count > 2)
             {
-                throw new Util.ExecError();
+                throw new Util.GraphingError("Graphing Error: Too many variables passed to grapher");
             }
 
             var executionEnvironment = interpreter.GetTempEnvironment(trimmedArgsArray[0]);
@@ -91,7 +91,10 @@ namespace WpfApp1
             if (trimmedArgsArray.Count != 3)
             {
                 // Think about maybe just presenting a message instead
-                throw new Util.ExecError();
+                
+                // No need to pass just a message as we will catch a graphing error and display it just like the others,
+                // will be good to have a uniform behaviour
+                throw new Util.GraphingError("Graphing Error: Invalid number of parameters passed to grapher");
             }
 
             //If range is backwards, swap them

@@ -74,8 +74,8 @@ namespace WpfApp1
 
             if (inputText.Text.Length >= 4 && inputText.Text.ToUpper()[..4] == "PLOT")
             {
+                consoleText.AppendText(inputText.Text + "\n");
                 ShowGraph();
-                consoleText.AppendText(inputText.Text + "\n" + ">>");
             }
             else if (inputText.Text.ToLower().Equals("clear"))
             {
@@ -299,8 +299,7 @@ namespace WpfApp1
             }
             catch (Exception plottingException)
             {
-                consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n" +
-                                       plottingException.StackTrace + "\n>>");
+                consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n>>");
             }
         }
 
@@ -342,6 +341,10 @@ namespace WpfApp1
                 consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
             }
             catch (Util.CalculateError ex1)
+            {
+                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+            }
+            catch (Util.GraphingError ex1)
             {
                 consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
             }

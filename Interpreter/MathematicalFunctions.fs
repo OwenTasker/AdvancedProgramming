@@ -14,22 +14,20 @@ open Interpreter.Util
 /// </summary>
 ///
 /// <remarks>
-/// Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
+/// Reference: https://www.efunda.com/math/taylor_series/logarithmic.cfm
 /// </remarks>
 ///
 /// <param name="input">A floating point value to take the logarithm base E of</param>
 /// <param name="increment">
-/// Current iteration of the taylor series, the more iterations performed, the more accurate
-/// the approximation
+/// Current iteration of the taylor series, the more iterations performed, the more accurate the approximation
 /// </param>
 /// <param name="sum">the cumulative sum of the Taylor Series</param>
 ///
 /// <returns>The natural log of the input provided</returns>
-/// <exception cref="InvalidArgumentError">Thrown when the input value is less than or equal to 0.5</exception>
 let rec private LogEGreaterThanZeroPointFive (input:float) (increment:float) (sum:float) =
-        match increment with
-        | 2000.0 -> sum
-        | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
+    match increment with
+    | 2000.0 -> sum
+    | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
         
 
 /// <summary>
@@ -37,18 +35,16 @@ let rec private LogEGreaterThanZeroPointFive (input:float) (increment:float) (su
 /// </summary>
 ///
 /// <remarks>
-/// Reference :: https://www.efunda.com/math/taylor_series/logarithmic.cfm
+/// Reference: https://www.efunda.com/math/taylor_series/logarithmic.cfm
 /// </remarks>
 ///
 /// <param name="input">A floating point value to take the logarithm base E of</param>
 /// <param name="increment">
-/// Current iteration of the taylor series, the more iterations performed, the more accurate
-/// the approximation
+/// Current iteration of the taylor series, the more iterations performed, the more accurate the approximation
 /// </param>
 /// <param name="sum">the cumulative sum of the Taylor Series</param>
 ///
 /// <returns>The natural log of the input provided</returns>
-/// <exception cref="InvalidArgumentError">Thrown when the input value is less than or equal to 0.5</exception>
 let rec private LogELessThanOrEqualToZeroPointFive (input:float) (increment:float) (sum:float) =
     match input <= 0.0 with
     | true ->
@@ -94,16 +90,12 @@ let internal LogETerminal input =
 /// </summary>
 ///
 /// <remarks>
-/// Change of base rule :: log(_b)a = log(_d)a / log(_d)b
+/// Change of base rule: log(_b)a = log(_d)a / log(_d)b
 /// log(_d) in this formula is represented by logE however any log base would work
 /// </remarks>
 ///
-/// <param name="numerator">
-/// A floating point value representing the top half of the change of base rule (a)
-/// </param>
-/// <param name="denominator">
-/// A floating point value representing the bottom half of the change of base rule (b)
-/// </param>
+/// <param name="numerator">A floating point value representing the top half of the change of base rule (a)</param>
+/// <param name="denominator">A floating point value representing the bottom half of the change of base rule (b)</param>
 ///
 /// <returns>Value calculated as log(_b)a</returns>
 let private FormNewBaseRuleFraction numerator denominator =
@@ -139,7 +131,7 @@ let internal Log10 input =
 /// <returns>The terminal value of the log base newBase of the input provided</returns>
 let internal LogX newBase input =
     if newBase = 0.0 && input = 0.0 then
-        InvalidArgumentError "Expected Base to be greater than or equal to 0" |> raise
+        InvalidArgumentError "Invalid Argument Error: Expected Base to be greater than or equal to 0" |> raise
     elif newBase = 0.0 then
         0.0 |> Number
     else
@@ -161,8 +153,8 @@ let internal RootToTerminals (terminals: terminal list) denominator =
     if not terminals.IsEmpty && denominator <> [Number 0.0] && not denominator.IsEmpty then
         [Lpar; Lpar] @ terminals @ [Rpar; Exponent; Lpar; Number 1.0; Divide] @ denominator @ [Rpar; Rpar]
     else
-        InvalidArgumentError "Ensure that input value is not empty and the root you are taking is not 0" |> raise
-
+        InvalidArgumentError
+            "Invalid Argument Error: Ensure that input value is not empty and the root you are taking is not 0" |> raise
 
 /// <summary>
 /// Function to calculate the floor of a number, uses the fact that in F#, downcasting a float to int just truncates it
@@ -172,7 +164,7 @@ let internal RootToTerminals (terminals: terminal list) denominator =
 /// <param name="numToFloor">Input to floor</param>
 ///
 /// <returns>Returns the floored input</returns>
-let internal FloorToTerminal (numToFloor:float) =
+let internal FloorToTerminal numToFloor =
     let isNegative = numToFloor < 0.0
     let checkForInteger = numToFloor |> int |> float = numToFloor
     match checkForInteger with
@@ -190,7 +182,7 @@ let internal FloorToTerminal (numToFloor:float) =
 /// <param name="numToCeil">Input to ceil</param>
 ///
 /// <returns>Returns the ceiled input</returns>
-let internal CeilToTerminal (numToCeil: float) =
+let internal CeilToTerminal numToCeil =
     let isNegative = numToCeil < 0.0
     let checkForInteger  = numToCeil |> int |> float = numToCeil
     match checkForInteger with
@@ -207,7 +199,7 @@ let internal CeilToTerminal (numToCeil: float) =
 /// <param name="num">Input to round</param>
 ///
 /// <returns>Returns the rounded input</returns>
-let internal RoundNum (num:float) =
+let internal RoundNum num =
     if (num |> int |> float = num) then
         num |> Number
     else
@@ -235,7 +227,7 @@ let internal RoundNum (num:float) =
 /// <param name="num">Input to calculate the absolute value of</param>
 ///
 /// <returns>Returns the absolute value of the input</returns>
-let internal AbsVal (num:float) =
+let internal AbsVal num =
     match num < 0.0 with
     | true -> -num |> Number
     | _ -> num |> Number
@@ -250,7 +242,7 @@ let internal AbsVal (num:float) =
 /// <param name="num2">Second value taken into account</param>
 ///
 /// <returns>Return the greatest common denominator/highest common factor of the two provided values</returns>
-let rec private getGCD (num1:float) (num2:float) =
+let rec private getGCD num1 num2 =
     if num2 = 0.0 then
         AbsVal num1
     else
@@ -277,7 +269,6 @@ let internal getGCDWrapper num1 num2 =
     else
         InvalidArgumentError "Ensure both arguments are whole numbers" |> raise
 
-
 /// <summary>
 /// Function to calculate the modulo of a number by another number
 /// </summary>
@@ -288,11 +279,12 @@ let internal getGCDWrapper num1 num2 =
 /// <param name="num2">Number to divide num1 by</param>
 ///
 /// <returns>Returns the result given num1 mod num2</returns>
-let internal moduloCalc (num1:float) (num2:float) =
+let internal moduloCalc num1 num2 =
     if not (num2 = 0.0) then
         (num1 % num2 + num2) % num2 |> Number
     else
-        InvalidArgumentError "Undefined value when passed 0 as second argument; mod(x,0.0) = undef" |> raise
+        InvalidArgumentError
+            "Invalid Argument Error: Undefined value when passed 0 as second argument; mod(x,0.0) = undef" |> raise
 
 /// <summary>
 /// Function to return a random whole number between specified lower and upper bound
@@ -309,6 +301,8 @@ let internal pseudoRandom (num1:float) (num2:float) =
         if (((num1 |> int |> float) = num1) && ((num2 |> int |> float) = num2)) then
             System.Random().Next(num1 |> int, num2 |> int) |> float |> Number
         else
-            InvalidArgumentError "Ensure both values passed to rand are whole numbers" |> raise
+            InvalidArgumentError "Invalid Argument Error: Ensure both values passed to rand are whole numbers"
+            |> raise
     else
-        InvalidArgumentError "Ensure first argument is smaller than the second argument" |> raise
+        InvalidArgumentError "Invalid Argument Error: Ensure first argument is smaller than the second argument"
+        |> raise

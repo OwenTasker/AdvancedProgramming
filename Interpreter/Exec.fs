@@ -7,7 +7,6 @@
 /// </namespacedoc>
 module internal Interpreter.Exec
 
-open Interpreter
 open Interpreter.Util
 open Interpreter.Differentiate
 open Interpreter.MathematicalFunctions
@@ -88,6 +87,19 @@ let private performOperation operator numStack =
             | Number f, Number g -> (performBinaryOperation operator g f) :: numStack.[2 .. ]
             | _ -> ExecError "Execution Error: Number stack contains non-number tokens." |> raise
 
+/// <summary>
+/// Reads a list of terminals and returns the value between parenthesis, returns a terminal list once a right
+/// parenthesis is met with a Lpar count of 1
+/// </summary>
+///
+/// <param name="terminals">A list of terminals representing an input.</param>
+/// <param name="lparCount">A integer value counting how many Lpars have been recognized.</param>
+/// <param name="out">A terminal list containing everything up to a Rpar met with a Lpar count of 1.</param>
+///
+/// <returns>
+/// Returns a tuple of two terminal lists, one containing the remaining values in an input and the other containing
+/// values between parenthesis
+/// </returns>
 let rec private extractBrackets terminals lparCount out =
     match terminals with
     | Lpar :: tail -> extractBrackets tail (lparCount+1) (Lpar::out)
@@ -96,7 +108,7 @@ let rec private extractBrackets terminals lparCount out =
         | 1 -> tail, List.rev (Rpar :: out)
         | _ -> extractBrackets tail (lparCount-1) (Rpar::out)
     | any :: tail -> extractBrackets tail lparCount (any::out)
-    | [] -> ExecError "Execution Error: Unmatched parenthesis." |> raise
+    | [] -> ExecError "Execution Error: Lpar without matching Rpar." |> raise
 
 /// <summary>
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
@@ -179,7 +191,9 @@ let rec private extractExpression inList outList =
 /// <param name="terminals">A list of terminals representing an expression in infix notation.</param>
 /// <param name="env">The execution environment for any variables in the expression.</param>
 ///
-/// <returns></returns>
+/// <returns>
+/// Returns true or false depending on whether the expression passed to this function is closed or not
+/// </returns>
 let rec internal closed (env: Map<string, terminal list>) terminals  =
     match terminals with
     | [] -> true
@@ -224,9 +238,16 @@ and private systemFunctionClosed (parameters: terminal list list) (env: Map<stri
     | head :: tail ->
         closed env head && systemFunctionClosed tail env
 
+/// <summary>
+/// Scans through a list of terminals and returns the string representation of the first variable found
+/// </summary>
+///
+/// <param name="expression">A list of terminals representing an input.</param>
+///
+/// <returns>A String representation of any variable found, if no variable is found, return "!"</returns>
 let rec getVariable expression =
     match expression with
-    | Word a :: tail -> a
+    | Word a :: _ -> a
     | [] -> "!"
     | _ :: tail -> getVariable tail
 
@@ -283,8 +304,9 @@ let rec private reduceRecursive terminals opStack numStack (env: Map<string, ter
         | [] ->
             match numStack with
             | [ _ ] -> numStack.[0]
-            | _ -> ExecError "Execution Error: Reduction did not result in exactly one terminal in the number
-                              stack" |> raise
+            | _ ->
+               ExecError "Execution Error: Reduction did not result in exactly one terminal in the number stack"
+               |> raise
         | Lpar :: _ -> ExecError "Execution Error: Unmatched left parenthesis." |> raise
         | head :: tail -> reduceRecursive terminals tail (performOperation head numStack) env
 
@@ -364,9 +386,12 @@ and private handleRootFunction (env : Map<string, terminal list>) operand expone
         ExecError "error" |> raise
 
 and private handleSingleArgumentFunction env func expression =
-    match reduce expression env with
-    | Number a -> func a
-    | _ -> ExecError "error" |> raise
+    let extractedParams, _ = extractParameters expression [] env
+    if extractedParams.Length <> 1 || extractedParams.[0].Length = 0 then ExecError "Execution Error: Function requires exactly one argument" |> raise
+    else
+        match reduce expression env with
+        | Number a -> func a
+        | _ -> ExecError "Execution Error: Expected number to be passed as argument but received otherwise" |> raise
 
 and private handleTwoArgumentFunction env func expression =
     let extractedParams, _ = extractParameters expression [] env
@@ -392,6 +417,20 @@ and private handleTwoArgumentFunction env func expression =
 and private reduce terminals (env: Map<string, terminal list>) =
     reduceRecursive terminals [] [] env
 
+/// <summary>
+/// Recursively execute differentiate on any input which has a nested differentiate and return a terminal list of the
+/// new expanded input.
+/// </summary>
+///
+/// <param name="terminalsIn">A list of terminals representing an input.</param>
+/// <param name="terminalsOut">A list of terminals representing a converted expression whenever there is a nested
+/// differentiation.
+/// </param>
+/// <param name="env">A map representing currently assigned user defined variables.</param>
+///
+/// <returns>
+/// A list of terminals representing a converted expression after executing a nested differentiation.
+/// </returns>
 let rec private expandDifferentiates terminalsIn terminalsOut env =
     match terminalsIn with
     | head :: tail when head = Function "differentiate" ->

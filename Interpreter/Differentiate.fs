@@ -19,7 +19,6 @@ open Interpreter.Util
 /// http://www.ams.org/publicoutreach/feature-column/fc-2017-12#:~:text=Dual%20numbers%20and%20the%20forward,%3D0%20%CF%B5%202%20%3D%200%20.
 /// https://www.infoq.com/presentations/automatic-differentiation/
 /// </remarks>
-///
 type Dual =
     | Const of real: float * epsilon: float
     | Var of real: terminal * epsilon: float
@@ -507,6 +506,8 @@ let rec private autoDifferentiate terminals opStack numStack =
 /// <summary>Wrapper for autoDifferentiate that calls it with empty number and operator stacks</summary>
 ///
 /// <param name="terminals">A list of terminals representing a valid expression for differentiation.</param>
+///
+/// <returns>Returns the terminal list representing the output of a differentiated function</returns>
 let internal differentiate terminals =
     if checkUniqueVariables terminals Set.empty then
         ExecError "Execution Error: Partial Differentiation is not supported, please ensure only one variable is contained within differentiation" |> raise

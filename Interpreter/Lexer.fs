@@ -29,9 +29,10 @@ let private symbolRegexString =
     let generateRegex = (String.concat "" symbolRegex)
     generateRegex.Remove(generateRegex.Length-1)
 
-//https://sodocumentation.net/fsharp/topic/962/active-patterns
 /// <summary>Function to match valid number characters passed to tokenize.</summary>
 ///
+/// <remarks>Reference: https://sodocumentation.net/fsharp/topic/962/active-patterns</remarks>
+/// 
 /// <param name="input">A character as a string.</param>
 ///
 /// <returns>An Option containing the input string if it was a number or a period, or None otherwise.</returns>
@@ -41,9 +42,10 @@ let private (|IntegerOrPeriodMatch|_|) (input:string) =
     else
         None
 
-//https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
 /// <summary>Function to match numbers passed to scan.</summary>
 ///
+/// <remarks>https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers</remarks>
+/// 
 /// <param name="input">A string to query for its composition.</param>
 ///
 /// <returns>An Option containing the input string if it was a number, or None otherwise.</returns>
@@ -98,7 +100,7 @@ let rec private tokenize input =
         | SymbolMatch _ ->  head :: tokenize tail
         | IntegerOrPeriodMatch _ ->
             if tail.Length > 0 then(
-            // If we already have a number in head and the first tail element is a digit
+                // If we already have a number in head and the first tail element is a digit
                 if head.Length >= 1 && (List.contains tail.[0] digits || tail.[0] = ".") then (
                     // If the tail has further elements to lex after the digit
                     // then append the digit to the number being built and lex the remaining characters
@@ -170,7 +172,7 @@ let rec private scan tokens output  =
             match tokensTail with
             | "(" :: _ -> scan tokensTail (Function tokenHead :: output)
             | _ -> scan tokensTail (Word tokenHead :: output)
-        | _ -> raise (ScanError "Scan Error: Malformed Tokens")
+        | _ -> raise (ScanError "Scan Error: Malformed Token")
 
 /// <summary>Function to lex an input list of characters as strings by calling tokenize then scan.</summary>
 ///
