@@ -659,8 +659,10 @@ namespace WpfApp1
                 //Create clone of y array to manipulate to calculate cursor position
                 var yArrayClone = (double[]) yArray.Clone();
                 
+                //Save minimum value of y before any further processing
                 var yMin = yArrayClone.Min() - 2;
                 
+                //Detect if y is a constant
                 var isNumber = false;
                 var isPositive = false;
                 try
@@ -682,20 +684,21 @@ namespace WpfApp1
                     yMin = 0;
                 }
                 
+                //Start of y array scaling
                 for (var i = 0; i < ImageWidth; i++)
                 {
                     yArrayClone[i] -= yMin;
                 }
                 var yMax = yArrayClone.Max() + 2;
                 
+                //Continuation of checking if y is constant
                 if (isNumber && !isPositive)
                 {
                     yArrayClone[0] = 0;
                     yMax = 0;
                 }
 
-                //Scale y values to size of graph
-                
+                //Continuation of scaling y values to size of graph
                 double scale;
                 //Add some padding if x axis is near edge of screen
                 if (yZero is < 20 or > ImageHeight - 20)
