@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Interpreter;
+using NUnit.Framework;
 using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
@@ -153,6 +154,23 @@ namespace WpfApp1
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
             _yProcessed.Add((yZeroUnPadded, functionRight));
 
+            
+            double xGridStep;
+            double yGridStep;
+            if (isNumber)
+            {
+                //Get steps for grid lines
+                (xGridStep, yGridStep) = CalculateConstantGridStep(xArray, Convert.ToDouble(functionRight));
+            }
+            else
+            {
+                //Get steps for grid lines
+                (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
+            }
+            
+            //Generate grid lines - y grid lines are parallel with y axis, xZero
+            GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
+
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
             GenerateLine((double[]) yArray.Clone(), yZeroUnPadded);
@@ -200,6 +218,195 @@ namespace WpfApp1
         }
 
         /// <summary>
+        /// Method to plot grid lines on the graph.
+        /// </summary>
+        private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord, int xAxisYCoordUnPadded, double xGridStep, double[] yArray)
+        {
+            //Get number of pixels per number along the x axis
+            var xRange = xArray.Max() - xArray.Min();
+            var pixelsPerXNumber = ImageWidth / xRange;
+            
+            //Plot vertical grid lines to right of y axis
+            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber))
+            {
+                if (i != yAxisXCoord)
+                {
+                    for (var j = 0; j < ImageHeight; j++)
+                    {
+                        if (j != xAxisYCoord)
+                        {
+                            PlotPixel(i, j, 127, 127, 127);
+                        }
+                    }
+                }
+            }
+            
+            //Plot vertical grid lines to left of y axis
+            for (var i = yAxisXCoord; i >= 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber))
+            {
+                if (i != yAxisXCoord)
+                {
+                    for (var j = 0; j < ImageHeight; j++)
+                    {
+                        if (j != xAxisYCoord)
+                        {
+                            PlotPixel(i, j, 127, 127, 127);
+                        }
+                    }
+                }
+            }
+            
+            //Get number of pixels per number along the y axis
+            var yRange = yArray.Max() - yArray.Min();
+            //Account for padding that is sometimes added to top and bottom of y axis
+            var dataRangeHeight = ImageHeight;
+            if (xAxisYCoord != xAxisYCoordUnPadded)
+            {
+                dataRangeHeight -= 40;
+            }
+            var pixelsPerYNumber = dataRangeHeight / yRange;
+            
+            //Plot horizontal grid lines above y axis
+            for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber))
+            {
+                if (i != xAxisYCoord)
+                {
+                    for (var j = 0; j < ImageWidth; j++)
+                    {
+                        if (j != yAxisXCoord)
+                        {
+                            PlotPixel(j, i, 127, 127, 127);
+                        }
+                    }
+                }
+            }
+            
+            //Plot horizontal grid lines below y axis
+            for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber))
+            {
+                if (i != xAxisYCoord)
+                {
+                    for (var j = 0; j < ImageWidth; j++)
+                    {
+                        if (j != yAxisXCoord)
+                        {
+                            PlotPixel(j, i, 127, 127, 127);
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Method to calculate step of grid lines for both x and y axis when y is constant.
+        /// </summary>
+        private (double xGridStep, double yGridStep) CalculateConstantGridStep(double[] xArray, double y)
+        {
+            double xGridStep;
+            double yGridStep;
+            
+            //X grid line step
+            switch (Math.Abs(y))
+            {
+                //Special case for range <= 1
+                case <= 1:
+                    xGridStep = 0.2;
+                    break;
+                //Special case for range <= 10
+                case <= 10:
+                    xGridStep = 2;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var yRangeString = ((int) Math.Ceiling(y)).ToString();
+                    var yRangeStringLength = yRangeString.Length - 1;
+                    xGridStep = Math.Pow(10, yRangeStringLength) / 5;
+                    break;
+                }
+            }
+            
+            //Y grid line step
+            var xRange = xArray.Max() - xArray.Min();
+            switch (xRange)
+            {
+                //Special case for range <= 1
+                case <= 1:
+                    yGridStep = 0.2;
+                    break;
+                //Special case for range <= 10
+                case <= 10:
+                    yGridStep = 2;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
+                    var xRangeStringLength = xRangeString.Length - 1;
+                    yGridStep = Math.Pow(10, xRangeStringLength) / 5;
+                    break;
+                }
+            }
+
+            return (xGridStep, yGridStep);
+        }
+
+        /// <summary>
+        /// Method to calculate step of grid lines for both x and y axis.
+        /// </summary>
+        private (double xGridStep, double yGridStep) CalculateGridStep(double[] xArray, double[] yArray)
+        {
+            double xGridStep;
+            double yGridStep;
+            
+            //X grid line step
+            var yRange = yArray.Max() - yArray.Min();
+            switch (yRange)
+            {
+                //Special case for range <= 1
+                case <= 1:
+                    xGridStep = 0.1;
+                    break;
+                //Special case for range <= 10
+                case <= 10:
+                    xGridStep = 1;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var yRangeString = ((int) Math.Ceiling(yRange)).ToString();
+                    var yRangeStringLength = yRangeString.Length - 1;
+                    xGridStep = Math.Pow(10, yRangeStringLength) / 5;
+                    break;
+                }
+            }
+            
+            //Y grid line step
+            var xRange = xArray.Max() - xArray.Min();
+            switch (xRange)
+            {
+                //Special case for range <= 1
+                case <= 1:
+                    yGridStep = 0.1;
+                    break;
+                //Special case for range <= 10
+                case <= 10:
+                    yGridStep = 1;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
+                    var xRangeStringLength = xRangeString.Length - 1;
+                    yGridStep = Math.Pow(10, xRangeStringLength) / 5;
+                    break;
+                }
+            }
+
+            return (xGridStep, yGridStep);
+        }
+
+        /// <summary>
         /// Method to mirror graph along x axis to correct for different coordinate systems.
         /// </summary>
         private void InvertGraph()
@@ -228,6 +435,20 @@ namespace WpfApp1
 
             //Set BGR to black
             _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
+        }
+        
+        /// <summary>
+        /// Method to plot a coloured pixel at (x,y)
+        /// </summary>
+        private void PlotPixel(int x, int y, int red, int green, int blue)
+        {
+            //Calculate starting byte of pixel
+            var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
+
+            //Set BGR to black
+            _imageBuffer[offset] = (byte) blue;
+            _imageBuffer[offset + 1] = (byte) green;
+            _imageBuffer[offset + 2] = (byte) red;
         }
 
         /// <summary>
