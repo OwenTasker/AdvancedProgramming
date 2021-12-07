@@ -44,8 +44,9 @@ namespace WpfApp1
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
 
-        //List of all plotted functions and their arrays (starts as just one)
+        //Lists of all plotted functions, their arrays, and key axis locations (starts as just one)
         private readonly List<(string, (double[], double[]))> _functions = new();
+        private readonly List<int> _yZeroUnPaddedList = new();
         
         //Create cursor for hovering
         private readonly Label _cursor = new();
@@ -149,6 +150,7 @@ namespace WpfApp1
             int xZero;
             int yZeroUnPadded;
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
+            _yZeroUnPaddedList.Add(yZeroUnPadded);
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
@@ -644,7 +646,9 @@ namespace WpfApp1
             //Calculate coordinates and display cursor if mouse over graph
             if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 399)
             {
+                //Get data for line cursor will be on
                 var (_, (xArray, yArray)) = _functions.Last();
+                var yZero = _yZeroUnPaddedList.Last();
 
                 //Set coordinate labels
                 var xCoordText = Math.Round(xArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
@@ -662,10 +666,23 @@ namespace WpfApp1
                     yArrayClone[i] -= yMin;
                 }
                 var yMax = yArrayClone.Max() + 2;
-                var scale = (ImageHeight - 1) / yMax;
+                double scale;
+                //Add some padding if x axis is near edge of screen
+                if (yZero is < 20 or > ImageHeight - 20)
+                {
+                    scale = (ImageHeight - 41) / yMax;
+                }
+                else
+                {
+                    scale = (ImageHeight - 1) / yMax;
+                }
                 for (var i = 0; i < ImageWidth; i++)
                 {
                     yArrayClone[i] *= scale;
+                    if (yZero is < 20 or > ImageHeight - 20)
+                    {
+                        yArrayClone[i] += 20;
+                    }
                 }
                 
                 //Set cursor location and display it
