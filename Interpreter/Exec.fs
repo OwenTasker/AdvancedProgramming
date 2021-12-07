@@ -88,6 +88,19 @@ let private performOperation operator numStack =
             | Number f, Number g -> (performBinaryOperation operator g f) :: numStack.[2 .. ]
             | _ -> ExecError "Execution Error: Number stack contains non-number tokens." |> raise
 
+/// <summary>
+/// Reads a list of terminals and returns the value between parenthesis, returns a terminal list once a right
+/// parenthesis is met with a Lpar count of 1
+/// </summary>
+///
+/// <param name="terminals">A list of terminals representing an input.</param>
+/// <param name="lparCount">A integer value counting how many Lpars have been recognized.</param>
+/// <param name="out">A terminal list containing everything up to a Rpar met with a Lpar count of 1.</param>
+///
+/// <returns>
+/// Returns a tuple of two terminal lists, one containing the remaining values in an input and the other containing
+/// values between parenthesis
+/// </returns>
 let rec private extractBrackets terminals lparCount out =
     match terminals with
     | Lpar :: tail -> extractBrackets tail (lparCount+1) (Lpar::out)
