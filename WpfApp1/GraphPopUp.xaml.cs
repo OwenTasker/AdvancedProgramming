@@ -152,6 +152,12 @@ namespace WpfApp1
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
             _yProcessed.Add((yZeroUnPadded, functionRight));
 
+            //Get steps for grid lines
+            var (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
+            
+            //Generate grid lines - y grid lines are parallel with y axis, xZero
+            GenerateGridLines(xZero, yGridStep, xArray, yZeroUnPadded, xGridStep, yArray);
+
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
             GenerateLine((double[]) yArray.Clone(), yZeroUnPadded);
@@ -198,6 +204,26 @@ namespace WpfApp1
             mainGrid.Children.Add(_cursor);
         }
 
+        private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord, double xGridStep, double[] yArray)
+        {
+            var xRange = xArray.Max() - xArray.Min();
+            var pixelsPerNumber = ImageWidth / xRange;
+            
+            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Floor(yGridStep * pixelsPerNumber))
+            {
+                if (i != yAxisXCoord)
+                {
+                    for (var j = 0; j < ImageHeight; j++)
+                    {
+                        if (j != xAxisYCoord)
+                        {
+                            PlotPixel(i, j, 127, 127, 127);
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Method to calculate step of grid lines for both x and y axis.
         /// </summary>
@@ -223,7 +249,7 @@ namespace WpfApp1
                 {
                     var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
                     var xRangeStringLength = xRangeString.Length - 1;
-                    xGridStep = Math.Pow(10, xRangeStringLength) / 2;
+                    xGridStep = Math.Pow(10, xRangeStringLength) / 5;
                     break;
                 }
             }
@@ -245,7 +271,7 @@ namespace WpfApp1
                 {
                     var yRangeString = ((int) Math.Ceiling(yRange)).ToString();
                     var yRangeStringLength = yRangeString.Length - 1;
-                    yGridStep = Math.Pow(10, yRangeStringLength) / 2;
+                    yGridStep = Math.Pow(10, yRangeStringLength) / 5;
                     break;
                 }
             }
