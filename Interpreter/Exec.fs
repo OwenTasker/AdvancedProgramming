@@ -7,7 +7,6 @@
 /// </namespacedoc>
 module internal Interpreter.Exec
 
-open Interpreter
 open Interpreter.Util
 open Interpreter.Differentiate
 open Interpreter.MathematicalFunctions
