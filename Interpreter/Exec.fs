@@ -364,9 +364,12 @@ and private handleRootFunction (env : Map<string, terminal list>) operand expone
         ExecError "error" |> raise
 
 and private handleSingleArgumentFunction env func expression =
-    match reduce expression env with
-    | Number a -> func a
-    | _ -> ExecError "error" |> raise
+    let extractedParams, _ = extractParameters expression [] env
+    if extractedParams.Length <> 1 || extractedParams.[0].Length = 0 then ExecError "Execution Error: Function requires exactly one argument" |> raise
+    else
+        match reduce expression env with
+        | Number a -> func a
+        | _ -> ExecError "Execution Error: Expected number to be passed as argument but received otherwise" |> raise
 
 and private handleTwoArgumentFunction env func expression =
     let extractedParams, _ = extractParameters expression [] env
