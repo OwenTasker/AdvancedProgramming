@@ -11,7 +11,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Interpreter;
-using NUnit.Framework;
 using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
@@ -64,6 +63,7 @@ namespace WpfApp1
         /// </summary>
         public GraphPopUp(IInterpreter interpreter, IGraphDataCalculator graphDataCalculator)
         {
+            //Set data to unchanged as none is generated yet
             _isDataDirty = false;
             
             _interpreter = interpreter;
@@ -964,6 +964,9 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Public wrapper for .Close().
+        /// </summary>
         public void ClosePopUp()
         {
             Close();
@@ -974,6 +977,7 @@ namespace WpfApp1
         /// </summary>
         private void ImageGraph_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            //Store mouse location when pressed
             _mouseDownXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
         }
 
@@ -982,36 +986,40 @@ namespace WpfApp1
         /// </summary>
         private void ImageGraph_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            //Get mouse location when mouse released
             var mouseUpXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
 
+            //Get x array of line
             var (_, (xArray, _)) = _functions.Last();
 
+            //Ensure new min and max values are correct way around
             var newXMinCoord = Math.Min(_mouseDownXCoord, mouseUpXCoord);
             var newXMaxCoord = Math.Max(_mouseDownXCoord, mouseUpXCoord);
 
+            //Pad selection slightly if not at edge of screen to ensure rounding doesn't case part of what the user
+            //wanted to see to get cut off
             if (newXMinCoord > 0)
             {
                 newXMinCoord--;
             }
-
             if (newXMaxCoord < ImageWidth - 1)
             {
                 newXMaxCoord++;
             }
             
+            //Convert x coordinates to values
             var newXMin = xArray[newXMinCoord];
             var newXMax = xArray[newXMaxCoord];
 
-            Console.WriteLine(newXMax + " - " + newXMin + " = " + (newXMax - newXMin));
+            //Do not zoom in if new range would be below 0.5
             if (newXMax - newXMin < 0.5)
             {
-                
                 return;
             }
 
+            //Emulate user re-plotting graph using top tool bar
             TextBoxXMin.Text = newXMin.ToString(CultureInfo.InvariantCulture);
             TextBoxXMax.Text = newXMax.ToString(CultureInfo.InvariantCulture);
-            
             PlotButton_OnClick(this, new RoutedEventArgs());
         }
     }
