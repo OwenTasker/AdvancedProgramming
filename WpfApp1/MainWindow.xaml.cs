@@ -99,6 +99,7 @@ namespace WpfApp1
             {
                 Calculate();
             }
+            inputText.Clear();
         }
 
         /// <summary>
