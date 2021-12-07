@@ -208,10 +208,10 @@ namespace WpfApp1
         {
             //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
-            var pixelsPerNumber = ImageWidth / xRange;
+            var pixelsPerXNumber = ImageWidth / xRange;
             
             //Plot vertical grid lines to right of y axis
-            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerNumber))
+            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber))
             {
                 if (i != yAxisXCoord)
                 {
@@ -226,7 +226,7 @@ namespace WpfApp1
             }
             
             //Plot vertical grid lines to left of y axis
-            for (var i = yAxisXCoord; i >= 0; i -= (int) Math.Round(yGridStep * pixelsPerNumber))
+            for (var i = yAxisXCoord; i >= 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber))
             {
                 if (i != yAxisXCoord)
                 {
@@ -235,6 +235,40 @@ namespace WpfApp1
                         if (j != xAxisYCoord)
                         {
                             PlotPixel(i, j, 127, 127, 127);
+                        }
+                    }
+                }
+            }
+            
+            //Get number of pixels per number along the y axis
+            var yRange = yArray.Max() - yArray.Min();
+            var pixelsPerYNumber = ImageHeight / yRange;
+            
+            //Plot horizontal grid lines above y axis
+            for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber))
+            {
+                if (i != xAxisYCoord)
+                {
+                    for (var j = 0; j < ImageWidth; j++)
+                    {
+                        if (j != yAxisXCoord)
+                        {
+                            PlotPixel(j, i, 127, 127, 127);
+                        }
+                    }
+                }
+            }
+            
+            //Plot horizontal grid lines below y axis
+            for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber))
+            {
+                if (i != xAxisYCoord)
+                {
+                    for (var j = 0; j < ImageWidth; j++)
+                    {
+                        if (j != yAxisXCoord)
+                        {
+                            PlotPixel(j, i, 127, 127, 127);
                         }
                     }
                 }
