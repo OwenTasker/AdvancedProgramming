@@ -41,7 +41,7 @@ namespace WpfApp1
         private readonly int _thisImageId = _imageId++;
 
         //Has this graph been saved? true = no
-        private bool _isDataDirty = false;
+        private bool _isDataDirty;
 
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
@@ -54,7 +54,7 @@ namespace WpfApp1
         private readonly Label _cursor = new();
         
         //Int to store location of click for zooming
-        private int mouseDownXCoord = 0;
+        private int _mouseDownXCoord;
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -218,8 +218,8 @@ namespace WpfApp1
             _cursor.Foreground = System.Windows.Media.Brushes.Red;
             _cursor.Opacity = 0;
             //Add mouse event handlers to label as is appears in front of and blocks the graph image
-            _cursor.MouseLeftButtonDown += new MouseButtonEventHandler(ImageGraph_OnMouseLeftButtonDown);
-            _cursor.MouseLeftButtonUp += new MouseButtonEventHandler(ImageGraph_OnMouseLeftButtonUp);
+            _cursor.MouseLeftButtonDown += ImageGraph_OnMouseLeftButtonDown;
+            _cursor.MouseLeftButtonUp += ImageGraph_OnMouseLeftButtonUp;
             mainGrid.Children.Add(_cursor);
 
             // mark graph as unsaved
@@ -965,8 +965,8 @@ namespace WpfApp1
         /// </summary>
         private void ImageGraph_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            mouseDownXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
-            Console.WriteLine(mouseDownXCoord);
+            _mouseDownXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
+            Console.WriteLine(_mouseDownXCoord);
         }
 
         /// <summary>
