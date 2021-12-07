@@ -10,19 +10,27 @@ module internal Interpreter.Parser
 
 open Interpreter.Util
 
-// https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf
-
-// statement ::= variable -> expression
-/// <summary>Function to parse a statement</summary>
+// statement ::= variable -> expression | expression
+/// <summary>
+/// Function to parse a statement, follows the BNF For our program to the letter
+/// </summary>
+///
+/// <remarks>reference: https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf</remarks>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 let rec private statement terminals =
     match terminals with
     | Word _ :: Assign :: tail -> expression tail
     | _ -> expression terminals
 
-// expression ::= term expression' | function expression
+// expression ::= term expression' 
 and private expression terminals = (term >> expressionP) terminals
 
-// expression' ::= + term expression' | function expression' | empty
+// expression' ::= + term expression' | - term expression' | empty
 and private expressionP terminals =
     match terminals with
     | Plus :: terminalsTail
@@ -32,7 +40,7 @@ and private expressionP terminals =
 // term ::= exponent term'
 and private term terminals = (exponent >> termP) terminals
 
-// term' ::= * exponent term' | empty
+// term' ::= * factor term' | / factor term' | empty
 and private termP terminals =
     match terminals with
     | Times :: terminalsTail
@@ -42,7 +50,7 @@ and private termP terminals =
 // exponent ::= unary exponent'
 and private exponent terminals = (unary >> exponentP) terminals
 
-// exponent' ::= ^ unary exponent' | empty
+// exponent' ::= ^ unary exponent'
 and exponentP terminals =
     match terminals with
     | Exponent :: terminalsTail -> (unary >> exponentP) terminalsTail
@@ -58,7 +66,7 @@ and private unary terminals =
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
 
-// factor ::= int | ( expression )
+// factor ::= var | Number | Function (ARGS) | ( expression )
 and private factor terminals =
     match terminals with
     | [] -> []
@@ -85,6 +93,7 @@ and private factor terminals =
     | [UnaryPlus] -> ParseError "Parse Error: Trailing Operator" |> raise
     | _ -> ParseError "Parse Error: Malformed Expression" |> raise
 
+// arguments ::= var -> expression, arguments | expression, arguments 
 and private arguments terminals =
     match terminals with
     | Word _ :: Assign :: tail -> expression tail |> arguments
@@ -98,5 +107,16 @@ and private arguments terminals =
     | Rpar :: tail -> tail
     | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
 
+/// <summary>
+/// Wrapper function for statement, if statement returns an empty list then the this will simply return the input,
+/// otherwise it will throw a Parse Error, this should only occur when the terminal list was not fully popped during
+/// the parsing process
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns the input given it is valid, will throw a ParseError whenever an invalid combination is recognized
+/// </returns>
 let internal parse terminals =
-    if statement terminals = [] then terminals else ParseError "ParseError: Malformed expression." |> raise
+    if statement terminals = [] then terminals else ParseError "Parse Error: Malformed expression." |> raise
