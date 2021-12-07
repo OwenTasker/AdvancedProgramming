@@ -305,7 +305,6 @@ namespace WpfApp1
             double yGridStep;
             
             //X grid line step
-            //TODO: This shouldn't be y, but I haven't figured out what should be there yet.
             switch (Math.Abs(y))
             {
                 //Special case for range <= 1
@@ -322,7 +321,6 @@ namespace WpfApp1
                     var yRangeString = ((int) Math.Ceiling(y)).ToString();
                     var yRangeStringLength = yRangeString.Length - 1;
                     xGridStep = Math.Pow(10, yRangeStringLength) / 5;
-                    Console.WriteLine(xGridStep);
                     break;
                 }
             }
