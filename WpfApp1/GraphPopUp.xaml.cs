@@ -206,10 +206,27 @@ namespace WpfApp1
 
         private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord, double xGridStep, double[] yArray)
         {
+            //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
             var pixelsPerNumber = ImageWidth / xRange;
             
+            //Plot vertical grid lines to right of y axis
             for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerNumber))
+            {
+                if (i != yAxisXCoord)
+                {
+                    for (var j = 0; j < ImageHeight; j++)
+                    {
+                        if (j != xAxisYCoord)
+                        {
+                            PlotPixel(i, j, 127, 127, 127);
+                        }
+                    }
+                }
+            }
+            
+            //Plot vertical grid lines to left of y axis
+            for (var i = yAxisXCoord; i >= 0; i -= (int) Math.Round(yGridStep * pixelsPerNumber))
             {
                 if (i != yAxisXCoord)
                 {
