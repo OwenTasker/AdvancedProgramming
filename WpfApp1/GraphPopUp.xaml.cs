@@ -46,7 +46,7 @@ namespace WpfApp1
 
         //Lists of all plotted functions, their arrays, and key axis locations (starts as just one)
         private readonly List<(string, (double[], double[]))> _functions = new();
-        private readonly List<int> _yZeroUnPaddedList = new();
+        private readonly List<(int, string)> _yProcessed = new();
         
         //Create cursor for hovering
         private readonly Label _cursor = new();
@@ -150,7 +150,7 @@ namespace WpfApp1
             int xZero;
             int yZeroUnPadded;
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
-            _yZeroUnPaddedList.Add(yZeroUnPadded);
+            _yProcessed.Add((yZeroUnPadded, functionRight));
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
@@ -648,7 +648,7 @@ namespace WpfApp1
             {
                 //Get data for line cursor will be on
                 var (_, (xArray, yArray)) = _functions.Last();
-                var yZero = _yZeroUnPaddedList.Last();
+                var (yZero, functionRight) = _yProcessed.Last();
 
                 //Set coordinate labels
                 var xCoordText = Math.Round(xArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
@@ -658,14 +658,44 @@ namespace WpfApp1
 
                 //Create clone of y array to manipulate to calculate cursor position
                 var yArrayClone = (double[]) yArray.Clone();
-
-                //Scale y values to size of graph
+                
                 var yMin = yArrayClone.Min() - 2;
+                
+                var isNumber = false;
+                var isPositive = false;
+                try
+                {
+                    var number = Convert.ToDouble(functionRight);
+                    isNumber = true;
+                    if (number >= 0)
+                    {
+                        isPositive = true;
+                    }
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+                if (isNumber && isPositive)
+                {
+                    yArrayClone[0] = 0;
+                    yMin = 0;
+                }
+                
                 for (var i = 0; i < ImageWidth; i++)
                 {
                     yArrayClone[i] -= yMin;
                 }
                 var yMax = yArrayClone.Max() + 2;
+                
+                if (isNumber && !isPositive)
+                {
+                    yArrayClone[0] = 0;
+                    yMax = 0;
+                }
+
+                //Scale y values to size of graph
+                
                 double scale;
                 //Add some padding if x axis is near edge of screen
                 if (yZero is < 20 or > ImageHeight - 20)
