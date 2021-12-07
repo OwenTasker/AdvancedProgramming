@@ -209,7 +209,7 @@ namespace WpfApp1
             var xRange = xArray.Max() - xArray.Min();
             var pixelsPerNumber = ImageWidth / xRange;
             
-            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Floor(yGridStep * pixelsPerNumber))
+            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerNumber))
             {
                 if (i != yAxisXCoord)
                 {
@@ -236,12 +236,12 @@ namespace WpfApp1
             var xRange = xArray.Max() - xArray.Min();
             switch (xRange)
             {
-                //Special case for range < 1
-                case < 1:
+                //Special case for range <= 1
+                case <= 1:
                     xGridStep = 0.1;
                     break;
-                //Special case for range < 10
-                case < 10:
+                //Special case for range <= 10
+                case <= 10:
                     xGridStep = 1;
                     break;
                 //Default step is a magnitude smaller than range
@@ -258,12 +258,12 @@ namespace WpfApp1
             var yRange = yArray.Max() - yArray.Min();
             switch (yRange)
             {
-                //Special case for range < 1
-                case < 1:
+                //Special case for range <= 1
+                case <= 1:
                     yGridStep = 0.1;
                     break;
-                //Special case for range < 10
-                case < 10:
+                //Special case for range <= 10
+                case <= 10:
                     yGridStep = 1;
                     break;
                 //Default step is a magnitude smaller than range
