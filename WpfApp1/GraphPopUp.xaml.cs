@@ -960,5 +960,15 @@ namespace WpfApp1
         {
             Close();
         }
+
+        private void ImageGraph_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ImageGraph_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

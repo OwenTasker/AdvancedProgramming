@@ -74,7 +74,8 @@
         <Grid x:Name="mainGrid" Grid.Row="1">
 
             <Image Name="ImageGraph" Source="Images/graph.png" VerticalAlignment="Center" HorizontalAlignment="Center"
-                   Height="400" Width="750" />
+                   Height="400" Width="750" MouseLeftButtonDown="ImageGraph_OnMouseLeftButtonDown"
+                   MouseLeftButtonUp="ImageGraph_OnMouseLeftButtonUp"/>
 
         </Grid>
     </Grid>
