@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using NUnit.Framework;
 using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
@@ -257,14 +258,12 @@ namespace WpfApp1
             //Get number of pixels per number along the y axis
             var yRange = yArray.Max() - yArray.Min();
             //Account for padding that is sometimes added to top and bottom of y axis
+            var dataRangeHeight = ImageHeight;
             if (xAxisYCoord != xAxisYCoordUnPadded)
             {
-                var max = Math.Max(xAxisYCoord, xAxisYCoordUnPadded);
-                var min = Math.Min(xAxisYCoord, xAxisYCoordUnPadded);
-
-                yRange += (max - min) / 2 + 2;
+                dataRangeHeight -= 40;
             }
-            var pixelsPerYNumber = ImageHeight / yRange;
+            var pixelsPerYNumber = dataRangeHeight / yRange;
             
             //Plot horizontal grid lines above y axis
             for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber))
@@ -311,11 +310,11 @@ namespace WpfApp1
             {
                 //Special case for range <= 1
                 case <= 1:
-                    xGridStep = 0.1;
+                    xGridStep = 0.2;
                     break;
                 //Special case for range <= 10
                 case <= 10:
-                    xGridStep = 1;
+                    xGridStep = 2;
                     break;
                 //Default step is a magnitude smaller than range
                 default:
@@ -323,6 +322,7 @@ namespace WpfApp1
                     var yRangeString = ((int) Math.Ceiling(y)).ToString();
                     var yRangeStringLength = yRangeString.Length - 1;
                     xGridStep = Math.Pow(10, yRangeStringLength) / 5;
+                    Console.WriteLine(xGridStep);
                     break;
                 }
             }
@@ -333,11 +333,11 @@ namespace WpfApp1
             {
                 //Special case for range <= 1
                 case <= 1:
-                    yGridStep = 0.1;
+                    yGridStep = 0.2;
                     break;
                 //Special case for range <= 10
                 case <= 10:
-                    yGridStep = 1;
+                    yGridStep = 2;
                     break;
                 //Default step is a magnitude smaller than range
                 default:
