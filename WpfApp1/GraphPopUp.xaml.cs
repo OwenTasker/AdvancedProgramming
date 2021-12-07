@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Interpreter;
 using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
@@ -579,8 +580,7 @@ namespace WpfApp1
             }
             catch (Exception plottingException)
             {
-                Console.WriteLine("Plotting Exception: " + plottingException.Message + "\n" +
-                                  plottingException.StackTrace + "\n>>");
+                throw new Util.GraphingError("Graphing Error: " + plottingException.Message + "\n>>");
             }
 
             _isDataDirty = true;

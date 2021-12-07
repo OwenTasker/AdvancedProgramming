@@ -20,6 +20,8 @@ exception public CalculateError of string
 /// <summary>Exception thrown when an error is encountered while computing a unary operation.</summary>
 exception public UnaryError of string
 /// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
+exception public GraphingError of string
+/// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
 exception public ExecError of string
 /// <summary>Exception thrown when an error is encountered while executing a function, used specifically for enforcing
 /// more stringent parameters</summary>
