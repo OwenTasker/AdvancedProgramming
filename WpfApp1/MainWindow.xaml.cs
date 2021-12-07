@@ -292,13 +292,14 @@ namespace WpfApp1
 
         private void ShowGraph()
         {
+            var graphPopUp = _kernel.Get<IGraphPopUp>();
             try
             {
-                var graphPopUp = _kernel.Get<IGraphPopUp>();
                 graphPopUp.GenerateGraph(inputText.Text);
             }
             catch (Exception plottingException)
             {
+                graphPopUp.ClosePopUp();
                 consoleText.AppendText("Plotting Exception: " + plottingException.Message + "\n>>");
             }
         }

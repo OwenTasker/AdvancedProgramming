@@ -41,7 +41,7 @@ namespace WpfApp1
         private readonly int _thisImageId = _imageId++;
 
         //Has this graph been saved? true = no
-        private bool _isDataDirty = true;
+        private bool _isDataDirty = false;
 
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
@@ -215,6 +215,9 @@ namespace WpfApp1
             _cursor.Foreground = System.Windows.Media.Brushes.Red;
             _cursor.Opacity = 0;
             mainGrid.Children.Add(_cursor);
+
+            // mark graph as unsaved
+            _isDataDirty = true;
         }
 
         /// <summary>
@@ -944,6 +947,11 @@ namespace WpfApp1
                 _cursor.Margin = new Thickness(xCoord + 20, ImageHeight - yArrayClone[(int) xCoord] + 17, 0, 0);
                 mainGrid.Children.Add(_cursor);
             }
+        }
+
+        public void ClosePopUp()
+        {
+            Close();
         }
     }
 }
