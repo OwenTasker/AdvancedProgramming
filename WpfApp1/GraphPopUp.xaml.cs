@@ -44,8 +44,9 @@ namespace WpfApp1
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
 
-        //List of all plotted functions and their arrays (starts as just one)
+        //Lists of all plotted functions, their arrays, and key axis locations (starts as just one)
         private readonly List<(string, (double[], double[]))> _functions = new();
+        private readonly List<(int, string)> _yProcessed = new();
         
         //Create cursor for hovering
         private readonly Label _cursor = new();
@@ -97,17 +98,63 @@ namespace WpfApp1
             }
 
             //Add some padding to top and bottom of graph
-            yArray[0] = yArray.Min() - 2;
-            yArray[749] = yArray.Max() + 2;
+            var yMin = yArray[0];
+            var yMax = yArray[^1];
+            var yMinIndex = 0;
+            var yMaxIndex = yArray.Length - 1;
+            for (var i = 0; i < yArray.Length; i++)
+            {
+                if (yArray[i] < yMin)
+                {
+                    yMin = yArray[i];
+                    yMinIndex = i;
+                }
 
+                if (yArray[i] > yMax)
+                {
+                    yMax = yArray[i];
+                    yMaxIndex = i;
+                }
+            }
+            yArray[yMinIndex] -= 2;
+            yArray[yMaxIndex] += 2;
+
+            //If y is constant, modify axis range
+            var functionRight = trimmedArgsArray[0].Split(">")[^1];
+            var isNumber = false;
+            var isPositive = false;
+            try
+            {
+                var number = Convert.ToDouble(functionRight);
+                isNumber = true;
+                if (number >= 0)
+                {
+                    isPositive = true;
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            if (isNumber && isPositive)
+            {
+                yArray[yMinIndex] = 0;
+            }
+            if (isNumber && !isPositive)
+            {
+                yArray[yMaxIndex] = 0;
+            }
+                
             //Draw axis and get axis positions
             int yZero;
             int xZero;
-            (yZero, xZero) = DrawAxis(xArray, yArray);
+            int yZeroUnPadded;
+            ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
+            _yProcessed.Add((yZeroUnPadded, functionRight));
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
-            GenerateLine((double[]) yArray.Clone());
+            GenerateLine((double[]) yArray.Clone(), yZeroUnPadded);
 
             //Invert graph due to coordinate system
             InvertGraph();
@@ -190,10 +237,10 @@ namespace WpfApp1
             //This method uses inverted y axis
 
             //Create axis labels
-            var yMaxLabel = "" + Math.Ceiling(yArray.Max());
-            var yMinLabel = "" + Math.Floor(yArray.Min());
-            var xMaxLabel = "" + Math.Ceiling(xArray.Max());
-            var xMinLabel = "" + Math.Floor(xArray.Min());
+            var yMaxLabel = "" + Math.Round(yArray.Max(), 2);
+            var yMinLabel = "" + Math.Round(yArray.Min(), 2);
+            var xMaxLabel = "" + Math.Round(xArray.Max(), 2);
+            var xMinLabel = "" + Math.Round(xArray.Min(), 2);
             var zeroLabel = "0";
 
             //Find axis label locations
@@ -202,7 +249,7 @@ namespace WpfApp1
             var yMinPointX = xZero;
             if (xZero > ImageWidth / 2 - 1)
             {
-                yMaxPointX -= (yMaxLabel.Length - 3) * 9 + 5;
+                yMaxPointX -= yMaxLabel.Length  * 9 + 5;
                 yMinPointX -= yMinLabel.Length * 9 + 5;
             }
 
@@ -241,6 +288,18 @@ namespace WpfApp1
             {
                 zeroLabel = "";
             }
+            
+            //Don't draw yMin label if it would be a positive or 0 below the x axis 
+            if (yZero < ImageHeight - 16 && yArray.Min() >= 0)
+            {
+                yMinLabel = "";
+            }
+            
+            //Don't draw yMax label if it would be a negative or 0 above the x axis
+            if (yZero > 0 && yArray.Max() <= 0)
+            {
+                yMaxLabel = "";
+            }
 
             //Draw labels in graph
             Bitmap newBitmap;
@@ -269,7 +328,7 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot a graph from arrays of x and y values
         /// </summary>
-        private void GenerateLine(IList<double> yArray)
+        private void GenerateLine(IList<double> yArray, int yZero)
         {
             //Scale y values to size of graph
             var yMin = yArray.Min();
@@ -277,12 +336,24 @@ namespace WpfApp1
             {
                 yArray[i] -= yMin;
             }
-
             var yMax = yArray.Max();
-            var scale = (ImageHeight - 1) / yMax;
+            double scale;
+            //Add some padding if x axis is near edge of screen
+            if (yZero is < 20 or > ImageHeight - 20)
+            {
+                scale = (ImageHeight - 41) / yMax;
+            }
+            else
+            {
+                scale = (ImageHeight - 1) / yMax;
+            }
             for (var i = 0; i < ImageWidth; i++)
             {
                 yArray[i] *= scale;
+                if (yZero is < 20 or > ImageHeight - 20)
+                {
+                    yArray[i] += 20;
+                }
             }
 
             //Plot line
@@ -295,9 +366,9 @@ namespace WpfApp1
         /// <summary>
         /// Method to draw x and y axis in correct locations
         /// </summary>
-        private (int yZero, int xZero) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
+        private ((int yZero, int xZero), int yZeroUnPadded) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
         {
-            //Find yArray index of y=0, default to below graph
+            //Find yArray index of y=0, x axis, default to below graph
             var yZero = 0;
             if (yArray.Min() > 0.0)
             {
@@ -338,13 +409,24 @@ namespace WpfApp1
             temp *= ImageHeight;
             yZero = (int) temp;
 
+            //Pad yZero if it would be too close to edge of screen
+            var yZeroUnPadded = yZero;
+            if (yZero < 20)
+            {
+                yZero += 20;
+            }
+            else if (yZero > ImageHeight - 20)
+            {
+                yZero -= 20;
+            }
+
             //Draw y=0 line
             for (var i = 0; i < ImageWidth; i++)
             {
                 PlotPixel(i, yZero);
             }
 
-            //Find xArray index of x=0, default to left of graph
+            //Find xArray index of x=0, y axis, default to left of graph
             var xZero = 0;
             if (xArray.Min() > 0.0)
             {
@@ -391,7 +473,7 @@ namespace WpfApp1
                 PlotPixel(xZero, i);
             }
 
-            return (yZero, xZero);
+            return ((yZero, xZero), yZeroUnPadded);
         }
 
         /// <summary>
@@ -487,6 +569,9 @@ namespace WpfApp1
                 return;
             }
 
+            //Remove cursor before redrawing
+            mainGrid.Children.Remove(_cursor);
+            
             try
             {
                 var (function, (_, _)) = _functions.Last();
@@ -506,51 +591,28 @@ namespace WpfApp1
         /// </summary>
         private void xRange_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string input;
-
             //If xMin is modified
-            if (sender.Equals(TextBoxXMin))
-            {
-                input = TextBoxXMin.Text;
-            }
-            //If xMax is modified
-            else if (sender.Equals(TextBoxXMax))
-            {
-                input = TextBoxXMax.Text;
-            }
-            //This should never happen:
-            else
-            {
-                Console.WriteLine("How did we get here?");
-                return;
-            }
+            var input = sender.Equals(TextBoxXMin) ? TextBoxXMin.Text : TextBoxXMax.Text;
 
             //Check if entry is a valid double, do not allow key-press if not
-            if (input.Length > 0 && input != "-" && input != "." && input != "-.")
+            if (input.Length <= 0 || input is "-" or "." or "-.") return;
+            try
             {
-                try
+                _ = Convert.ToDouble(input);
+            }
+            catch (Exception)
+            {
+                //If xMin is invalid
+                if (sender.Equals(TextBoxXMin))
                 {
-                    _ = Convert.ToDouble(input);
+                    TextBoxXMin.Text = TextBoxXMin.Text[..^1];
+                    TextBoxXMin.CaretIndex = int.MaxValue;
                 }
-                catch (Exception)
+                //If xMax is invalid
+                else
                 {
-                    //If xMin is invalid
-                    if (sender.Equals(TextBoxXMin))
-                    {
-                        TextBoxXMin.Text = TextBoxXMin.Text[..^1];
-                        TextBoxXMin.CaretIndex = int.MaxValue;
-                    }
-                    //If xMax is invalid
-                    else if (sender.Equals(TextBoxXMax))
-                    {
-                        TextBoxXMax.Text = TextBoxXMax.Text[..^1];
-                        TextBoxXMax.CaretIndex = int.MaxValue;
-                    }
-                    //This should never happen:
-                    else
-                    {
-                        Console.WriteLine("How did we get here?");
-                    }
+                    TextBoxXMax.Text = TextBoxXMax.Text[..^1];
+                    TextBoxXMax.CaretIndex = int.MaxValue;
                 }
             }
         }
@@ -584,28 +646,76 @@ namespace WpfApp1
             //Calculate coordinates and display cursor if mouse over graph
             if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 399)
             {
+                //Get data for line cursor will be on
                 var (_, (xArray, yArray)) = _functions.Last();
+                var (yZero, functionRight) = _yProcessed.Last();
 
                 //Set coordinate labels
-                var xCoordText = xArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
-                var yCoordText = yArray[(int) xCoord].ToString(CultureInfo.InvariantCulture);
+                var xCoordText = Math.Round(xArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
+                var yCoordText = Math.Round(yArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
                 TextBoxXCoord.Text = xCoordText;
                 TextBoxYCoord.Text = yCoordText;
 
                 //Create clone of y array to manipulate to calculate cursor position
                 var yArrayClone = (double[]) yArray.Clone();
-
-                //Scale y values to size of graph
+                
+                //Save minimum value of y before any further processing
                 var yMin = yArrayClone.Min() - 2;
+                
+                //Detect if y is a constant
+                var isNumber = false;
+                var isPositive = false;
+                try
+                {
+                    var number = Convert.ToDouble(functionRight);
+                    isNumber = true;
+                    if (number >= 0)
+                    {
+                        isPositive = true;
+                    }
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+                if (isNumber && isPositive)
+                {
+                    yArrayClone[0] = 0;
+                    yMin = 0;
+                }
+                
+                //Start of y array scaling
                 for (var i = 0; i < ImageWidth; i++)
                 {
                     yArrayClone[i] -= yMin;
                 }
                 var yMax = yArrayClone.Max() + 2;
-                var scale = (ImageHeight - 1) / yMax;
+                
+                //Continuation of checking if y is constant
+                if (isNumber && !isPositive)
+                {
+                    yArrayClone[0] = 0;
+                    yMax = 0;
+                }
+
+                //Continuation of scaling y values to size of graph
+                double scale;
+                //Add some padding if x axis is near edge of screen
+                if (yZero is < 20 or > ImageHeight - 20)
+                {
+                    scale = (ImageHeight - 41) / yMax;
+                }
+                else
+                {
+                    scale = (ImageHeight - 1) / yMax;
+                }
                 for (var i = 0; i < ImageWidth; i++)
                 {
                     yArrayClone[i] *= scale;
+                    if (yZero is < 20 or > ImageHeight - 20)
+                    {
+                        yArrayClone[i] += 20;
+                    }
                 }
                 
                 //Set cursor location and display it
