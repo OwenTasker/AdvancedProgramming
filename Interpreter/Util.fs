@@ -85,8 +85,13 @@ let internal (|FunctionMatch|_|) (input:string) =
     else
         None
 
-//https://gist.github.com/theburningmonk/3363893
 /// <summary>Function to convert a C# Dictionary to an F# Map.</summary>
+///
+/// <remarks>reference: https://gist.github.com/theburningmonk/3363893</remarks>
+/// 
+/// <param name="kvps">Sequence Of Generic Key-Value Pairs</param>
+///
+/// <returns>Returns a generic map of Key-Value Pairs</returns>
 let inline internal toMap kvps =
     kvps
     |> Seq.map (|KeyValue|)
@@ -202,9 +207,7 @@ let rec internal evaluateBrackets opStack (numStack : 'a list) (performOperation
 /// <param name="terminals">A list of terminals representing an input.</param>
 /// <param name="vars">A set of strings representing a list of all unique words encountered.</param>
 ///
-/// <returns>
-/// Returns true if there is more than one unique word in the terminal list provided.
-/// </returns>
+/// <returns>Returns true if there is more than one unique word in the terminal list provided.</returns>
 let rec checkUniqueVariables terminals (vars: Set<string>) =
     match terminals with
     | head :: tail ->
