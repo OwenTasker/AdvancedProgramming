@@ -199,6 +199,61 @@ namespace WpfApp1
         }
 
         /// <summary>
+        /// Method to calculate step of grid lines for both x and y axis.
+        /// </summary>
+        private (double xGridStep, double yGridStep) CalculateGridStep(double[] xArray, double[] yArray)
+        {
+            double xGridStep;
+            double yGridStep;
+            
+            //X grid line step
+            var xRange = xArray.Max() - xArray.Min();
+            switch (xRange)
+            {
+                //Special case for range < 1
+                case < 1:
+                    xGridStep = 0.1;
+                    break;
+                //Special case for range < 10
+                case < 10:
+                    xGridStep = 1;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
+                    var xRangeStringLength = xRangeString.Length - 1;
+                    xGridStep = Math.Pow(10, xRangeStringLength) / 2;
+                    break;
+                }
+            }
+            
+            //Y grid line step
+            var yRange = yArray.Max() - yArray.Min();
+            switch (yRange)
+            {
+                //Special case for range < 1
+                case < 1:
+                    yGridStep = 0.1;
+                    break;
+                //Special case for range < 10
+                case < 10:
+                    yGridStep = 1;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var yRangeString = ((int) Math.Ceiling(yRange)).ToString();
+                    var yRangeStringLength = yRangeString.Length - 1;
+                    yGridStep = Math.Pow(10, yRangeStringLength) / 2;
+                    break;
+                }
+            }
+
+            return (xGridStep, yGridStep);
+        }
+
+        /// <summary>
         /// Method to mirror graph along x axis to correct for different coordinate systems.
         /// </summary>
         private void InvertGraph()
@@ -227,6 +282,20 @@ namespace WpfApp1
 
             //Set BGR to black
             _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
+        }
+        
+        /// <summary>
+        /// Method to plot a coloured pixel at (x,y)
+        /// </summary>
+        private void PlotPixel(int x, int y, int red, int green, int blue)
+        {
+            //Calculate starting byte of pixel
+            var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
+
+            //Set BGR to black
+            _imageBuffer[offset] = (byte) blue;
+            _imageBuffer[offset + 1] = (byte) green;
+            _imageBuffer[offset + 2] = (byte) red;
         }
 
         /// <summary>
