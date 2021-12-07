@@ -968,7 +968,6 @@ namespace WpfApp1
         private void ImageGraph_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             _mouseDownXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
-            Console.WriteLine(_mouseDownXCoord);
         }
 
         /// <summary>
@@ -977,7 +976,36 @@ namespace WpfApp1
         private void ImageGraph_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             var mouseUpXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
-            Console.WriteLine(mouseUpXCoord);
+
+            var (_, (xArray, _)) = _functions.Last();
+
+            var newXMinCoord = Math.Min(_mouseDownXCoord, mouseUpXCoord);
+            var newXMaxCoord = Math.Max(_mouseDownXCoord, mouseUpXCoord);
+
+            if (newXMinCoord > 0)
+            {
+                newXMinCoord--;
+            }
+
+            if (newXMaxCoord < ImageWidth - 1)
+            {
+                newXMaxCoord++;
+            }
+            
+            var newXMin = xArray[newXMinCoord];
+            var newXMax = xArray[newXMaxCoord];
+
+            Console.WriteLine(newXMax + " - " + newXMin + " = " + (newXMax - newXMin));
+            if (newXMax - newXMin < 0.5)
+            {
+                
+                return;
+            }
+
+            TextBoxXMin.Text = newXMin.ToString(CultureInfo.InvariantCulture);
+            TextBoxXMax.Text = newXMax.ToString(CultureInfo.InvariantCulture);
+            
+            PlotButton_OnClick(this, new RoutedEventArgs());
         }
     }
 }
