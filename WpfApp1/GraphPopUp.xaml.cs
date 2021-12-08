@@ -54,6 +54,9 @@ namespace WpfApp1
         
         //Int to store location of click for zooming
         private int _mouseDownXCoord;
+        
+        //Save time graph was last generated - prevents ghost double mouse releases causing graph to rapidly zoom in
+        private long _timeLastGenerated;
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -80,6 +83,9 @@ namespace WpfApp1
         /// </summary>
         public void GenerateGraph(string input)
         {
+            //Save time of generation
+            _timeLastGenerated = DateTimeOffset.Now.ToUnixTimeSeconds();
+            
             //Split command into arguments
             var trimmedArgsArray = _graphDataCalculator.TrimmedArgsArray(input);
 
@@ -993,6 +999,14 @@ namespace WpfApp1
         /// </summary>
         private void ImageGraph_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            //If it has been less than 1 second since last zoom, this is probably the result of mouse release ghosting
+            //Therefore the zoom should be cancelled
+            var currentTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            if (currentTime == _timeLastGenerated)
+            {
+                return;
+            }
+            
             //Get mouse location when mouse released
             var mouseUpXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
 
