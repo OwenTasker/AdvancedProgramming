@@ -7,6 +7,7 @@
 /// </namespacedoc>
 module internal Interpreter.Exec
 
+open System.Globalization
 open Interpreter.Util
 open Interpreter.Differentiate
 open Interpreter.MathematicalFunctions
@@ -86,83 +87,6 @@ let private performOperation operator numStack =
             match numStack.[0], numStack.[1] with
             | Number f, Number g -> (performBinaryOperation operator g f) :: numStack.[2 .. ]
             | _ -> ExecError "Execution Error: Number stack contains non-number tokens." |> raise
-
-/// <summary>
-/// Reads a list of terminals and returns the value between parenthesis, returns a terminal list once a right
-/// parenthesis is met with a Lpar count of 1
-/// </summary>
-///
-/// <param name="terminals">A list of terminals representing an input.</param>
-/// <param name="lparCount">A integer value counting how many Lpars have been recognized.</param>
-/// <param name="out">A terminal list containing everything up to a Rpar met with a Lpar count of 1.</param>
-///
-/// <returns>
-/// Returns a tuple of two terminal lists, one containing the remaining values in an input and the other containing
-/// values between parenthesis
-/// </returns>
-let rec private extractBrackets terminals lparCount out =
-    match terminals with
-    | Lpar :: tail -> extractBrackets tail (lparCount+1) (Lpar::out)
-    | Rpar :: tail ->
-        match lparCount with
-        | 1 -> tail, List.rev (Rpar :: out)
-        | _ -> extractBrackets tail (lparCount-1) (Rpar::out)
-    | any :: tail -> extractBrackets tail lparCount (any::out)
-    | [] -> ExecError "Execution Error: Lpar without matching Rpar." |> raise
-
-/// <summary>
-/// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.
-/// </summary>
-///
-/// <param name="inList">
-/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
-/// </param>
-/// <param name="outList">A list to contain a single assignment expression taken from the input list.</param>
-/// <param name="nestCount">Maintain a count of left and right parenthesis</param>
-/// <returns>
-/// A tuple containing the input list and the output list with the leftmost assignation moved from the input list to
-/// the output list.
-/// </returns>
-let rec private extractAssignment inList outList nestCount =
-    match inList with
-    | Rpar :: _ when nestCount = 0 -> inList, List.rev outList
-    | [Rpar] -> inList, List.rev outList
-    | Comma :: _ when nestCount = 0 -> (inList, List.rev outList)
-    | Lpar :: inTail -> extractAssignment inTail (Lpar :: outList) (nestCount+1)
-    | Rpar :: inTail -> extractAssignment inTail (Rpar :: outList) (nestCount-1)
-    | any :: inTail -> extractAssignment inTail (any :: outList) nestCount
-    | [] -> inList, List.rev outList
-
-/// <summary>
-/// Creates an environment from a list of terminals representing Comma separate assignments.
-/// </summary>
-///
-/// <param name="terminals">
-/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
-/// </param>
-/// <param name="env">The execution environment in which the variable assignments are to be stored.</param>
-///
-/// <returns></returns>
-and private setArguments terminals (env: Map<string, terminal list>) =
-    match terminals with
-    | Rpar :: tail -> env, tail
-    | Word x :: Assign :: tail ->
-        match extractAssignment tail [] 0 with
-        | remaining, expression ->
-            setArguments remaining (env.Add(x, expression))
-    | Comma :: tail
-    | Lpar :: tail -> setArguments tail env
-    | _ -> env, terminals
-
-and private extractParameters terminals (paramList : terminal list list) env =
-    match terminals with
-    | Rpar :: tail -> List.rev paramList, tail
-    | Comma :: tail
-    | Lpar :: tail ->
-        let remaining, parameter = extractAssignment tail [] 0
-        extractParameters remaining (parameter :: paramList) env
-    | [] -> ExecError "Execution Error: Unmatched left parenthesis" |> raise
-    | _ -> ExecError "Execution Error: Unmatched right parenthesis" |> raise
 
 /// <summary>
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or final Rpar terminal
