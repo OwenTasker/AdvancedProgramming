@@ -12,10 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Interpreter;
 using Microsoft.Win32;
-using NUnit.Framework;
-using Brush = System.Drawing.Brush;
 using Brushes = System.Drawing.Brushes;
-using Color = System.Windows.Media.Color;
 using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
@@ -44,7 +41,7 @@ namespace WpfApp1
         private readonly int _thisImageId = _imageId++;
 
         //Has this graph been saved? true = no
-        private bool _isDataDirty = false;
+        private bool _isDataDirty;
 
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
