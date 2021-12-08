@@ -239,7 +239,7 @@ namespace WpfApp1
 
             // set graph title to function plotted
             var (function, _) = _functions.Last();
-            //functionLabel.Content = function;
+            functionLabel.Content = function;
         }
 
         /// <summary>
