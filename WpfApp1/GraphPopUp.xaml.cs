@@ -221,10 +221,10 @@ namespace WpfApp1
 
             // mark graph as unsaved
             _isDataDirty = true;
-            
+
             // set graph title to function plotted
             var (function, _) = _functions.Last();
-            functionLabel.Content = function;
+            //functionLabel.Content = function;
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace WpfApp1
             //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
             var pixelsPerXNumber = ImageWidth / xRange;
-            var labelAbove = xAxisYCoord < (ImageHeight - xAxisYCoord);
+            var labelAbove = xAxisYCoord < ImageHeight - xAxisYCoord;
 
             var value = yGridStep;
 
@@ -265,27 +265,28 @@ namespace WpfApp1
 
                             PlotPixel(i, j, 127, 127, 127);
 
-                            var label = new Label
-                            {
-                                Width = 25,
-                                Height = 25,
-                                VerticalContentAlignment = VerticalAlignment.Top,
-                                Background = System.Windows.Media.Brushes.Transparent,
-                                Margin = new Thickness
-                                {
-                                    Left = i - 25 ,
-                                    Right = ImageWidth - (i),
-                                    Top = xTop,
-                                    Bottom = xBottom
-                                },
-                                BorderThickness = new Thickness(0,0,0,0),
-                                HorizontalContentAlignment = HorizontalAlignment.Right,
-                                Content = string.Format(valueFormat, value)
-                            };
 
-                            mainGrid.Children.Add(label);
                         }
                     }
+                    var label = new Label
+                    {
+                        Width = 25,
+                        Height = 25,
+                        VerticalContentAlignment = VerticalAlignment.Top,
+                        Background = System.Windows.Media.Brushes.Transparent,
+                        Margin = new Thickness
+                        {
+                            Left = i - 25 ,
+                            Right = ImageWidth - i,
+                            Top = xTop,
+                            Bottom = xBottom
+                        },
+                        BorderThickness = new Thickness(0,0,0,0),
+                        HorizontalContentAlignment = HorizontalAlignment.Right,
+                        Content = string.Format(valueFormat, value)
+                    };
+
+                    mainGrid.Children.Add(label);
                     value += yGridStep;
                 }
             }
@@ -355,7 +356,7 @@ namespace WpfApp1
                 yRight -= 26;
             }
             //Plot horizontal grid lines above y axis
-            for (var i = xAxisYCoord; i < ImageHeight-10; i += (int) Math.Round(xGridStep * pixelsPerYNumber))
+            for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber))
             {
                 if (i != xAxisYCoord)
                 {
@@ -391,7 +392,7 @@ namespace WpfApp1
             value = -xGridStep;
 
             //Plot horizontal grid lines below y axis
-            for (var i = xAxisYCoord; i > 10; i -= (int) Math.Round(xGridStep * pixelsPerYNumber))
+            for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber))
             {
                 if (i != xAxisYCoord)
                 {
@@ -588,36 +589,9 @@ namespace WpfApp1
             //This method uses inverted y axis
 
             //Create axis labels
-            var yMaxLabel = "" + Math.Round(yArray.Max(), 2);
-            var yMinLabel = "" + Math.Round(yArray.Min(), 2);
-            var xMaxLabel = "" + Math.Round(xArray.Max(), 2);
-            var xMinLabel = "" + Math.Round(xArray.Min(), 2);
+
             var zeroLabel = "0";
 
-            //Find axis label locations
-            //Find y axis label locations:
-            var yMaxPointX = xZero;
-            var yMinPointX = xZero;
-            if (xZero > ImageWidth / 2 - 1)
-            {
-                yMaxPointX -= yMaxLabel.Length  * 9 + 5;
-                yMinPointX -= yMinLabel.Length * 9 + 5;
-            }
-
-            var yMaxPoint = new PointF(yMaxPointX, 0);
-            var yMinPoint = new PointF(yMinPointX, ImageHeight - 16);
-
-            //Find x axis label locations:
-            var xMaxPointY = yZero;
-            var xMinPointY = yZero;
-            if (yZero < ImageHeight / 2)
-            {
-                xMaxPointY += 18;
-                xMinPointY += 18;
-            }
-
-            var xMaxPoint = new PointF(ImageWidth - (xMaxLabel.Length * 9 + 5), ImageHeight - xMaxPointY);
-            var xMinPoint = new PointF(0, ImageHeight - xMinPointY);
 
             //Find zero label location:
             var zeroPointX = xZero;
@@ -640,18 +614,6 @@ namespace WpfApp1
                 zeroLabel = "";
             }
 
-            //Don't draw yMin label if it would be a positive or 0 below the x axis
-            if (yZero < ImageHeight - 16 && yArray.Min() >= 0)
-            {
-                yMinLabel = "";
-            }
-
-            //Don't draw yMax label if it would be a negative or 0 above the x axis
-            if (yZero > 0 && yArray.Max() <= 0)
-            {
-                yMaxLabel = "";
-            }
-
             //Draw labels in graph
             Bitmap newBitmap;
             var path = Path.GetTempPath();
@@ -661,10 +623,6 @@ namespace WpfApp1
                 {
                     using (var font = new Font("Courier New", 14, GraphicsUnit.Pixel))
                     {
-                        graphics.DrawString(yMaxLabel, font, Brushes.Black, yMaxPoint);
-                        graphics.DrawString(yMinLabel, font, Brushes.Black, yMinPoint);
-                        graphics.DrawString(xMaxLabel, font, Brushes.Black, xMaxPoint);
-                        graphics.DrawString(xMinLabel, font, Brushes.Black, xMinPoint);
                         graphics.DrawString(zeroLabel, font, Brushes.Black, zeroPoint);
                     }
                 }
@@ -716,7 +674,7 @@ namespace WpfApp1
                 //Plot pixel above line to make it thicker
                 if ((int) yArray[i] < ImageHeight - 2)
                 {
-                    PlotPixel(i, (int) yArray[i] + 1, 53, 179, 242);                
+                    PlotPixel(i, (int) yArray[i] + 1, 53, 179, 242);
                 }
             }
         }
@@ -728,12 +686,9 @@ namespace WpfApp1
         {
             //Find yArray index of y=0, x axis, default to below graph
             var yZero = 0;
-            if (yArray.Min() > 0.0)
-            {
-                //Do nothing: yZero defaults to correct value
-            }
+
             //y=0 is above graph
-            else if (yArray.Max() <= 0.0)
+            if (yArray.Max() <= 0.0)
             {
                 yZero = yArray.Count - 1;
             }
@@ -873,7 +828,7 @@ namespace WpfApp1
             var (function, _) = _functions.Last();
 
             SaveFileDialog fileToSaveTo = null; // Initialise
-            
+
             // Check for forbidden characters in Windows filenames
             if (function.Contains("*"))
             {
@@ -882,13 +837,13 @@ namespace WpfApp1
             if (function.Contains("/"))
             {
                 function = function.Replace("/", "_divided_by_");
-                
+
             }
-            
+
             // Prepare file to save to
-            fileToSaveTo = 
+            fileToSaveTo =
                 SaverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph_" + function[3..] + ".png");
-            
+
 
             //fileToSaveTo is null if user chooses cancel above
             if (fileToSaveTo != null)
