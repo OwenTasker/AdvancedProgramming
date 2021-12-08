@@ -236,7 +236,7 @@ namespace WpfApp1
 
             // set graph title to function plotted
             var (function, _) = _functions.Last();
-            //functionLabel.Content = function;
+            functionLabel.Content = function;
         }
 
         /// <summary>
@@ -953,9 +953,8 @@ namespace WpfApp1
                 return;
             }
 
-            //Remove cursor before redrawing
-            //mainGrid.Children.Remove(_cursor);
-            mainGrid.Children.RemoveRange(1,mainGrid.Children.Count-1);
+            //Remove all WPF elements except title and graph before redrawing
+            mainGrid.Children.RemoveRange(2,mainGrid.Children.Count-1);
 
             try
             {
