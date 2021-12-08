@@ -584,7 +584,14 @@ namespace WpfApp1
             //Plot line
             for (var i = 0; i < ImageWidth; i++)
             {
-                PlotPixel(i, (int) yArray[i]);
+                //Plot line
+                PlotPixel(i, (int) yArray[i], 53, 179, 242);
+
+                //Plot pixel above line to make it thicker
+                if ((int) yArray[i] < ImageHeight - 2)
+                {
+                    PlotPixel(i, (int) yArray[i] + 1, 53, 179, 242);                
+                }
             }
         }
 
