@@ -95,8 +95,8 @@ namespace WpfApp1
             _functions.Add((trimmedArgsArray[0],((double[]) xArray.Clone(), (double[]) yArray.Clone())));
 
             //Pre-fill x range boxes
-            TextBoxXMin.Text = "" + xArray.Min();
-            TextBoxXMax.Text = "" + xArray.Max();
+            TextBoxXMin.Text = "" + Math.Round(xArray.Min(), 2);
+            TextBoxXMax.Text = "" + Math.Round(xArray.Max(), 2);
 
             //Set graph background to white and opacity to max
             for (var i = 0; i < _imageBuffer.Length; i++)
