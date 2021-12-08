@@ -44,7 +44,7 @@ namespace WpfApp1
         private readonly int _thisImageId = _imageId++;
 
         //Has this graph been saved? true = no
-        private bool _isDataDirty = false;
+        private bool _isDataDirty;
 
         //Array containing all pixels of graph
         private readonly byte[] _imageBuffer = new byte[ImageWidth * ImageHeight * BytesPerPixel];
@@ -55,6 +55,12 @@ namespace WpfApp1
 
         //Create cursor for hovering
         private readonly Label _cursor = new();
+        
+        //Int to store location of click for zooming
+        private int _mouseDownXCoord;
+        
+        //Save time graph was last generated - prevents ghost double mouse releases causing graph to rapidly zoom in
+        private long _timeLastGenerated;
 
         private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
@@ -64,6 +70,9 @@ namespace WpfApp1
         /// </summary>
         public GraphPopUp(IInterpreter interpreter, IGraphDataCalculator graphDataCalculator)
         {
+            //Set data to unchanged as none is generated yet
+            _isDataDirty = false;
+            
             _interpreter = interpreter;
             _graphDataCalculator = graphDataCalculator;
 
@@ -78,6 +87,9 @@ namespace WpfApp1
         /// </summary>
         public void GenerateGraph(string input)
         {
+            //Save time of generation
+            _timeLastGenerated = DateTimeOffset.Now.ToUnixTimeSeconds();
+            
             //Split command into arguments
             var trimmedArgsArray = _graphDataCalculator.TrimmedArgsArray(input);
 
@@ -93,8 +105,8 @@ namespace WpfApp1
             _functions.Add((trimmedArgsArray[0],((double[]) xArray.Clone(), (double[]) yArray.Clone())));
 
             //Pre-fill x range boxes
-            TextBoxXMin.Text = "" + xArray.Min();
-            TextBoxXMax.Text = "" + xArray.Max();
+            TextBoxXMin.Text = "" + Math.Round(xArray.Min(), 2);
+            TextBoxXMax.Text = "" + Math.Round(xArray.Max(), 2);
 
             //Set graph background to white and opacity to max
             for (var i = 0; i < _imageBuffer.Length; i++)
@@ -217,6 +229,9 @@ namespace WpfApp1
             _cursor.FontSize = 14;
             _cursor.Foreground = System.Windows.Media.Brushes.Red;
             _cursor.Opacity = 0;
+            //Add mouse event handlers to label as is appears in front of and blocks the graph image
+            _cursor.MouseLeftButtonDown += ImageGraph_OnMouseLeftButtonDown;
+            _cursor.MouseLeftButtonUp += ImageGraph_OnMouseLeftButtonUp;
             mainGrid.Children.Add(_cursor);
 
             // mark graph as unsaved
@@ -915,6 +930,12 @@ namespace WpfApp1
             {
                 return;
             }
+            
+            //Check if new x range is less than 0.5. If true, do not re-plot
+            if (Convert.ToDouble(TextBoxXMax.Text) - Convert.ToDouble(TextBoxXMin.Text) < 0.5)
+            {
+                return;
+            }
 
             //Remove cursor before redrawing
             //mainGrid.Children.Remove(_cursor);
@@ -930,6 +951,7 @@ namespace WpfApp1
                 throw new Util.GraphingError("Graphing Error: " + plottingException.Message + "\n>>");
             }
 
+            //Set data as having been modified since last save
             _isDataDirty = true;
         }
 
@@ -1072,9 +1094,71 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Public wrapper for .Close().
+        /// </summary>
         public void ClosePopUp()
         {
             Close();
+        }
+
+        /// <summary>
+        /// Detect when user presses mouse on graph as part of zooming.
+        /// </summary>
+        private void ImageGraph_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            //Store mouse location when pressed
+            _mouseDownXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
+        }
+
+        /// <summary>
+        /// Detect when user releases mouse on graph, re-plot using new x range.
+        /// </summary>
+        private void ImageGraph_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            //If it has been less than 1 second since last zoom, this is probably the result of mouse release ghosting
+            //Therefore the zoom should be cancelled
+            var currentTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            if (currentTime == _timeLastGenerated)
+            {
+                return;
+            }
+            
+            //Get mouse location when mouse released
+            var mouseUpXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
+
+            //Get x array of line
+            var (_, (xArray, _)) = _functions.Last();
+
+            //Ensure new min and max values are correct way around
+            var newXMinCoord = Math.Min(_mouseDownXCoord, mouseUpXCoord);
+            var newXMaxCoord = Math.Max(_mouseDownXCoord, mouseUpXCoord);
+
+            //Pad selection slightly if not at edge of screen to ensure rounding doesn't case part of what the user
+            //wanted to see to get cut off
+            if (newXMinCoord > 0)
+            {
+                newXMinCoord--;
+            }
+            if (newXMaxCoord < ImageWidth - 1)
+            {
+                newXMaxCoord++;
+            }
+            
+            //Convert x coordinates to values
+            var newXMin = xArray[newXMinCoord];
+            var newXMax = xArray[newXMaxCoord];
+
+            //Do not zoom in if new range would be below 0.5
+            if (newXMax - newXMin < 0.5)
+            {
+                return;
+            }
+
+            //Emulate user re-plotting graph using top tool bar
+            TextBoxXMin.Text = newXMin.ToString(CultureInfo.InvariantCulture);
+            TextBoxXMax.Text = newXMax.ToString(CultureInfo.InvariantCulture);
+            PlotButton_OnClick(this, new RoutedEventArgs());
         }
     }
 }
