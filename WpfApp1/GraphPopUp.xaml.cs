@@ -245,8 +245,8 @@ namespace WpfApp1
                 valueFormat = "{0:0.0}";
             }
 
-            var xTop = ImageHeight - xAxisYCoord;
-            var xBottom = xAxisYCoord - 25;
+            var xTop = ImageHeight - xAxisYCoord + 30;
+            var xBottom = xAxisYCoord - 25 - 30;
             if (labelAbove)
             {
                 xTop -= 25;
@@ -262,33 +262,41 @@ namespace WpfApp1
                     {
                         if (j != xAxisYCoord)
                         {
-
                             PlotPixel(i, j, 127, 127, 127);
-
-
                         }
                     }
-                    var label = new Label
+                }
+            }
+
+            for (var i = yAxisXCoord; i <= ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber))
+            {
+                if (i != yAxisXCoord)
+                {
+                    var axisLabel = new TextBlock()
                     {
                         Width = 25,
                         Height = 25,
-                        VerticalContentAlignment = VerticalAlignment.Top,
+                        VerticalAlignment = VerticalAlignment.Top,
                         Background = System.Windows.Media.Brushes.Transparent,
                         Margin = new Thickness
                         {
-                            Left = i - 25 ,
-                            Right = ImageWidth - i,
+                            Left = i - 30,
+                            Right = ImageWidth - i + 30,
                             Top = xTop,
                             Bottom = xBottom
                         },
-                        BorderThickness = new Thickness(0,0,0,0),
-                        HorizontalContentAlignment = HorizontalAlignment.Right,
-                        Content = string.Format(valueFormat, value)
+                        //BorderThickness = new Thickness(0,0,0,0),
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        TextAlignment = TextAlignment.Right,
+                        Text = string.Format(valueFormat, value),
+                        TextWrapping = TextWrapping.WrapWithOverflow
                     };
 
-                    mainGrid.Children.Add(label);
+                    mainGrid.Children.Add(axisLabel);
+
                     value += yGridStep;
                 }
+
             }
 
             value = -yGridStep;
@@ -303,27 +311,34 @@ namespace WpfApp1
                         if (j != xAxisYCoord)
                         {
                             PlotPixel(i, j, 127, 127, 127);
-                            var label = new Label
-                            {
-                                Background = System.Windows.Media.Brushes.Transparent,
-                                Width = 25,
-                                Height = 25,
-                                VerticalContentAlignment = VerticalAlignment.Bottom,
-                                Margin = new Thickness
-                                {
-                                    Left = i+1,
-                                    Right = ImageWidth - 25 - (i-1),
-                                    Top = xTop,
-                                    Bottom = xBottom
-                                },
-                                BorderThickness = new Thickness(0,0,0,0),
-                                Content = string.Format(valueFormat, value)
-
-                            };
-
-                            mainGrid.Children.Add(label);
                         }
                     }
+                }
+            }
+
+            for (var i = yAxisXCoord; i >= 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber))
+            {
+                if (i != yAxisXCoord)
+                {
+                    var axisLabel = new TextBlock()
+                    {
+                        Background = System.Windows.Media.Brushes.Transparent,
+                        Width = 25,
+                        Height = 25,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Margin = new Thickness
+                        {
+                            Left = i + 1,
+                            Right = ImageWidth - 25 - (i - 1),
+                            Top = xTop,
+                            Bottom = xBottom
+                        },
+                        //BorderThickness = new Thickness(0,0,0,0),
+                        Text = string.Format(valueFormat, value),
+                        TextWrapping = TextWrapping.WrapWithOverflow
+                    };
+
+                    mainGrid.Children.Add(axisLabel);
                     value -= yGridStep;
                 }
             }
@@ -348,8 +363,8 @@ namespace WpfApp1
                 valueFormat = "{0:0.0}";
             }
 
-            var yLeft = yAxisXCoord - 25 - 1;
-            var yRight = ImageWidth - yAxisXCoord + 1;
+            var yLeft = yAxisXCoord - 50 - 1;
+            var yRight = ImageWidth - yAxisXCoord + 1 + 25;
             if (labelRight)
             {
                 yLeft += 26;
@@ -365,26 +380,27 @@ namespace WpfApp1
                         if (j != yAxisXCoord)
                         {
                             PlotPixel(j, i, 127, 127, 127);
-                            var label = new Label
-                            {
-                                Background = System.Windows.Media.Brushes.Transparent,
-                                HorizontalContentAlignment = HorizontalAlignment.Right,
-                                Width = 25,
-                                Height = 25,
-                                Margin = new Thickness
-                                {
-                                    Left = yLeft,
-                                    Right = yRight,
-                                    Top = ImageHeight - i,
-                                    Bottom = i - 25
-                                },
-                                BorderThickness = new Thickness(0,0,0,0),
-                                Content = string.Format(valueFormat, value)
-                            };
-
-                            mainGrid.Children.Add(label);
                         }
                     }
+                    var label = new TextBlock()
+                    {
+                        Background = System.Windows.Media.Brushes.Transparent,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Width = 25,
+                        Height = 25,
+                        Margin = new Thickness
+                        {
+                            Left = yLeft,
+                            Right = yRight,
+                            Top = ImageHeight - i,
+                            Bottom = i - 25
+                        },
+                        //BorderThickness = new Thickness(0,0,0,0),
+                        Text = string.Format(valueFormat, value),
+                        TextWrapping = TextWrapping.WrapWithOverflow
+                    };
+
+                    mainGrid.Children.Add(label);
                     value += xGridStep;
                 }
             }
@@ -401,27 +417,28 @@ namespace WpfApp1
                         if (j != yAxisXCoord)
                         {
                             PlotPixel(j, i, 127, 127, 127);
-                            var label = new Label
-                            {
-                                Background = System.Windows.Media.Brushes.Transparent,
-                                HorizontalContentAlignment = HorizontalAlignment.Right,
-                                VerticalContentAlignment = VerticalAlignment.Bottom,
-                                Width = 25,
-                                Height = 25,
-                                Margin = new Thickness
-                                {
-                                    Left = yLeft,
-                                    Right = yRight,
-                                    Top = ImageHeight - i,
-                                    Bottom = i + 25
-                                },
-                                BorderThickness = new Thickness(0,0,0,0),
-                                Content = string.Format(valueFormat, value)
-                            };
-
-                            mainGrid.Children.Add(label);
                         }
                     }
+                    var label = new TextBlock()
+                    {
+                        Background = System.Windows.Media.Brushes.Transparent,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Bottom,
+                        Width = 25,
+                        Height = 25,
+                        Margin = new Thickness
+                        {
+                            Left = yLeft,
+                            Right = yRight,
+                            Top = ImageHeight - i,
+                            Bottom = i + 25
+                        },
+                        //BorderThickness = new Thickness(0,0,0,0),
+                        Text = string.Format(valueFormat, value),
+                        TextWrapping = TextWrapping.WrapWithOverflow
+                    };
+
+                    mainGrid.Children.Add(label);
                     value -= xGridStep;
                 }
             }
