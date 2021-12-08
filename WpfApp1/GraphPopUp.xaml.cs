@@ -464,7 +464,7 @@ namespace WpfApp1
 
             if (yArray.Max() < 0)
             {
-                value += yArray.Min();
+                value += yArray.Max();
             }
 
             //Plot horizontal grid lines below y axis
