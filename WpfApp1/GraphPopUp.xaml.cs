@@ -934,9 +934,8 @@ namespace WpfApp1
                 return;
             }
 
-            //Remove cursor before redrawing
-            //mainGrid.Children.Remove(_cursor);
-            mainGrid.Children.RemoveRange(1,mainGrid.Children.Count-1);
+            //Remove all WPF elements except title and graph before redrawing
+            mainGrid.Children.RemoveRange(2,mainGrid.Children.Count-1);
 
             try
             {
