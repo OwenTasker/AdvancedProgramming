@@ -607,7 +607,7 @@ namespace WpfApp1
                 //Do nothing: yZero defaults to correct value
             }
             //y=0 is above graph
-            else if (yArray.Max() < 0.0)
+            else if (yArray.Max() <= 0.0)
             {
                 yZero = yArray.Count - 1;
             }
@@ -665,7 +665,7 @@ namespace WpfApp1
                 //Do nothing: xZero defaults to correct value
             }
             //x=0 is to right of graph
-            else if (xArray.Max() < 0.0)
+            else if (xArray.Max() <= 0.0)
             {
                 xZero = xArray.Count - 1;
             }
