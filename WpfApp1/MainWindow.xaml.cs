@@ -145,8 +145,8 @@ namespace WpfApp1
                 "piButton" => ("pi()", 0),
                 "eulerButton" => ("euler()", 0),
                 "LnButton" => ("ln()", -1),
-                "Log2Button" => ("log2()", -1),
-                "Log10Button" => ("log10()", -1),
+                "Log2Button" => ("logTwo()", -1),
+                "Log10Button" => ("logTen()", -1),
                 "LogXButton" => ("logX()", -1),
                 _ => throw new InvalidOperationException()
             };
