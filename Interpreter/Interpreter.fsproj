@@ -14,8 +14,8 @@
 
   <ItemGroup>
     <Compile Include="Util.fs" />
-    <Compile Include="Differentiate.fs" />
     <Compile Include="MathematicalFunctions.fs" />
+    <Compile Include="Differentiate.fs" />
     <Compile Include="Lexer.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Exec.fs" />

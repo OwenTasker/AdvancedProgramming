@@ -9,6 +9,7 @@
 module Interpreter.Differentiate
 
 open Interpreter.Util
+open Interpreter.MathematicalFunctions
 
 /// <summary>
 /// Type defining dual numbers as being of the form a + be where e^2 = 0. Operations are redefined under this type
@@ -503,6 +504,21 @@ let rec private autoDifferentiate terminals opStack numStack =
                 |> raise
         | head :: tail -> autoDifferentiate terminals tail (performOperation head numStack)
 
+let rec expandRoots expressionIn expressionOut =
+    match expressionIn with
+    | Function a :: tail ->
+        let remaining, bracketedExpression = extractBrackets tail 0 []
+        match a with
+        | "sqrt" -> RootToTerminals bracketedExpression [Number 2.0]
+        | "cbrt" -> RootToTerminals bracketedExpression [Number 3.0]
+        | "xrt" ->
+            let extractedParams, _ = extractParameters bracketedExpression [] Map.empty
+            let result = RootToTerminals extractedParams.[0] extractedParams.[1]
+            expandRoots remaining (expressionOut @ result)
+        | _ -> expandRoots tail (expressionOut @ [Function a])
+    | head :: tail -> expandRoots tail (expressionOut @ [head])
+    | [] -> expressionOut
+
 /// <summary>Wrapper for autoDifferentiate that calls it with empty number and operator stacks</summary>
 ///
 /// <param name="terminals">A list of terminals representing a valid expression for differentiation.</param>
@@ -512,4 +528,5 @@ let internal differentiate terminals =
     if checkUniqueVariables terminals Set.empty then
         ExecError "Execution Error: Partial Differentiation is not supported, please ensure only one variable is contained within differentiation" |> raise
     else
-        autoDifferentiate terminals [] []
+        let expandedExpression = expandRoots terminals []
+        autoDifferentiate expandedExpression [] []
