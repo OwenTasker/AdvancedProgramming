@@ -296,6 +296,7 @@ namespace WpfApp1
             try
             {
                 graphPopUp.GenerateGraph(inputText.Text);
+                consoleText.AppendText(">>");
             }
             catch (Exception plottingException)
             {
