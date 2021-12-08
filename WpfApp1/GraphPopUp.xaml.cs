@@ -227,18 +227,28 @@ namespace WpfApp1
             //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
             var pixelsPerXNumber = ImageWidth / xRange;
+            var labelAbove = xAxisYCoord < (ImageHeight - xAxisYCoord);
 
             var value = (int) Math.Round(yGridStep);
 
+            var xTop = ImageHeight - xAxisYCoord;
+            var xBottom = xAxisYCoord - 25;
+            if (labelAbove)
+            {
+                xTop -= 25;
+                xBottom += 25;
+            }
             //Plot vertical grid lines to right of y axis
             for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber))
             {
                 if (i != yAxisXCoord)
                 {
+
                     for (var j = 0; j < ImageHeight; j++)
                     {
                         if (j != xAxisYCoord)
                         {
+
                             PlotPixel(i, j, 127, 127, 127);
                             var label = new Label
                             {
@@ -250,8 +260,8 @@ namespace WpfApp1
                                 {
                                     Left = i - 25 ,
                                     Right = ImageWidth - (i),
-                                    Top = ImageHeight - xAxisYCoord,
-                                    Bottom = xAxisYCoord - 25
+                                    Top = xTop,
+                                    Bottom = xBottom
                                 },
                                 BorderThickness = new Thickness(0,0,0,0),
                                 HorizontalContentAlignment = HorizontalAlignment.Right,
@@ -287,8 +297,8 @@ namespace WpfApp1
                                 {
                                     Left = i+1,
                                     Right = ImageWidth - 25 - (i-1),
-                                    Top = ImageHeight - xAxisYCoord,
-                                    Bottom = xAxisYCoord - 25
+                                    Top = xTop,
+                                    Bottom = xBottom
                                 },
                                 BorderThickness = new Thickness(0,0,0,0),
                                 Content = value.ToString()
@@ -312,8 +322,17 @@ namespace WpfApp1
             }
             var pixelsPerYNumber = dataRangeHeight / yRange;
 
+            var labelRight = yAxisXCoord < (ImageWidth - yAxisXCoord);
+
             value = (int) Math.Round(xGridStep);
 
+            var yLeft = yAxisXCoord - 25 - 1;
+            var yRight = ImageWidth - yAxisXCoord + 1;
+            if (labelRight)
+            {
+                yLeft += 26;
+                yRight -= 26;
+            }
             //Plot horizontal grid lines above y axis
             for (var i = xAxisYCoord; i < ImageHeight-10; i += (int) Math.Round(xGridStep * pixelsPerYNumber))
             {
@@ -332,8 +351,8 @@ namespace WpfApp1
                                 Height = 25,
                                 Margin = new Thickness
                                 {
-                                    Left = yAxisXCoord - 25 - 1,
-                                    Right = ImageWidth - yAxisXCoord + 1,
+                                    Left = yLeft,
+                                    Right = yRight,
                                     Top = ImageHeight - i,
                                     Bottom = i - 25
                                 },
@@ -369,8 +388,8 @@ namespace WpfApp1
                                 Height = 25,
                                 Margin = new Thickness
                                 {
-                                    Left = yAxisXCoord - 25 - 1,
-                                    Right = ImageWidth - yAxisXCoord + 1,
+                                    Left = yLeft,
+                                    Right = yRight,
                                     Top = ImageHeight - i,
                                     Bottom = i + 25
                                 },
