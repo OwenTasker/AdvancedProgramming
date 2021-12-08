@@ -102,7 +102,7 @@ and private arguments terminals =
     | UnaryMinus :: _
     | UnaryPlus :: _
     | Word _ :: _ -> expression terminals |> arguments
-    | Function _ :: _ -> factor terminals |> arguments
+    | Function _ :: _ -> expression terminals |> arguments
     | Lpar :: _ -> expression terminals |> arguments
     | Rpar :: tail -> tail
     | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise

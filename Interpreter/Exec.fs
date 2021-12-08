@@ -7,6 +7,7 @@
 /// </namespacedoc>
 module internal Interpreter.Exec
 
+open Interpreter
 open Interpreter.Util
 open Interpreter.Differentiate
 open Interpreter.MathematicalFunctions
@@ -211,6 +212,9 @@ let rec internal closed (env: Map<string, terminal list>) terminals  =
             if differentiationClosed parameters env then
                 closed env remaining
             else false
+        | "zeroCrossing" ->
+            let _, remaining = extractParameters tail [] env
+            closed env remaining
         | FunctionMatch _ ->
             let parameters, remaining = extractParameters tail [] env
             if systemFunctionClosed parameters env then
@@ -250,6 +254,7 @@ let rec getVariable expression =
     | Word a :: _ -> a
     | [] -> "!"
     | _ :: tail -> getVariable tail
+        
 
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
@@ -310,6 +315,7 @@ let rec private reduceRecursive terminals opStack numStack (env: Map<string, ter
         | Lpar :: _ -> ExecError "Execution Error: Unmatched left parenthesis." |> raise
         | head :: tail -> reduceRecursive terminals tail (performOperation head numStack) env
 
+
 and private handleFunction funcName bracketedExpression env : terminal=
     match funcName with
     | "integrate" ->
@@ -339,6 +345,23 @@ and private handleFunction funcName bracketedExpression env : terminal=
             reduce (differentiate extractedParams.[0]) (toMap diffEnv)
         else
             reduce (differentiate extractedParams.[0]) env
+    | "zeroCrossing" ->
+        let extractedParams, _ = extractParameters bracketedExpression [] env
+        if extractedParams.Length <> 2 then ExecError "Execution Error: Zero Crossings require exactly one argument" |> raise
+        else
+            let expression = extractedParams.[0]
+            let seed = extractedParams.[1]
+            let A = getVariable expression
+            let B = getVariable seed
+            if B <> "!" then
+                ExecError "Execution Error: Seed Value must be a number" |> raise
+            else
+                let reducedSeed = reduce seed Map.empty
+                if checkUniqueVariables expression Set.empty || A = "!" then
+                    ExecError "Execution Error: Zero Crossings can only take place with respect to at most one variable, prior variable assignments are not recognised for this purpose" |> raise
+                else
+                    zeroCrossings expression reducedSeed A
+        
     | "sqrt" -> handleRootFunction env bracketedExpression [Number 2.0]
     | "cbrt" -> handleRootFunction env bracketedExpression [Number 3.0]
     | "xrt" ->
@@ -355,14 +378,27 @@ and private handleFunction funcName bracketedExpression env : terminal=
     | "gcd" -> handleTwoArgumentFunction env getGCDWrapper bracketedExpression
     | "mod" -> handleTwoArgumentFunction env moduloCalc bracketedExpression
     | "rand" -> handleTwoArgumentFunction env pseudoRandom bracketedExpression
-    | "pi" -> Number 3.14
-    | "euler" -> Number 2.71
+    
+    | "pi" -> Number 3.1415
+    | "euler" -> Number 2.7183
     | _ ->
         if env.ContainsKey funcName then
             let newEnv, _ = setArguments bracketedExpression env
             let combinedEnv = Map.fold (fun acc key value -> Map.add key value acc) env newEnv
             (reduce [Word funcName] combinedEnv)
         else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
+
+and zeroCrossings expression seed variable =
+    let resultA = reduce expression (Map.empty.Add (variable, [seed]))
+    let resultB = reduce (differentiate expression) (Map.empty.Add (variable, [seed]))
+    let resultC = reduce [seed;Minus;resultA;Divide;resultB] Map.empty
+    match resultC, seed with
+    | Number A, Number B ->
+        if abs(A - B) < 0.01 then
+            A |> Number
+        else
+            zeroCrossings expression resultC variable
+    | _ -> ExecError "Execution Error: Zero Crossings Could Not Find A Proper root" |> raise
 
 and calculateIntegral expression variable lowerBound (current : int) sum =
     if current = lowerBound then Number sum
@@ -393,6 +429,16 @@ and private handleSingleArgumentFunction env func expression =
         | Number a -> func a
         | _ -> ExecError "Execution Error: Expected number to be passed as argument but received otherwise" |> raise
 
+/// <summary>
+/// Function to handle predefined functions with two arguments, contains logic to ensure exactly two arguments are
+/// passed. Is a higher order function as it 
+/// </summary>
+///
+/// <param name="env">A list of terminals representing an expression in infix notation.</param>
+/// <param name="func">The execution environment for any variables in the expression.</param>
+/// <param name="expression">The execution environment for any variables in the expression.</param>
+///
+/// <returns>A Number terminal containing the outcome of the expression.</returns>
 and private handleTwoArgumentFunction env func expression =
     let extractedParams, _ = extractParameters expression [] env
 

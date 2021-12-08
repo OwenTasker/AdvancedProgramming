@@ -59,6 +59,7 @@ let public functions = [
                  ("differentiate", "One Argument; A function to differentiate an expression provided as an argument, given a value of x^2, will return 2*x")
                  ("integrate", "Three Arguments; A function to estimate the area beneath a graph between given bounds")
                  ("abs", "One Argument; A function to determine the absolute value of an expression, given a value of -12, returns 12")
+                 ("zeroCrossing", "One Argument; A function to determine the value of a function when it is equal to 0")
                  ("xrt", "Two Arguments; determines the xth root of a given value")
                  ("gcd", "Two Arguments; Calculates the greatest common divisor of two integer values")
                  ("mod", "Two Arguments; Calculates the modulo value of a pair of floating point values")
@@ -143,7 +144,7 @@ let rec internal terminalListToString str list =
 /// <exception cref="InvalidArgumentError">Thrown when the input value is not of Number terminal type</exception>
 let internal terminalToNum term =
     match term with
-    | Number _ -> term |> individualTerminalToString |> System.Double.Parse
+    | Number A -> A
     | _ -> InvalidArgumentError "Invalid Argument Error: Cannot Parse Non Number Terminal As Number" |> raise
 
 /// <summary>
@@ -202,8 +203,8 @@ let rec internal evaluateBrackets opStack (numStack : 'a list) (performOperation
     | head :: tail -> evaluateBrackets tail (performOperation head numStack) performOperation
 
 /// <summary>
-/// Takes in a terminal list and adds each word to a set, if there are more than one unique word among the input
-/// list, return true, else false .
+/// Takes in a terminal list and adds each word to a set, if there are more than one unique word among the input list,
+/// return true, else false.
 /// </summary>
 ///
 /// <param name="terminals">A list of terminals representing an input.</param>
@@ -217,3 +218,5 @@ let rec checkUniqueVariables terminals (vars: Set<string>) =
         | Word a -> checkUniqueVariables tail (vars.Add a)
         | _ -> checkUniqueVariables tail vars
     | [] -> vars.Count > 1
+    
+    
