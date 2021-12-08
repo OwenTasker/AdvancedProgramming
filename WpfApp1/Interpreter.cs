@@ -66,12 +66,15 @@ namespace WpfApp1
         {
             var variables = Regex.Replace(
                 expression, "[^a-zA-Z]", "|").Split("|").Where(
-                s => s.Length > 0).ToArray();
+                s => s.Length > 0).ToList();
+
+            var systemFunctions = Util.functions.Select(x => x.Item1).ToList();
+            variables = variables.Except(systemFunctions).ToList();
 
             // Compile set of open variables
-            var openVars = new List<string> {variables[0]};
+            var openVars = new List<string> {variables.ToArray()[0]};
 
-            foreach (var t in variables[1..])
+            foreach (var t in variables.ToArray()[1..])
             {
                 if (!(Closed(t) || openVars.Contains(t)))
                     openVars.Add(t);
