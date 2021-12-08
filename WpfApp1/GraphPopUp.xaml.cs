@@ -52,10 +52,10 @@ namespace WpfApp1
 
         //Create cursor for hovering
         private readonly Label _cursor = new();
-        
+
         //Int to store location of click for zooming
         private int _mouseDownXCoord;
-        
+
         //Save time graph was last generated - prevents ghost double mouse releases causing graph to rapidly zoom in
         private long _timeLastGenerated;
 
@@ -69,7 +69,7 @@ namespace WpfApp1
         {
             //Set data to unchanged as none is generated yet
             _isDataDirty = false;
-            
+
             _interpreter = interpreter;
             _graphDataCalculator = graphDataCalculator;
 
@@ -86,7 +86,7 @@ namespace WpfApp1
         {
             //Save time of generation
             _timeLastGenerated = DateTimeOffset.Now.ToUnixTimeSeconds();
-            
+
             //Split command into arguments
             var trimmedArgsArray = _graphDataCalculator.TrimmedArgsArray(input);
 
@@ -242,25 +242,14 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot grid lines on the graph.
         /// </summary>
-        private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord, int xAxisYCoordUnPadded, double xGridStep, double[] yArray)
+        private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord,
+            int xAxisYCoordUnPadded, double xGridStep, double[] yArray)
         {
             //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
             var pixelsPerXNumber = ImageWidth / xRange;
             var labelAbove = xAxisYCoord < ImageHeight - xAxisYCoord;
 
-            var value = yGridStep;
-
-            if (xArray.Min() > 0)
-            {
-                value += xArray.Min();
-            }
-
-            var valueFormat = "{0:0.#}";
-            if (value < 1)
-            {
-                valueFormat = "{0:0.0}";
-            }
 
             var xTop = ImageHeight - xAxisYCoord + 30;
             var xBottom = xAxisYCoord - 25 - 30;
@@ -269,6 +258,7 @@ namespace WpfApp1
                 xTop -= 25;
                 xBottom += 25;
             }
+
             //Plot vertical grid lines to right of y axis
             for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber))
             {
@@ -285,7 +275,27 @@ namespace WpfApp1
                 }
             }
 
-            for (var i = yAxisXCoord; i <= ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber))
+            var multiplier = 1;
+
+            if (pixelsPerXNumber*yGridStep < 25)
+            {
+                multiplier = 2;
+            }
+
+            var value = yGridStep*multiplier;
+
+            if (xArray.Min() > 0)
+            {
+                value += xArray.Min();
+            }
+
+            var valueFormat = "{0:0.#}";
+            if (value < 1)
+            {
+                valueFormat = "{0:0.0}";
+            }
+
+            for (var i = yAxisXCoord; i <= ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber) * multiplier)
             {
                 if (i != yAxisXCoord)
                 {
@@ -311,12 +321,12 @@ namespace WpfApp1
 
                     mainGrid.Children.Add(axisLabel);
 
-                    value += yGridStep;
+                    value += yGridStep*multiplier;
                 }
 
             }
 
-            value = -yGridStep;
+            value = -yGridStep*multiplier;
 
             if (xArray.Max() < 0)
             {
@@ -338,7 +348,7 @@ namespace WpfApp1
                 }
             }
 
-            for (var i = yAxisXCoord; i >= 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber))
+            for (var i = yAxisXCoord; i >= 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber)*multiplier)
             {
                 if (i != yAxisXCoord)
                 {
@@ -361,7 +371,7 @@ namespace WpfApp1
                     };
 
                     mainGrid.Children.Add(axisLabel);
-                    value -= yGridStep;
+                    value -= yGridStep*multiplier;
                 }
             }
 
@@ -373,22 +383,10 @@ namespace WpfApp1
             {
                 dataRangeHeight -= 40;
             }
+
             var pixelsPerYNumber = dataRangeHeight / yRange;
 
             var labelRight = yAxisXCoord < (ImageWidth - yAxisXCoord);
-
-            value = xGridStep;
-
-            if (yArray.Min() > 0)
-            {
-                value += yArray.Min();
-            }
-
-            valueFormat = "{0:0.#}";
-            if (value < 1)
-            {
-                valueFormat = "{0:0.0}";
-            }
 
             var yLeft = yAxisXCoord - 50 - 1;
             var yRight = ImageWidth - yAxisXCoord + 1 + 25;
@@ -397,6 +395,7 @@ namespace WpfApp1
                 yLeft += 26;
                 yRight -= 26;
             }
+
             //Plot horizontal grid lines above y axis
             for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber))
             {
@@ -409,6 +408,34 @@ namespace WpfApp1
                             PlotPixel(j, i, 127, 127, 127);
                         }
                     }
+
+                }
+            }
+
+            multiplier = 1;
+
+            if (pixelsPerYNumber*xGridStep < 12.5)
+            {
+                multiplier = 2;
+            }
+
+            value = xGridStep * multiplier;
+
+            if (yArray.Min() > 0)
+            {
+                value += yArray.Min();
+            }
+
+            valueFormat = "{0:0.#}";
+            if (value < 1)
+            {
+                valueFormat = "{0:0.0}";
+            }
+
+            for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber)*multiplier)
+            {
+                if (i != xAxisYCoord)
+                {
                     var label = new TextBlock()
                     {
                         Background = System.Windows.Media.Brushes.Transparent,
@@ -428,9 +455,10 @@ namespace WpfApp1
                     };
 
                     mainGrid.Children.Add(label);
-                    value += xGridStep;
+                    value += xGridStep*multiplier;
                 }
             }
+
 
             value = -xGridStep;
 
@@ -451,6 +479,14 @@ namespace WpfApp1
                             PlotPixel(j, i, 127, 127, 127);
                         }
                     }
+                }
+            }
+
+            //Plot horizontal grid lines below y axis
+            for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber)*multiplier)
+            {
+                if (i != xAxisYCoord)
+                {
                     var label = new TextBlock()
                     {
                         Background = System.Windows.Media.Brushes.Transparent,
@@ -471,7 +507,7 @@ namespace WpfApp1
                     };
 
                     mainGrid.Children.Add(label);
-                    value -= xGridStep;
+                    value -= xGridStep*multiplier;
                 }
             }
         }
@@ -946,7 +982,7 @@ namespace WpfApp1
             {
                 return;
             }
-            
+
             //Check if new x range is less than 0.5. If true, do not re-plot
             if (Convert.ToDouble(TextBoxXMax.Text) - Convert.ToDouble(TextBoxXMin.Text) < 0.5)
             {
@@ -1138,7 +1174,7 @@ namespace WpfApp1
             {
                 return;
             }
-            
+
             //Get mouse location when mouse released
             var mouseUpXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
 
@@ -1159,7 +1195,7 @@ namespace WpfApp1
             {
                 newXMaxCoord++;
             }
-            
+
             //Convert x coordinates to values
             var newXMin = xArray[newXMinCoord];
             var newXMax = xArray[newXMaxCoord];
