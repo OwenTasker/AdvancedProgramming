@@ -355,8 +355,8 @@ and private handleFunction funcName bracketedExpression env : terminal=
     | "gcd" -> handleTwoArgumentFunction env getGCDWrapper bracketedExpression
     | "mod" -> handleTwoArgumentFunction env moduloCalc bracketedExpression
     | "rand" -> handleTwoArgumentFunction env pseudoRandom bracketedExpression
-    | "pi" -> Number 3.14
-    | "euler" -> Number 2.71
+    | "pi" -> Number 3.1415
+    | "euler" -> Number 2.7183
     | _ ->
         if env.ContainsKey funcName then
             let newEnv, _ = setArguments bracketedExpression env
