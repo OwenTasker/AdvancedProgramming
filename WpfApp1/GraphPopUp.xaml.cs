@@ -808,6 +808,12 @@ namespace WpfApp1
             {
                 return;
             }
+            
+            //Check if new x range is less than 0.5. If true, do not re-plot
+            if (Convert.ToDouble(TextBoxXMax.Text) - Convert.ToDouble(TextBoxXMin.Text) < 0.5)
+            {
+                return;
+            }
 
             //Remove cursor before redrawing
             mainGrid.Children.Remove(_cursor);
@@ -822,6 +828,7 @@ namespace WpfApp1
                 throw new Util.GraphingError("Graphing Error: " + plottingException.Message + "\n>>");
             }
 
+            //Set data as having been modified since last save
             _isDataDirty = true;
         }
 
