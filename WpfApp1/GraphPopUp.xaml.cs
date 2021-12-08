@@ -239,6 +239,11 @@ namespace WpfApp1
 
             var value = yGridStep;
 
+            if (xArray.Min() > 0)
+            {
+                value += xArray.Min();
+            }
+
             var valueFormat = "{0:0.#}";
             if (value < 1)
             {
@@ -301,6 +306,11 @@ namespace WpfApp1
 
             value = -yGridStep;
 
+            if (xArray.Max() < 0)
+            {
+                value += xArray.Max();
+            }
+
             //Plot vertical grid lines to left of y axis
             for (var i = yAxisXCoord; i > 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber))
             {
@@ -357,6 +367,11 @@ namespace WpfApp1
 
             value = xGridStep;
 
+            if (yArray.Min() > 0)
+            {
+                value += yArray.Min();
+            }
+
             valueFormat = "{0:0.#}";
             if (value < 1)
             {
@@ -406,6 +421,11 @@ namespace WpfApp1
             }
 
             value = -xGridStep;
+
+            if (yArray.Max() < 0)
+            {
+                value += yArray.Min();
+            }
 
             //Plot horizontal grid lines below y axis
             for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber))
@@ -608,7 +628,6 @@ namespace WpfApp1
             //Create axis labels
 
             var zeroLabel = "0";
-
 
             //Find zero label location:
             var zeroPointX = xZero;
