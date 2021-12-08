@@ -27,7 +27,7 @@ let rec private statement terminals =
     | Word _ :: Assign :: tail -> expression tail
     | _ -> expression terminals
 
-// expression ::= term expression' 
+// expression ::= term expression'
 and private expression terminals = (term >> expressionP) terminals
 
 // expression' ::= + term expression' | - term expression' | empty
@@ -93,7 +93,7 @@ and private factor terminals =
     | [UnaryPlus] -> ParseError "Parse Error: Trailing Operator" |> raise
     | _ -> ParseError "Parse Error: Malformed Expression" |> raise
 
-// arguments ::= var -> expression, arguments | expression, arguments 
+// arguments ::= var -> expression, arguments | expression, arguments
 and private arguments terminals =
     match terminals with
     | Word _ :: Assign :: tail -> expression tail |> arguments
