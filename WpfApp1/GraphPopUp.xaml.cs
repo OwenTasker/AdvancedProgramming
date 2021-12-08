@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Interpreter;
+using Microsoft.Win32;
 using NUnit.Framework;
 using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
@@ -218,6 +219,10 @@ namespace WpfApp1
 
             // mark graph as unsaved
             _isDataDirty = true;
+            
+            // set graph title to function plotted
+            var (function, _) = _functions.Last();
+            functionLabel.Content = function;
         }
 
         /// <summary>
@@ -744,8 +749,25 @@ namespace WpfApp1
         /// </summary>
         private void SaveButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var fileToSaveTo =
-                SaverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph" + _thisImageId + ".png");
+            var (function, _) = _functions.Last();
+
+            SaveFileDialog fileToSaveTo = null; // Initialise
+            
+            // Check for forbidden characters in Windows filenames
+            if (function.Contains("*"))
+            {
+                function = function.Replace("*", "_times_");
+            }
+            if (function.Contains("/"))
+            {
+                function = function.Replace("/", "_divided_by_");
+                
+            }
+            
+            // Prepare file to save to
+            fileToSaveTo = 
+                SaverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph_" + function[3..] + ".png");
+            
 
             //fileToSaveTo is null if user chooses cancel above
             if (fileToSaveTo != null)

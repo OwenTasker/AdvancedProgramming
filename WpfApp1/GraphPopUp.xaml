@@ -72,7 +72,7 @@
         </WrapPanel>
 
         <Grid x:Name="mainGrid" Grid.Row="1">
-
+            <Label x:Name="functionLabel" Content="Function" FontFamily="Courier New" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
             <Image Name="ImageGraph" Source="Images/graph.png" VerticalAlignment="Center" HorizontalAlignment="Center"
                    Height="400" Width="750" />
 
