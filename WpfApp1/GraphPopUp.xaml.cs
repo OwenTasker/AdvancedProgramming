@@ -237,7 +237,13 @@ namespace WpfApp1
             var pixelsPerXNumber = ImageWidth / xRange;
             var labelAbove = xAxisYCoord < (ImageHeight - xAxisYCoord);
 
-            var value = (int) Math.Round(yGridStep);
+            var value = yGridStep;
+
+            var valueFormat = "{0:0.#}";
+            if (value < 1)
+            {
+                valueFormat = "{0:0.0}";
+            }
 
             var xTop = ImageHeight - xAxisYCoord;
             var xBottom = xAxisYCoord - 25;
@@ -258,6 +264,7 @@ namespace WpfApp1
                         {
 
                             PlotPixel(i, j, 127, 127, 127);
+
                             var label = new Label
                             {
                                 Width = 25,
@@ -273,17 +280,17 @@ namespace WpfApp1
                                 },
                                 BorderThickness = new Thickness(0,0,0,0),
                                 HorizontalContentAlignment = HorizontalAlignment.Right,
-                                Content = value.ToString()
+                                Content = string.Format(valueFormat, value)
                             };
 
                             mainGrid.Children.Add(label);
                         }
                     }
-                    value += (int) Math.Round(yGridStep);
+                    value += yGridStep;
                 }
             }
 
-            value = (int) Math.Round(-yGridStep);
+            value = -yGridStep;
 
             //Plot vertical grid lines to left of y axis
             for (var i = yAxisXCoord; i > 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber))
@@ -309,14 +316,14 @@ namespace WpfApp1
                                     Bottom = xBottom
                                 },
                                 BorderThickness = new Thickness(0,0,0,0),
-                                Content = value.ToString()
+                                Content = string.Format(valueFormat, value)
 
                             };
 
                             mainGrid.Children.Add(label);
                         }
                     }
-                    value -= (int) Math.Round(yGridStep);
+                    value -= yGridStep;
                 }
             }
 
@@ -332,7 +339,13 @@ namespace WpfApp1
 
             var labelRight = yAxisXCoord < (ImageWidth - yAxisXCoord);
 
-            value = (int) Math.Round(xGridStep);
+            value = xGridStep;
+
+            valueFormat = "{0:0.#}";
+            if (value < 1)
+            {
+                valueFormat = "{0:0.0}";
+            }
 
             var yLeft = yAxisXCoord - 25 - 1;
             var yRight = ImageWidth - yAxisXCoord + 1;
@@ -365,17 +378,17 @@ namespace WpfApp1
                                     Bottom = i - 25
                                 },
                                 BorderThickness = new Thickness(0,0,0,0),
-                                Content = value.ToString()
+                                Content = string.Format(valueFormat, value)
                             };
 
                             mainGrid.Children.Add(label);
                         }
                     }
-                    value += (int) Math.Round(xGridStep);
+                    value += xGridStep;
                 }
             }
 
-            value = (int) Math.Round(-xGridStep);
+            value = -xGridStep;
 
             //Plot horizontal grid lines below y axis
             for (var i = xAxisYCoord; i > 10; i -= (int) Math.Round(xGridStep * pixelsPerYNumber))
@@ -402,13 +415,13 @@ namespace WpfApp1
                                     Bottom = i + 25
                                 },
                                 BorderThickness = new Thickness(0,0,0,0),
-                                Content = value.ToString()
+                                Content = string.Format(valueFormat, value)
                             };
 
                             mainGrid.Children.Add(label);
                         }
                     }
-                    value -= (int) Math.Round(xGridStep);
+                    value -= xGridStep;
                 }
             }
         }
