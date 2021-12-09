@@ -259,8 +259,15 @@ namespace WpfApp1
                 xBottom += 25;
             }
 
+            var multiplier = 1;
+
+            if (pixelsPerXNumber*yGridStep < 25)
+            {
+                multiplier = 2;
+            }
+
             //Plot vertical grid lines to right of y axis
-            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber))
+            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber)*multiplier)
             {
                 if (i != yAxisXCoord)
                 {
@@ -275,12 +282,6 @@ namespace WpfApp1
                 }
             }
 
-            var multiplier = 1;
-
-            if (pixelsPerXNumber*yGridStep < 25)
-            {
-                multiplier = 2;
-            }
 
             var value = yGridStep*multiplier;
 
@@ -334,7 +335,7 @@ namespace WpfApp1
             }
 
             //Plot vertical grid lines to left of y axis
-            for (var i = yAxisXCoord; i > 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber))
+            for (var i = yAxisXCoord; i > 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber)*multiplier)
             {
                 if (i != yAxisXCoord)
                 {
@@ -396,8 +397,14 @@ namespace WpfApp1
                 yRight -= 26;
             }
 
+            multiplier = 1;
+
+            if (pixelsPerYNumber*xGridStep < 25)
+            {
+                multiplier = 2;
+            }
             //Plot horizontal grid lines above y axis
-            for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber))
+            for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber)* multiplier)
             {
                 if (i != xAxisYCoord)
                 {
@@ -412,12 +419,7 @@ namespace WpfApp1
                 }
             }
 
-            multiplier = 1;
 
-            if (pixelsPerYNumber*xGridStep < 12.5)
-            {
-                multiplier = 2;
-            }
 
             value = xGridStep * multiplier;
 
@@ -468,7 +470,7 @@ namespace WpfApp1
             }
 
             //Plot horizontal grid lines below y axis
-            for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber))
+            for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber)*multiplier)
             {
                 if (i != xAxisYCoord)
                 {
