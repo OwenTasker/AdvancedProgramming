@@ -59,18 +59,16 @@ namespace WpfApp1
         //Save time graph was last generated - prevents ghost double mouse releases causing graph to rapidly zoom in
         private long _timeLastGenerated;
 
-        private readonly IInterpreter _interpreter;
         private readonly IGraphDataCalculator _graphDataCalculator;
 
         /// <summary>
         /// Entry point, initializes the graph window, generates and displays graph.
         /// </summary>
-        public GraphPopUp(IInterpreter interpreter, IGraphDataCalculator graphDataCalculator)
+        public GraphPopUp(IGraphDataCalculator graphDataCalculator)
         {
             //Set data to unchanged as none is generated yet
             _isDataDirty = false;
 
-            _interpreter = interpreter;
             _graphDataCalculator = graphDataCalculator;
 
             //Show window
@@ -88,18 +86,20 @@ namespace WpfApp1
             _timeLastGenerated = DateTimeOffset.Now.ToUnixTimeSeconds();
 
             //Split command into arguments
-            var trimmedArgsArray = _graphDataCalculator.TrimmedArgsArray(input);
+            //var trimmedArgsArray = _graphDataCalculator.TrimmedArgsArray(input);
 
             //Compute evenly spaced values for x axis between given bounds
-            var xArray =
-                _graphDataCalculator.ComputeXArray(double.Parse(trimmedArgsArray[1]),
-                    double.Parse(trimmedArgsArray[2]));
+            //var xArray =
+                //_graphDataCalculator.ComputeXArray(double.Parse(trimmedArgsArray[1]),
+                    //double.Parse(trimmedArgsArray[2]));
 
             //Compute values for y axis based on given function and calculated x array
-            var yArray = _graphDataCalculator.ComputeYArray(trimmedArgsArray, xArray, _interpreter);
+            //var yArray = _graphDataCalculator.ComputeYArray(trimmedArgsArray, xArray);
+
+            var (xArray, yArray, command) = _graphDataCalculator.GetXyArrays(input);
 
             //Add initial function and its number arrays to list
-            _functions.Add((trimmedArgsArray[0],((double[]) xArray.Clone(), (double[]) yArray.Clone())));
+            _functions.Add((command,((double[]) xArray.Clone(), (double[]) yArray.Clone())));
 
             //Pre-fill x range boxes
             TextBoxXMin.Text = "" + Math.Round(xArray.Min(), 2);
@@ -134,16 +134,18 @@ namespace WpfApp1
             yArray[yMaxIndex] += 2;
 
             //If y is constant, modify axis range
-            var functionRight = trimmedArgsArray[0].Split(">")[^1];
+            //var functionRight = trimmedArgsArray[0].Split(">")[^1];
             var isNumber = false;
             var isPositive = false;
             try
             {
-                var number = Convert.ToDouble(functionRight);
-                isNumber = true;
-                if (number >= 0)
+                if (yArray.Min() - yArray.Max() == 0)
                 {
-                    isPositive = true;
+                    isNumber = true;
+                    if (yArray.Min() > 0)
+                    {
+                        isPositive = true;
+                    }
                 }
             }
             catch (Exception)
@@ -164,7 +166,7 @@ namespace WpfApp1
             int xZero;
             int yZeroUnPadded;
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
-            _yProcessed.Add((yZeroUnPadded, functionRight));
+            _yProcessed.Add((yZeroUnPadded, "functionRight"));
 
 
             double xGridStep;
@@ -172,7 +174,7 @@ namespace WpfApp1
             if (isNumber)
             {
                 //Get steps for grid lines
-                (xGridStep, yGridStep) = CalculateConstantGridStep(xArray, Convert.ToDouble(functionRight));
+                (xGridStep, yGridStep) = CalculateConstantGridStep(xArray, yArray.Min());
             }
             else
             {
@@ -1089,11 +1091,13 @@ namespace WpfApp1
                 var isPositive = false;
                 try
                 {
-                    var number = Convert.ToDouble(functionRight);
-                    isNumber = true;
-                    if (number >= 0)
+                    if (yArray.Min() - yArray.Max() == 0)
                     {
-                        isPositive = true;
+                        isNumber = true;
+                        if (yArray.Min() >= 0)
+                        {
+                            isPositive = true;
+                        }
                     }
                 }
                 catch (Exception)

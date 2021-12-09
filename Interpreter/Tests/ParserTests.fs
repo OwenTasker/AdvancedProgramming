@@ -59,6 +59,7 @@ let ValidCases =
         TestCaseData([UnaryMinus; Function "floor"; Lpar; Number 2.0 ; Rpar])
         TestCaseData([UnaryMinus; UnaryMinus; Function "floor"; Lpar; Number 2.0 ; Rpar])
         TestCaseData([Function "floor"; Lpar; Number 2.0 ; Rpar])
+        TestCaseData([Function "plot"; Lpar; Word "y"; Assign; Function "mod"; Lpar; Number 2.0; Comma; Word "x"; Rpar; Comma; Number 10.0; Comma; Number -10.0; Rpar])
     ]
 
 [<TestCaseSource("ValidCases")>]
