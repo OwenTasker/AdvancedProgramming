@@ -421,6 +421,18 @@ let rec private expandDifferentiates terminalsIn terminalsOut env =
     | head :: tail -> expandDifferentiates tail (terminalsOut @ [head]) env
     | [] -> terminalsOut
 
+let rec checkCircularAssignment (environment: Map<string, terminal list>) variable assignment =
+    match assignment with
+    | Word a :: tail ->
+        if a = variable then
+            false
+        elif environment.ContainsKey a then
+            let innerAssignment = environment.[a]
+            checkCircularAssignment environment variable innerAssignment
+        else
+            checkCircularAssignment environment variable tail
+    | _ :: tail -> checkCircularAssignment environment variable tail
+    | [] -> true
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
 /// a valid statement and an execution environment.
@@ -433,12 +445,15 @@ let rec private expandDifferentiates terminalsIn terminalsOut env =
 let rec internal exec (env: Map<string, terminal list>) terminals =
     match terminals with
     | Word x :: Assign :: tail ->
-        match tail with
-        | Word _ :: Assign :: _ -> ExecError "Execution Error: Malformed expression; an assignment may not be assigned to an assignment" |> raise
-        | [] -> ExecError "Execution Error: Malformed expression; an assignment may not be empty" |> raise
-        | _ ->
-            let result, _ = exec env tail
-            terminals, (env.Add(x, result) |> Map.toSeq |> dict)
+        if checkCircularAssignment env x tail then
+            match tail with
+            | Word _ :: Assign :: _ -> ExecError "Execution Error: Malformed expression; an assignment may not be assigned to an assignment" |> raise
+            | [] -> ExecError "Execution Error: Malformed expression; an assignment may not be empty" |> raise
+            | _ ->
+                let result, _ = exec env tail
+                terminals, (env.Add(x, result) |> Map.toSeq |> dict)
+        else
+            ExecError "Execution Error: Circular assignment is not permitted." |> raise
     | [] -> [], env |> Map.toSeq |> dict
     | _ ->
         if closed env terminals then
