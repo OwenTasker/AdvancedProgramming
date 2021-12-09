@@ -34,7 +34,7 @@ let private performBinaryOperation operator op1 op2 =
         | 0.0 -> CalculateError "Calculate Error: Attempting to divide by zero, this operation is undefined." |> raise
         | _ -> Number (op1 / op2)
     | Exponent ->
-        if op1 <= 0.0 && 0.0 < op2 && op2 < 1.0 then
+        if op1 < 0.0 && 0.0 < op2 && op2 < 1.0 then
             Number (-((-op1)**op2))
         else
             Number (op1 ** op2)
@@ -347,7 +347,7 @@ and private handleRootFunction (env : Map<string, terminal list>) operand expone
     match reducedOperand, reducedExponent with
     | Number a, Number b ->
         if a < 0.0 && (b < 0.0 || (b % 2.0) <> 1.0) then
-            InvalidArgumentError "First argument to root function must be positive to take an even numbered root." |> raise
+            InvalidArgumentError "Execution Error: First argument to root function must be positive to take an even numbered root." |> raise
         else
             reduce (RootToTerminals [reducedOperand] [reducedExponent]) env
     | _ ->
