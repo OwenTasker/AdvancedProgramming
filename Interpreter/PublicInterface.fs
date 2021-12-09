@@ -21,7 +21,7 @@ open Interpreter.Exec
 /// A tuple of strings and terminal lists, this contains all user defined functions that currently
 /// exist in the program
 /// </param>
-/// 
+///
 /// <returns>Returns a valid MMP expression</returns>
 let public interpret input env =
     lexer input |> parse |> exec env
@@ -36,7 +36,7 @@ let public interpret input env =
 /// A tuple of strings and terminal lists, this contains all user defined functions that currently
 /// exist in the program
 /// </param>
-/// 
+///
 /// <returns>Returns a boolean based on whether each variable within an expression is already defined or not</returns>
 let public closed input env =
     lexer input |> closed env
@@ -46,7 +46,7 @@ let public closed input env =
 /// </summary>
 ///
 /// <param name="input">A string list represting an input, this will ultimately be turned into a terminal list</param>
-/// 
+///
 /// <returns>Returns a valid MMP expression</returns>
 let public stringToTerminalList input =
     lexer input |> parse
@@ -56,7 +56,7 @@ let public stringToTerminalList input =
 /// </summary>
 ///
 /// <param name="input">A terminal list representing an input, will be ultimately transformed into a string</param>
-/// 
+///
 /// <returns>Returns a string representation of a terminal list</returns>
 let public terminalListToString input =
     Util.terminalListToString "" input
@@ -66,7 +66,10 @@ let public terminalListToString input =
 /// </summary>
 ///
 /// <param name="kvps">A sequence of key-value pairs that will ultimately be turned into a map for use in C#</param>
-/// 
+///
 /// <returns>Returns a map representation of a sequence of key-value pairs</returns>
 let public toMap kvps =
     Util.toMap kvps
+
+let public getXYValues terminals =
+    lexer terminals |> parse |> plot

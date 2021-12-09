@@ -25,5 +25,7 @@ namespace WpfApp1
         public string GetStringFromTerminal(Util.terminal terminal);
 
         public IEnumerable<System.Tuple<string, string>> GetFunctions();
+
+        public (List<double>, List<double>, string) GetXyValues(string statement);
     }
 }

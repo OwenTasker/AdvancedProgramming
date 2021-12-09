@@ -94,6 +94,16 @@ namespace WpfApp1
             return Util.functions.ToEnumerable();
         }
 
+        public (List<double>, List<double>, string) GetXyValues(string statement)
+        {
+            var inputList = statement.Select(c => c.ToString()).ToList();
+            var inputFSharpList = ListModule.OfSeq(inputList);
+
+            var (x, y, command) = PublicInterface.getXYValues(inputFSharpList);
+
+            return (x.ToList(), y.ToList(), PublicInterface.terminalListToString(command));
+        }
+
         public FSharpList<Util.terminal> GetTerminalListFromString(string input)
         {
             var inputList = input.Select(c => c.ToString()).ToList();
@@ -101,5 +111,7 @@ namespace WpfApp1
 
             return PublicInterface.stringToTerminalList(inputFSharpList);
         }
+
+
     }
 }
