@@ -109,6 +109,19 @@ let rec private extractExpression inList outList =
     | [] -> ExecError "Execution Error: Function call missing right parenthesis." |> raise
 
 /// <summary>
+/// Scans through a list of terminals and returns the string representation of the first variable found
+/// </summary>
+///
+/// <param name="expression">A list of terminals representing an input.</param>
+///
+/// <returns>A String representation of any variable found, if no variable is found, return "!"</returns>
+let rec getVariable expression =
+    match expression with
+    | Word a :: _ -> a
+    | [] -> "!"
+    | _ :: tail -> getVariable tail
+
+/// <summary>
 /// Checks whether a function contains any variables whose values are not defined in the current environment.
 /// </summary>
 ///
@@ -153,9 +166,13 @@ let rec internal closed (env: Map<string, terminal list>) terminals  =
 
 and private differentiationClosed (parameters: terminal list list) (env: Map<string, terminal list>) =
     if parameters.Length > 1 then
-        let newEnv, _ = setArguments parameters.[1] env
-        let diffedExpr = differentiate parameters.[0]
-        closed (toMap newEnv) diffedExpr
+        if checkUniqueVariables parameters.[0] Set.empty then
+            ExecError "Execution Error: Partial differentiation is not supported, please only differentiate single variate expressions." |> raise
+        else
+            let variable = getVariable parameters.[0]
+            let newEnv = env.Add(variable, parameters.[1])
+            let diffedExpr = differentiate parameters.[0]
+            closed newEnv diffedExpr
     else
         closed env (differentiate parameters.[0])
 
@@ -164,20 +181,6 @@ and private systemFunctionClosed (parameters: terminal list list) (env: Map<stri
     | [] -> true
     | head :: tail ->
         closed env head && systemFunctionClosed tail env
-
-/// <summary>
-/// Scans through a list of terminals and returns the string representation of the first variable found
-/// </summary>
-///
-/// <param name="expression">A list of terminals representing an input.</param>
-///
-/// <returns>A String representation of any variable found, if no variable is found, return "!"</returns>
-let rec getVariable expression =
-    match expression with
-    | Word a :: _ -> a
-    | [] -> "!"
-    | _ :: tail -> getVariable tail
-
 
 /// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
@@ -263,11 +266,17 @@ and private handleFunction funcName bracketedExpression env : terminal=
                     | _ -> ExecError "Execution Error: Reduction did not result in Number." |> raise
     | "differentiate" ->
         let extractedParams, _ = extractParameters bracketedExpression [] env
-        if extractedParams.Length > 1 then
-            let diffEnv, _ = setArguments extractedParams.[1] env
-            reduce (differentiate extractedParams.[0]) (toMap diffEnv)
-        else
+        if extractedParams.Length = 2 then
+            if checkUniqueVariables extractedParams.[0] Set.empty then
+                ExecError "Execution Error: Partial differentiation is not supported, please only differentiate single variate expressions." |> raise
+            else
+                let variable = getVariable extractedParams.[0]
+                let diffEnv = env.Add(variable, extractedParams.[1])
+                reduce (differentiate extractedParams.[0]) diffEnv
+        elif extractedParams.Length = 2 then
             reduce (differentiate extractedParams.[0]) env
+        else
+            ExecError "Execution Error: Differentiation can only occur with 1 or 2 arguments." |> raise
     | "zeroCrossing" ->
         let extractedParams, _ = extractParameters bracketedExpression [] env
         if extractedParams.Length <> 2 then ExecError "Execution Error: Zero Crossings require exactly one argument" |> raise

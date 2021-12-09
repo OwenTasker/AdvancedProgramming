@@ -441,8 +441,9 @@ let rec private autoDifferentiate terminals opStack numStack =
                            @ Divide :: Function "abs" :: expression @ [ Rpar ])
                      )
                      :: numStack)
+            | "differentiate" -> ExecError "Differentiation Error: Differentiation within differentiation is not currently supported" |> raise
             | _ ->
-                ExecError "Differentiation Error: Derivative is undefined" |> raise
+                ExecError ("Differentiation Error: Derivative is undefined for " + a) |> raise
         | Lpar -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
         | Rpar ->
             match evaluateBrackets opStack numStack performOperation with
