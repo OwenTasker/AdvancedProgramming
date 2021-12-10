@@ -367,27 +367,6 @@ let private performOperation operator numStack =
             :: numStack.[2..]
 
 /// <summary>
-/// Extracts a bracketed expression from a list of terminals, including any bracketed sub expressions.
-/// </summary>
-///
-/// <param name="terminals">A stack of terminals representing an expresssion.</param>
-/// <param name="lparCount">The number of left parentheses so far encountered in extracting the expression.</param>
-/// <param name="output">The as yet compiled expression.</param>
-///
-/// <returns>A list of terminals representing a complete bracketed expression.</returns>
-let rec private extractExpression terminals lparCount output =
-    match terminals with
-    | Comma :: tail when lparCount = 0 ->  List.rev output, tail
-    | Rpar :: _ when lparCount = 0 ->  List.rev output, terminals
-    | Rpar :: tail -> extractExpression tail (lparCount - 1) (Rpar :: output)
-    | Lpar :: tail -> extractExpression tail (lparCount + 1) (Lpar :: output)
-    | head :: tail -> extractExpression tail lparCount (head :: output)
-    | [] when lparCount = 0 -> List.rev(output), []
-    | [] ->
-        ExecError "Execution Error: Unmatched parenthesis"
-        |> raise
-
-/// <summary>
 /// Recursively performs the Dijkstra's Shunting Yard algorithm by reading a terminal list representing an infix
 /// expression into an operator stack and a number stack. Performs calculations depending on precedence and
 /// associativity rather than producing a reverse Polish notation output.
@@ -405,7 +384,7 @@ let rec private autoDifferentiate terminals opStack numStack =
         | Word _ -> autoDifferentiate terminalTail opStack (Var(terminalHead, 1.0) :: numStack)
         | Number a -> autoDifferentiate terminalTail opStack (Const(a, 0.0) :: numStack)
         | Function a ->
-            let expression, remainingTerminals = extractExpression terminalTail 0 []
+            let remainingTerminals, expression = extractBrackets terminalTail 0 []
 
             match a with
             | "ln" ->
@@ -426,8 +405,8 @@ let rec private autoDifferentiate terminals opStack numStack =
                     remainingTerminals
                     opStack
                     (Expr(
-                        (Function "logTen" :: expression),
-                        (autoDifferentiate (Function "ln" :: expression @ [Divide; Function "ln"; Lpar; Number 10.0; Rpar]) [] [])
+                        (Function "logTen" :: expression ),
+                        (autoDifferentiate (Function "ln" :: Lpar :: expression @ [Rpar; Divide; Function "ln"; Lpar; Number 10.0; Rpar]) [] [])
                      )
                      :: numStack)
             | "logTwo" ->
@@ -436,18 +415,18 @@ let rec private autoDifferentiate terminals opStack numStack =
                     opStack
                     (Expr(
                         (Function "logTwo" :: expression),
-                        (autoDifferentiate (Function "ln" :: expression @ [Divide; Function "ln"; Lpar; Number 2.0; Rpar]) [] [])
+                        (autoDifferentiate (Function "ln" :: Lpar :: expression @ [Rpar; Divide; Function "ln"; Lpar; Number 2.0; Rpar]) [] [])
                      )
                      :: numStack)
             | "logX" ->
-                let logBase, remainWithOperand = extractExpression expression.[1..] 0 []
-                let operand, _ = extractExpression remainWithOperand 0 []
+                let paramList, _ = extractParameters expression [] Map.empty
+
                 autoDifferentiate
                     remainingTerminals
                     opStack
                     (Expr(
-                        (Function "logX" :: Lpar :: logBase @ [Comma] @ operand @ [Rpar]),
-                        (autoDifferentiate (Function "ln" :: Lpar :: operand @ [Rpar; Divide; Function "ln"; Lpar] @ logBase @ [Rpar]) [] [])
+                        (Function "logX" :: Lpar :: paramList.[0] @ [Comma] @ paramList.[1] @ [Rpar]),
+                        (autoDifferentiate (Function "ln" :: Lpar :: paramList.[1] @ [Rpar; Divide; Function "ln"; Lpar] @ paramList.[0] @ [Rpar]) [] [])
                      )
                      :: numStack)
             | "abs" ->
@@ -462,8 +441,9 @@ let rec private autoDifferentiate terminals opStack numStack =
                            @ Divide :: Function "abs" :: expression @ [ Rpar ])
                      )
                      :: numStack)
+            | "differentiate" -> ExecError "Differentiation Error: Differentiation within differentiation is not currently supported" |> raise
             | _ ->
-                ExecError "Differentiation Error: Derivative is undefined" |> raise
+                ExecError ("Differentiation Error: Derivative is undefined for " + a) |> raise
         | Lpar -> autoDifferentiate terminalTail (terminalHead :: opStack) numStack
         | Rpar ->
             match evaluateBrackets opStack numStack performOperation with
