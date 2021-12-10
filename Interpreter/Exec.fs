@@ -256,7 +256,7 @@ and private handleFunction funcName bracketedExpression env : terminal=
                 let lowerBound = reduce extractedParams.[1] Map.empty
                 let upperBound = reduce extractedParams.[2] Map.empty
 
-                if lowerBound > upperBound then
+                if lowerBound >= upperBound then
                     ExecError "Execution Error: Lower bound must be less than upper bound" |> raise
                 else
                     let variable = getVariable expression
@@ -513,7 +513,7 @@ let private computeYArray statement (xArray: float list) : float list=
     | _ -> ExecError "Execution Error: Malformed expression" |> raise
 
 
-let internal plot terminals =
+let internal map terminals =
     match terminals with
     | Function "plot" :: tail ->
         let paramList, remaining = extractParameters tail [] Map.empty

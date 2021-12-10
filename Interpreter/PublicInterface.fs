@@ -72,4 +72,4 @@ let public toMap kvps =
     Util.toMap kvps
 
 let public getXYValues terminals =
-    lexer terminals |> parse |> plot
+    lexer terminals |> parse |> map

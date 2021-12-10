@@ -1540,6 +1540,11 @@ let GeneralErrorCases =
         TestCaseData([Function "test"; Lpar; Number 2.0; Times; Number 2.0; Rpar;])
         TestCaseData([Function "differentiate"; Lpar; Function "y"; Lpar; Word "z"; Assign; Number 2.0; Rpar; Rpar;])
         TestCaseData([Function "differentiate"; Lpar; Function "ceil"; Lpar; Number 2.0; Rpar; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Comma; Number 4.0; Rpar; Comma; Number 4.0;])
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Word "y"; Comma; Number 2.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Number 2.0; Comma; Number 4.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Number 2.0; Comma; Number 5.0; Comma; Number 4.0; Rpar;])
         TestCaseData([Function "sqrt"; Lpar; Plus; Rpar;])
         TestCaseData([Function "y"; Lpar; Word "z"; Assign; Plus; Comma; Word "x"; Assign; Lpar; Rpar;])
         TestCaseData([Word "x"; Assign; Word "y"; Assign; Number 2.0])
@@ -1560,3 +1565,23 @@ let GivenExec_WhenPassedInvalidStatement_RaiseExecError(input: terminal list) =
 [<TestCaseSource("RootErrorCases")>]
 let GivenExec_WhenPassedRootWithInvalidArgument_RaiseInvalidArgumentError(input: terminal list) =
     Assert.Throws<InvalidArgumentError>(fun () -> exec env input |> ignore) |> ignore
+
+let IntegrateSuccessCases =
+    [
+        TestCaseData([Function "integrate"; Lpar; Number 2.0; Comma; Number 2.0; Comma; Number 4.0; Rpar;],3.999,4.001)
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Comma; Number 4.0; Rpar;],18.666,18.668)
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Comma; Number 0.0; Comma; Number 1.0; Rpar;],0.499,0.501)
+    ]
+
+[<TestCaseSource(nameof IntegrateSuccessCases)>]
+let GivenExec_WhenPassedValidIntegration_ReturnAnswerWithinBounds(input: terminal list, lowerBound: float, upperBound: float) =
+    let result, _ = exec Map.empty input
+    match result with
+    | [Number a] -> Assert.True(lowerBound < a && a < upperBound)
+    | _ -> Assert.True(false)
+
+// Integrate Errors into general errors (?)
+
+// Zero Crossing success
+
+// Zero Crossing errors into general errors (?)
