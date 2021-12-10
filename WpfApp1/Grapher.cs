@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using Interpreter;
-
-namespace WpfApp1
+﻿namespace WpfApp1
 {
     public class GraphDataCalculator : IGraphDataCalculator
     {
