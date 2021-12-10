@@ -1600,8 +1600,3 @@ let GivenExec_WhenPassedValidZeroCrossings_ReturnAnswerWithinBounds(input: termi
     | [Number a] -> Assert.True(lowerBound < a && a < upperBound)
     | _ -> Assert.True(false)
 
-// Zero Crossing errors into general errors (?)
-
-// map tests
-
-// map errors
