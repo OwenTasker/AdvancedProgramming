@@ -98,6 +98,17 @@ namespace WpfApp1
 
             var (xArray, yArray, command) = _graphDataCalculator.GetXyArrays(input);
 
+            if (xArray.Max() - xArray.Min() > 100000000000)
+            {
+                throw new Util.GraphingError(
+                    "Graphing Error: The range given by the x bounds is too large to plot.");
+            }
+            if (yArray.Max() - yArray.Min() > 100000000000)
+            {
+                throw new Util.GraphingError(
+                    "Graphing Error: Computing this function within the given x bounds has resulted in a y axis range too large to plot.");
+            }
+
             //Add initial function and its number arrays to list
             _functions.Add((command,((double[]) xArray.Clone(), (double[]) yArray.Clone())));
 

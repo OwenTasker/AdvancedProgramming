@@ -502,10 +502,14 @@ let computeYArray statement (xArray: float list) : float list=
             ExecError "Execution Error: Plotting is currently only supported for two variables" |> raise
         else
             let variable = getVariable tail
-            if variable <> "!" then
-                fillArrayVariable [Word a] env variable xArray []
-            else
-                fillArray [Word a] env xArray []
+            try
+                if variable <> "!" then
+                    fillArrayVariable [Word a] env variable xArray []
+                else
+                    fillArray [Word a] env xArray []
+            with
+            | InvalidArgumentError _
+            | ExecError _ -> ExecError "Execution Error: The evaluation of this function within the given bounds has undefined values." |> raise
     | _ -> ExecError "Execution Error: Malformed expression" |> raise
 
 

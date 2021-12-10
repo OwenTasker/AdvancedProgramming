@@ -298,6 +298,16 @@ namespace WpfApp1
                 graphPopUp.GenerateGraph(inputText.Text);
                 consoleText.AppendText(">>");
             }
+            catch (Util.ExecError ex)
+            {
+                graphPopUp.ClosePopUp();
+                consoleText.AppendText(inputText.Text + "\n\"" + inputText.Text+ "\"\n" + ex.Data0 + "\n>>");
+            }
+            catch (Util.GraphingError ex)
+            {
+                graphPopUp.ClosePopUp();
+                consoleText.AppendText(inputText.Text + "\n\"" + inputText.Text+ "\"\n" + ex.Data0 + "\n>>");
+            }
             catch (Exception plottingException)
             {
                 graphPopUp.ClosePopUp();
