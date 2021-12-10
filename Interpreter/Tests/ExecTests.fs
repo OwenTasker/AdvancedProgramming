@@ -1540,11 +1540,16 @@ let GeneralErrorCases =
         TestCaseData([Function "test"; Lpar; Number 2.0; Times; Number 2.0; Rpar;])
         TestCaseData([Function "differentiate"; Lpar; Function "y"; Lpar; Word "z"; Assign; Number 2.0; Rpar; Rpar;])
         TestCaseData([Function "differentiate"; Lpar; Function "ceil"; Lpar; Number 2.0; Rpar; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Rpar;])
         TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Rpar;])
         TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Comma; Number 4.0; Rpar; Comma; Number 4.0;])
         TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Word "y"; Comma; Number 2.0; Comma; Number 4.0; Rpar;])
         TestCaseData([Function "integrate"; Lpar; Number 2.0; Comma; Number 4.0; Comma; Number 4.0; Rpar;])
         TestCaseData([Function "integrate"; Lpar; Number 2.0; Comma; Number 5.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Comma; Number 2.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Rpar;])
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Plus; Word "y"; Comma; Number 2.0; Rpar;])
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Comma; Word "x"; Rpar;])
         TestCaseData([Function "sqrt"; Lpar; Plus; Rpar;])
         TestCaseData([Function "y"; Lpar; Word "z"; Assign; Plus; Comma; Word "x"; Assign; Lpar; Rpar;])
         TestCaseData([Word "x"; Assign; Word "y"; Assign; Number 2.0])
@@ -1580,8 +1585,23 @@ let GivenExec_WhenPassedValidIntegration_ReturnAnswerWithinBounds(input: termina
     | [Number a] -> Assert.True(lowerBound < a && a < upperBound)
     | _ -> Assert.True(false)
 
-// Integrate Errors into general errors (?)
+let ZeroCrossingSuccessCases =
+    [
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Rpar;],-0.01,0.01)
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 40.0; Rpar;],-0.01,0.01)
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Exponent; Number 2.0; Plus; Number 2.0; Times; Word "x"; Comma; Number 2.0; Rpar;],-0.01,0.01)
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Exponent; Number 2.0; Plus; Number 2.0; Times; Word "x"; Comma; Number -32.0; Rpar;],-2.01,-1.99)
+    ]
 
-// Zero Crossing success
+[<TestCaseSource(nameof ZeroCrossingSuccessCases)>]
+let GivenExec_WhenPassedValidZeroCrossings_ReturnAnswerWithinBounds(input: terminal list, lowerBound: float, upperBound: float) =
+    let result, _ = exec Map.empty input
+    match result with
+    | [Number a] -> Assert.True(lowerBound < a && a < upperBound)
+    | _ -> Assert.True(false)
 
 // Zero Crossing errors into general errors (?)
+
+// map tests
+
+// map errors

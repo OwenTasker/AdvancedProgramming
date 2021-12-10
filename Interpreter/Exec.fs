@@ -279,7 +279,7 @@ and private handleFunction funcName bracketedExpression env : terminal=
             ExecError "Execution Error: Differentiation can only occur with 1 or 2 arguments." |> raise
     | "zeroCrossing" ->
         let extractedParams, _ = extractParameters bracketedExpression [] env
-        if extractedParams.Length <> 2 then ExecError "Execution Error: Zero Crossings require exactly one argument" |> raise
+        if extractedParams.Length <> 2 then ExecError "Execution Error: Zero Crossings require exactly two arguments" |> raise
         else
             let expression = extractedParams.[0]
             let seed = extractedParams.[1]
