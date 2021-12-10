@@ -1,8 +1,10 @@
-﻿namespace WpfApp1
+﻿using System.Linq;
+using Interpreter;
+
+namespace WpfApp1
 {
     public class GraphDataCalculator : IGraphDataCalculator
     {
-
         private readonly IInterpreter _interpreter;
 
         public GraphDataCalculator(IInterpreter interpreter)
