@@ -568,15 +568,6 @@ let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean (terminals: terminal l
 /// <summary>Test cases for valid assign inputs to exec.</summary>
 let ValidExecAssignCases =
     [ TestCaseData([ Word "x"; Assign; Number 2.0 ], ("x", [ Number 2.0 ]))
-      TestCaseData([ Word "x"; Assign; Word "x" ], ("x", [ Number 2.0 ]))
-      TestCaseData(
-          [ Word "x"
-            Assign
-            Word "x"
-            Plus
-            Word "x" ],
-          ("x", [ Number 4.0 ])
-      )
       TestCaseData([ Word "y"; Assign; Word "z" ], ("y", [ Word "z" ]))
       TestCaseData(
           [ Word "b"
@@ -585,14 +576,6 @@ let ValidExecAssignCases =
             Times
             Word "y" ],
           ("b", [ Number 6.0 ])
-      )
-      TestCaseData(
-          [ Word "x"
-            Assign
-            Word "x"
-            Plus
-            Number 1.0 ],
-          ("x", [ Number 3.0 ])
       ) ]
 
 /// <summary>Test to ensure that exec correctly updates environment when passed valid assign.</summary>
@@ -1459,8 +1442,6 @@ let DifferentiateCases =
             Exponent
             Number 2.0
             Comma
-            Word "y"
-            Assign
             Number 2.0
             Rpar ],
           [ Number 4.0 ]
@@ -1474,8 +1455,6 @@ let DifferentiateCases =
             Exponent
             Number 2.0
             Comma
-            Word "y"
-            Assign
             Number 2.0
             Rpar ],
           [ Number 8.0 ]
@@ -1487,8 +1466,6 @@ let DifferentiateCases =
             Exponent
             Number 2.0
             Comma
-            Word "y"
-            Assign
             Number 2.0
             Rpar
             Plus
@@ -1507,11 +1484,9 @@ let DifferentiateCases =
             Number 12.0
             Rpar
             Comma
-            Word "x"
-            Assign
             Number 2.0
             Rpar ],
-          [ Number 2.316342605425184 ]
+          [ Number 3.7280096073576723 ]
       ) ]
 
 [<TestCaseSource("DifferentiateCases")>]
