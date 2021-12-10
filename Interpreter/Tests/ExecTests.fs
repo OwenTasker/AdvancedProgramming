@@ -568,15 +568,6 @@ let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean (terminals: terminal l
 /// <summary>Test cases for valid assign inputs to exec.</summary>
 let ValidExecAssignCases =
     [ TestCaseData([ Word "x"; Assign; Number 2.0 ], ("x", [ Number 2.0 ]))
-      TestCaseData([ Word "x"; Assign; Word "x" ], ("x", [ Number 2.0 ]))
-      TestCaseData(
-          [ Word "x"
-            Assign
-            Word "x"
-            Plus
-            Word "x" ],
-          ("x", [ Number 4.0 ])
-      )
       TestCaseData([ Word "y"; Assign; Word "z" ], ("y", [ Word "z" ]))
       TestCaseData(
           [ Word "b"
@@ -585,14 +576,6 @@ let ValidExecAssignCases =
             Times
             Word "y" ],
           ("b", [ Number 6.0 ])
-      )
-      TestCaseData(
-          [ Word "x"
-            Assign
-            Word "x"
-            Plus
-            Number 1.0 ],
-          ("x", [ Number 3.0 ])
       ) ]
 
 /// <summary>Test to ensure that exec correctly updates environment when passed valid assign.</summary>
@@ -1459,8 +1442,6 @@ let DifferentiateCases =
             Exponent
             Number 2.0
             Comma
-            Word "y"
-            Assign
             Number 2.0
             Rpar ],
           [ Number 4.0 ]
@@ -1474,8 +1455,6 @@ let DifferentiateCases =
             Exponent
             Number 2.0
             Comma
-            Word "y"
-            Assign
             Number 2.0
             Rpar ],
           [ Number 8.0 ]
@@ -1487,8 +1466,6 @@ let DifferentiateCases =
             Exponent
             Number 2.0
             Comma
-            Word "y"
-            Assign
             Number 2.0
             Rpar
             Plus
@@ -1507,11 +1484,9 @@ let DifferentiateCases =
             Number 12.0
             Rpar
             Comma
-            Word "x"
-            Assign
             Number 2.0
             Rpar ],
-          [ Number 2.316342605425184 ]
+          [ Number 3.7280096073576723 ]
       ) ]
 
 [<TestCaseSource("DifferentiateCases")>]
@@ -1540,6 +1515,16 @@ let GeneralErrorCases =
         TestCaseData([Function "test"; Lpar; Number 2.0; Times; Number 2.0; Rpar;])
         TestCaseData([Function "differentiate"; Lpar; Function "y"; Lpar; Word "z"; Assign; Number 2.0; Rpar; Rpar;])
         TestCaseData([Function "differentiate"; Lpar; Function "ceil"; Lpar; Number 2.0; Rpar; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Comma; Number 4.0; Rpar; Comma; Number 4.0;])
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Word "y"; Comma; Number 2.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Number 2.0; Comma; Number 4.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "integrate"; Lpar; Number 2.0; Comma; Number 5.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Comma; Number 2.0; Comma; Number 4.0; Rpar;])
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Rpar;])
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Plus; Word "y"; Comma; Number 2.0; Rpar;])
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Comma; Word "x"; Rpar;])
         TestCaseData([Function "sqrt"; Lpar; Plus; Rpar;])
         TestCaseData([Function "y"; Lpar; Word "z"; Assign; Plus; Comma; Word "x"; Assign; Lpar; Rpar;])
         TestCaseData([Word "x"; Assign; Word "y"; Assign; Number 2.0])
@@ -1560,3 +1545,33 @@ let GivenExec_WhenPassedInvalidStatement_RaiseExecError(input: terminal list) =
 [<TestCaseSource("RootErrorCases")>]
 let GivenExec_WhenPassedRootWithInvalidArgument_RaiseInvalidArgumentError(input: terminal list) =
     Assert.Throws<InvalidArgumentError>(fun () -> exec env input |> ignore) |> ignore
+
+let IntegrateSuccessCases =
+    [
+        TestCaseData([Function "integrate"; Lpar; Number 2.0; Comma; Number 2.0; Comma; Number 4.0; Rpar;],3.999,4.001)
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Comma; Number 4.0; Rpar;],18.666,18.668)
+        TestCaseData([Function "integrate"; Lpar; Word "x"; Comma; Number 0.0; Comma; Number 1.0; Rpar;],0.499,0.501)
+    ]
+
+[<TestCaseSource(nameof IntegrateSuccessCases)>]
+let GivenExec_WhenPassedValidIntegration_ReturnAnswerWithinBounds(input: terminal list, lowerBound: float, upperBound: float) =
+    let result, _ = exec Map.empty input
+    match result with
+    | [Number a] -> Assert.True(lowerBound < a && a < upperBound)
+    | _ -> Assert.True(false)
+
+let ZeroCrossingSuccessCases =
+    [
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 2.0; Rpar;],-0.01,0.01)
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Exponent; Number 2.0; Comma; Number 40.0; Rpar;],-0.01,0.01)
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Exponent; Number 2.0; Plus; Number 2.0; Times; Word "x"; Comma; Number 2.0; Rpar;],-0.01,0.01)
+        TestCaseData([Function "zeroCrossing"; Lpar; Word "x"; Exponent; Number 2.0; Plus; Number 2.0; Times; Word "x"; Comma; Number -32.0; Rpar;],-2.01,-1.99)
+    ]
+
+[<TestCaseSource(nameof ZeroCrossingSuccessCases)>]
+let GivenExec_WhenPassedValidZeroCrossings_ReturnAnswerWithinBounds(input: terminal list, lowerBound: float, upperBound: float) =
+    let result, _ = exec Map.empty input
+    match result with
+    | [Number a] -> Assert.True(lowerBound < a && a < upperBound)
+    | _ -> Assert.True(false)
+

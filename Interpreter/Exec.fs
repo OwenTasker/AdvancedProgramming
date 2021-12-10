@@ -256,13 +256,13 @@ and private handleFunction funcName bracketedExpression env : terminal=
                 let lowerBound = reduce extractedParams.[1] Map.empty
                 let upperBound = reduce extractedParams.[2] Map.empty
 
-                if lowerBound > upperBound then
+                if lowerBound >= upperBound then
                     ExecError "Execution Error: Lower bound must be less than upper bound" |> raise
                 else
                     let variable = getVariable expression
                     match lowerBound, upperBound with
                     | Number a, Number b ->
-                        calculateIntegral expression variable (int a) (int b) 0.0
+                        calculateIntegral expression variable a b ((b - a)/100.0) 0.0
                     | _ -> ExecError "Execution Error: Reduction did not result in Number." |> raise
     | "differentiate" ->
         let extractedParams, _ = extractParameters bracketedExpression [] env
@@ -279,7 +279,7 @@ and private handleFunction funcName bracketedExpression env : terminal=
             ExecError "Execution Error: Differentiation can only occur with 1 or 2 arguments." |> raise
     | "zeroCrossing" ->
         let extractedParams, _ = extractParameters bracketedExpression [] env
-        if extractedParams.Length <> 2 then ExecError "Execution Error: Zero Crossings require exactly one argument" |> raise
+        if extractedParams.Length <> 2 then ExecError "Execution Error: Zero Crossings require exactly two arguments" |> raise
         else
             let expression = extractedParams.[0]
             let seed = extractedParams.[1]
@@ -320,7 +320,7 @@ and private handleFunction funcName bracketedExpression env : terminal=
             (reduce [Word funcName] combinedEnv)
         else ExecError "Execution Error: Assignments given in function call do not close expression." |> raise
 
-and zeroCrossings expression seed variable =
+and private zeroCrossings expression seed variable =
     let resultA = reduce expression (Map.empty.Add (variable, [seed]))
     let resultB = reduce (differentiate expression) (Map.empty.Add (variable, [seed]))
     let resultC = reduce [seed;Minus;resultA;Divide;resultB] Map.empty
@@ -332,13 +332,13 @@ and zeroCrossings expression seed variable =
             zeroCrossings expression resultC variable
     | _ -> ExecError "Execution Error: Zero Crossings Could Not Find A Proper root" |> raise
 
-and calculateIntegral expression variable lowerBound (current : int) sum =
-    if current = lowerBound then Number sum
+and private calculateIntegral expression variable lowerBound (current : float) step sum : terminal=
+    if current <= lowerBound then Number sum
     else
         let resultA = reduce expression (Map.empty.Add (variable, [Number (float current)]))
-        let resultB = reduce expression (Map.empty.Add (variable, [Number (float (current-1))]))
+        let resultB = reduce expression (Map.empty.Add (variable, [Number (float (current-step))]))
         match resultA, resultB with
-        | Number a, Number b -> calculateIntegral expression variable lowerBound (current-1) (sum + (a - ((a - b)/2.0)))
+        | Number a, Number b -> calculateIntegral expression variable lowerBound (current-step) step (sum + step*(a - ((a - b)/2.0)))
         | _ -> ExecError "Execution Error: Reduction did not result in Numbers" |> raise
 
 and private handleRootFunction (env : Map<string, terminal list>) operand exponent =
@@ -421,7 +421,7 @@ let rec private expandDifferentiates terminalsIn terminalsOut env =
     | head :: tail -> expandDifferentiates tail (terminalsOut @ [head]) env
     | [] -> terminalsOut
 
-let rec checkCircularAssignment (environment: Map<string, terminal list>) variable assignment =
+let rec private checkCircularAssignment (environment: Map<string, terminal list>) variable assignment =
     match assignment with
     | Word a :: tail ->
         if a = variable then
@@ -463,7 +463,7 @@ let rec internal exec (env: Map<string, terminal list>) terminals =
             let result = expandDifferentiates terminals [] env
             result, (env |> Map.toSeq |> dict)
 
-let computeXArray lowerBound upperBound =
+let private computeXArray lowerBound upperBound =
     let step = (upperBound - lowerBound)/749.0
     let result = [lowerBound .. step .. upperBound]
     if result.Length = 749 then
@@ -473,28 +473,28 @@ let computeXArray lowerBound upperBound =
     else
         ExecError "Too many/not enough values generated" |> raise
 
-let rec terminalListAsFloatList terminalList outList=
+let rec private terminalListAsFloatList terminalList outList=
     match terminalList with
     | Number a :: tail ->
         terminalListAsFloatList tail (a :: outList)
     | [] -> List.rev outList
     | _ -> ExecError "Execution Error: Reduction of point did not result in Number" |> raise
 
-let rec fillArrayVariable expression (env: Map<string, terminal list>) variable values (outList : terminal list) : float list =
+let rec private fillArrayVariable expression (env: Map<string, terminal list>) variable values (outList : terminal list) : float list =
     match values with
     | a :: tail ->
         let result, _ = exec (env.Add(variable, [Number a])) expression
         fillArrayVariable expression env variable tail (outList @ result)
     | [] -> terminalListAsFloatList outList []
 
-let rec fillArray expression (env: Map<string, terminal list>) values outList =
+let rec private fillArray expression (env: Map<string, terminal list>) values outList =
     match values with
     | _ :: tail ->
         let result, _ = exec env expression
         fillArray expression env tail (outList @ result)
     | [] -> terminalListAsFloatList outList []
 
-let computeYArray statement (xArray: float list) : float list=
+let private computeYArray statement (xArray: float list) : float list=
     match statement with
     | Word a :: Assign :: tail ->
         let env = Map.empty.Add(a, tail)
@@ -513,7 +513,7 @@ let computeYArray statement (xArray: float list) : float list=
     | _ -> ExecError "Execution Error: Malformed expression" |> raise
 
 
-let plot terminals =
+let internal map terminals =
     match terminals with
     | Function "plot" :: tail ->
         let paramList, remaining = extractParameters tail [] Map.empty
