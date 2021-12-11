@@ -11,7 +11,8 @@
         Width="825"
         Background="#B4C7E7"
         Icon="mymathspal_logo.ico"
-        Closing="GraphPopUp_Closing">
+        Closing="GraphPopUp_Closing"
+        MouseLeftButtonUp="GraphPopUp_OnMouseLeftButtonUp">
 
     <Grid>
         <Grid.RowDefinitions>

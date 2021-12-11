@@ -1061,7 +1061,9 @@ namespace WpfApp1
             {
                 // Remove zoom selection rectangle so it can be redrawn
                 mainGrid.Children.Remove(_selection);
-
+                
+                _selection.Opacity = 1;
+                
                 if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 399)
                 {
                     // Mouse moving from top left to bottom right
@@ -1106,6 +1108,10 @@ namespace WpfApp1
                     }
                     
                     mainGrid.Children.Add(_selection);
+                }
+                else
+                {
+                    _selection.Opacity = 0;
                 }
             }
         }
@@ -1197,6 +1203,9 @@ namespace WpfApp1
             PlotButton_OnClick(this, new RoutedEventArgs());
         }
 
+        /// <summary>
+        /// Reset graph to original state after zooming when right click pressed.
+        /// </summary>
         private void ImageGraph_OnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             //If it has been less than 1 second since last zoom, this is probably the result of mouse release ghosting
@@ -1214,6 +1223,14 @@ namespace WpfApp1
             TextBoxXMin.Text = xMin.ToString(CultureInfo.InvariantCulture);
             TextBoxXMax.Text = xMax.ToString(CultureInfo.InvariantCulture);
             PlotButton_OnClick(this, new RoutedEventArgs());
+        }
+
+        /// <summary>
+        /// Ensure mouse button release is detected from anywhere on screen.
+        /// </summary>
+        private void GraphPopUp_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            _mouseDown = false;
         }
     }
 }
