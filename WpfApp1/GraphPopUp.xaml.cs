@@ -146,16 +146,15 @@ namespace WpfApp1
             int yZeroUnPadded;
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
             _yProcessed.Add((yZeroUnPadded, "functionRight"));
-
-
+            
             double xGridStep;
             double yGridStep;
 
             //Get steps for grid lines
             (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
 
-            //Generate grid lines - y grid lines are parallel with y axis, xZero
-            GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
+            //Generate grid lines and get labels - y grid lines are parallel with y axis, xZero
+            var labels = GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
@@ -178,7 +177,7 @@ namespace WpfApp1
             }
 
             //Add axis labels to graph
-            AddLabels(yZero, xZero, xArray, yArray);
+            AddLabels(yZero, xZero, xArray, yArray, labels);
 
             //Display graph
             var stream = File.OpenRead(path + "MyMathsPal\\graph" + _thisImageId + ".png");
@@ -243,9 +242,11 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot grid lines on the graph.
         /// </summary>
-        private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord,
+        private List<(PointF, string)> GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord,
             int xAxisYCoordUnPadded, double xGridStep, double[] yArray)
         {
+            var labels = new List<(PointF, string)>();
+
             //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
             var pixelsPerXNumber = ImageWidth / xRange;
@@ -299,6 +300,7 @@ namespace WpfApp1
             {
                 if ((int)Math.Round(i) != yAxisXCoord)
                 {
+                    labels.Add((new PointF(ImageWidth - (int)i + 30, xTop), string.Format(valueFormat, value)));
                     var axisLabel = new TextBlock()
                     {
                         Width = 25,
@@ -351,6 +353,7 @@ namespace WpfApp1
             {
                 if ((int)Math.Round(i) != yAxisXCoord)
                 {
+                    labels.Add((new PointF(ImageWidth - (int)i + 30, xTop), string.Format(valueFormat, value)));
                     var axisLabel = new TextBlock()
                     {
                         Background = System.Windows.Media.Brushes.Transparent,
@@ -438,6 +441,7 @@ namespace WpfApp1
             {
                 if ((int)Math.Round(i) != xAxisYCoord)
                 {
+                    labels.Add((new PointF(ImageWidth - (int)i + 30, xTop), string.Format(valueFormat, value)));
                     var label = new TextBlock()
                     {
                         Background = System.Windows.Media.Brushes.Transparent,
@@ -491,6 +495,7 @@ namespace WpfApp1
             {
                 if ((int)Math.Round(i) != xAxisYCoord)
                 {
+                    labels.Add((new PointF(ImageWidth - (int)i + 30, xTop), string.Format(valueFormat, value)));
                     var label = new TextBlock()
                     {
                         Background = System.Windows.Media.Brushes.Transparent,
@@ -513,6 +518,8 @@ namespace WpfApp1
                     value -= xGridStep*multiplier;
                 }
             }
+
+            return labels;
         }
 
         /// <summary>
@@ -634,7 +641,7 @@ namespace WpfApp1
         /// <summary>
         /// Method to add labels to image
         /// </summary>
-        private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray)
+        private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray, List<(PointF, string)> labels)
         {
             //This method uses inverted y axis
 
