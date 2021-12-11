@@ -57,10 +57,10 @@ namespace WpfApp1
         //Int to store location of click for zooming
         private int _mouseDownXCoord;
         private int _mouseDownYCoord;
-        
+
         //Rectangle to be used for selection of zoom area
         private readonly Rectangle _selection = new();
-        
+
         //boolean of whether mouse is currently held
         private bool _mouseDown;
 
@@ -231,7 +231,7 @@ namespace WpfApp1
             _selection.MouseLeftButtonDown += ImageGraph_OnMouseLeftButtonDown;
             _selection.MouseLeftButtonUp += ImageGraph_OnMouseLeftButtonUp;
             _selection.Visibility = Visibility.Visible;
-            
+
             // mark graph as unsaved
             _isDataDirty = true;
 
@@ -268,15 +268,15 @@ namespace WpfApp1
             }
 
             //Plot vertical grid lines to right of y axis
-            for (var i = yAxisXCoord; i < ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber)*multiplier)
+            for (double i = yAxisXCoord; i < ImageWidth; i += yGridStep * pixelsPerXNumber*multiplier)
             {
-                if (i != yAxisXCoord)
+                if ((int)Math.Round(i) != yAxisXCoord)
                 {
                     for (var j = 0; j < ImageHeight; j++)
                     {
                         if (j != xAxisYCoord)
                         {
-                            PlotPixel(i, j, 127, 127, 127);
+                            PlotPixel((int)Math.Round(i), j, 127, 127, 127);
                         }
                     }
                 }
@@ -295,9 +295,9 @@ namespace WpfApp1
                 valueFormat = "{0:0.0}";
             }
 
-            for (var i = yAxisXCoord; i <= ImageWidth; i += (int) Math.Round(yGridStep * pixelsPerXNumber) * multiplier)
+            for (double i = yAxisXCoord; i <= ImageWidth; i += yGridStep * pixelsPerXNumber * multiplier)
             {
-                if (i != yAxisXCoord)
+                if ((int)Math.Round(i) != yAxisXCoord)
                 {
                     var axisLabel = new TextBlock()
                     {
@@ -333,23 +333,23 @@ namespace WpfApp1
             }
 
             //Plot vertical grid lines to left of y axis
-            for (var i = yAxisXCoord; i > 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber)*multiplier)
+            for (double i = yAxisXCoord; i > 0; i -= yGridStep * pixelsPerXNumber*multiplier)
             {
-                if (i != yAxisXCoord)
+                if ((int)Math.Round(i) != yAxisXCoord)
                 {
                     for (var j = 0; j < ImageHeight; j++)
                     {
                         if (j != xAxisYCoord)
                         {
-                            PlotPixel(i, j, 127, 127, 127);
+                            PlotPixel((int)Math.Round(i), j, 127, 127, 127);
                         }
                     }
                 }
             }
 
-            for (var i = yAxisXCoord; i >= 0; i -= (int) Math.Round(yGridStep * pixelsPerXNumber)*multiplier)
+            for (double i = yAxisXCoord; i >= 0; i -= yGridStep * pixelsPerXNumber*multiplier)
             {
-                if (i != yAxisXCoord)
+                if ((int)Math.Round(i) != yAxisXCoord)
                 {
                     var axisLabel = new TextBlock()
                     {
@@ -402,15 +402,15 @@ namespace WpfApp1
             }
 
             //Plot horizontal grid lines above y axis
-            for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber)* multiplier)
+            for (double i = xAxisYCoord; i < ImageHeight; i += xGridStep * pixelsPerYNumber* multiplier)
             {
-                if (i != xAxisYCoord)
+                if ((int)Math.Round(i) != xAxisYCoord)
                 {
                     for (var j = 0; j < ImageWidth; j++)
                     {
                         if (j != yAxisXCoord)
                         {
-                            PlotPixel(j, i, 127, 127, 127);
+                            PlotPixel(j, (int)Math.Round(i), 127, 127, 127);
                         }
                     }
                 }
@@ -434,9 +434,9 @@ namespace WpfApp1
                 valueFormat = "{0:0.0}";
             }
 
-            for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber)*multiplier)
+            for (double i = xAxisYCoord; i < ImageHeight; i += xGridStep * pixelsPerYNumber*multiplier)
             {
-                if (i != xAxisYCoord)
+                if ((int)Math.Round(i) != xAxisYCoord)
                 {
                     var label = new TextBlock()
                     {
@@ -472,24 +472,24 @@ namespace WpfApp1
             }
 
             //Plot horizontal grid lines below y axis
-            for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber)*multiplier)
+            for (double i = xAxisYCoord; i > 0; i -= xGridStep * pixelsPerYNumber*multiplier)
             {
-                if (i != xAxisYCoord)
+                if ((int)Math.Round(i) != xAxisYCoord)
                 {
                     for (var j = 0; j < ImageWidth; j++)
                     {
                         if (j != yAxisXCoord)
                         {
-                            PlotPixel(j, i, 127, 127, 127);
+                            PlotPixel(j, (int)Math.Round(i), 127, 127, 127);
                         }
                     }
                 }
             }
 
             //Plot horizontal grid lines below y axis
-            for (var i = xAxisYCoord; i > 0; i -= (int) Math.Round(xGridStep * pixelsPerYNumber)*multiplier)
+            for (double i = xAxisYCoord; i > 0; i -= xGridStep * pixelsPerYNumber*multiplier)
             {
-                if (i != xAxisYCoord)
+                if ((int)Math.Round(i) != xAxisYCoord)
                 {
                     var label = new TextBlock()
                     {
@@ -606,6 +606,22 @@ namespace WpfApp1
         /// </summary>
         private void PlotPixel(int x, int y, int red, int green, int blue)
         {
+            if (y == 400)
+            {
+                y--;
+            }
+            if (y == -1)
+            {
+                y++;
+            }
+            if (x == 750)
+            {
+                x--;
+            }
+            if (x == -1)
+            {
+                x++;
+            }
             //Calculate starting byte of pixel
             var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
 
@@ -1056,14 +1072,14 @@ namespace WpfApp1
                 _cursor.Margin = new Thickness(xCoord + 20, ImageHeight - yArrayClone[(int) xCoord] + 17, 0, 0);
                 mainGrid.Children.Add(_cursor);
             }
-            
+
             if (_mouseDown)
             {
                 // Remove zoom selection rectangle so it can be redrawn
                 mainGrid.Children.Remove(_selection);
-                
+
                 _selection.Opacity = 1;
-                
+
                 if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 399)
                 {
                     // Mouse moving from top left to bottom right
@@ -1079,7 +1095,7 @@ namespace WpfApp1
                         var selectionMargin = _selection.Margin;
                         selectionMargin.Top = yCoord + 31;
                         _selection.Margin = selectionMargin;
-                        
+
                         _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
                         _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
                     }
@@ -1090,7 +1106,7 @@ namespace WpfApp1
                         var selectionMargin = _selection.Margin;
                         selectionMargin.Left = xCoord + 30;
                         _selection.Margin = selectionMargin;
-                        
+
                         _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
                         _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
                     }
@@ -1102,11 +1118,11 @@ namespace WpfApp1
                         selectionMargin.Left = xCoord + 30;
                         selectionMargin.Top = yCoord + 31;
                         _selection.Margin = selectionMargin;
-                        
+
                         _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
                         _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
                     }
-                    
+
                     mainGrid.Children.Add(_selection);
                 }
                 else
@@ -1131,12 +1147,12 @@ namespace WpfApp1
         {
             //Get mouse coords
             var coords = Mouse.GetPosition(ImageGraph);
-            
+
             //Store mouse location when pressed
             _mouseDownXCoord = (int) Math.Floor(coords.X);
             _mouseDownYCoord = (int) Math.Floor(coords.Y);
             _mouseDown = true;
-            
+
             //Start drawing selection rectangle
             _selection.Width = 0;
             _selection.Height = 0;
@@ -1158,14 +1174,14 @@ namespace WpfApp1
             {
                 return;
             }
-            
+
             //Remove selection rectangle on mouse release
             mainGrid.Children.Remove(_selection);
             _selection.Opacity = 0;
             _selection.Width = 0;
             _selection.Height = 0;
             _mouseDown = false;
-            
+
             //Get mouse location when mouse released
             var mouseUpXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
 
@@ -1215,11 +1231,11 @@ namespace WpfApp1
             {
                 return;
             }
-            
+
             var (function, (xArray, _)) = _functions.First();
             var xMin = xArray.Min();
             var xMax = xArray.Max();
-            
+
             TextBoxXMin.Text = xMin.ToString(CultureInfo.InvariantCulture);
             TextBoxXMax.Text = xMax.ToString(CultureInfo.InvariantCulture);
             PlotButton_OnClick(this, new RoutedEventArgs());
