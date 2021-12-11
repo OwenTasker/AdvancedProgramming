@@ -3,7 +3,9 @@
                 https://docs.microsoft.com/en-us/dotnet/desktop/wpf/controls/how-to-use-templates-to-style-a-listview-that-uses-gridview?view=netframeworkdesktop-4.8 
                 https://social.msdn.microsoft.com/Forums/vstudio/en-US/419eced1-94c0-4b1f-952c-02aefc8f435d/adding-superscript-text-on-button-in-visual-studio?forum=wpf 
                 https://stackoverflow.com/questions/37621437/is-there-a-simple-way-to-wrap-text-in-a-wpf-listbox
-                https://stackoverflow.com/questions/39699832/wrap-text-inside-listbox-item -->
+                https://stackoverflow.com/questions/39699832/wrap-text-inside-listbox-item 
+                https://stackoverflow.com/questions/181956/prevent-user-from-resizing-columns-with-wpf-listview 
+                https://stackoverflow.com/questions/11101360/textblock-text-wrapping-in-gridviewcolumn-celltemplate-not-working -->
 
 <Window x:Class="WpfApp1.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -121,8 +123,14 @@
                 <ListView.Resources>
                     <Style x:Key="varDisplayHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
                         <Setter Property="Background" Value="#8FAADC"/>
+                        <Setter Property="IsHitTestVisible" Value="False"/>
+                    </Style>
+                    
+                    <Style TargetType="TextBlock">
+                        <Setter Property="TextWrapping" Value="Wrap"/>
                     </Style>
                 </ListView.Resources>
+                
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Name" Width="100" DisplayMemberBinding="{Binding Path=Key}" HeaderContainerStyle="{StaticResource varDisplayHeaderStyle}"/>
