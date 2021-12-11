@@ -75,7 +75,7 @@
             <Label x:Name="functionLabel" Content="Function" FontFamily="Courier New" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
             <Image Name="ImageGraph" Source="Images/graph.png" VerticalAlignment="Center" HorizontalAlignment="Center"
                    Height="400" Width="750" MouseLeftButtonDown="ImageGraph_OnMouseLeftButtonDown"
-                   MouseLeftButtonUp="ImageGraph_OnMouseLeftButtonUp"/>
+                   MouseLeftButtonUp="ImageGraph_OnMouseLeftButtonUp" MouseRightButtonDown="ImageGraph_OnMouseRightButtonDown"/>
 
         </Grid>
     </Grid>

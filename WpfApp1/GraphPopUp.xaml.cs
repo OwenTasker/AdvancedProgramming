@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.IO;
 using System.Windows.Controls;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -243,6 +244,7 @@ namespace WpfApp1
             //Add mouse event handlers to label as is appears in front of and blocks the graph image
             _cursor.MouseLeftButtonDown += ImageGraph_OnMouseLeftButtonDown;
             _cursor.MouseLeftButtonUp += ImageGraph_OnMouseLeftButtonUp;
+            _cursor.MouseRightButtonDown += ImageGraph_OnMouseRightButtonDown;
             mainGrid.Children.Add(_cursor);
 
             // mark graph as unsaved
@@ -1227,6 +1229,25 @@ namespace WpfApp1
             //Emulate user re-plotting graph using top tool bar
             TextBoxXMin.Text = newXMin.ToString(CultureInfo.InvariantCulture);
             TextBoxXMax.Text = newXMax.ToString(CultureInfo.InvariantCulture);
+            PlotButton_OnClick(this, new RoutedEventArgs());
+        }
+
+        private void ImageGraph_OnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            //If it has been less than 1 second since last zoom, this is probably the result of mouse release ghosting
+            //Therefore the zoom should be cancelled
+            var currentTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            if (currentTime == _timeLastGenerated)
+            {
+                return;
+            }
+            
+            var (function, (xArray, _)) = _functions.First();
+            var xMin = xArray.Min();
+            var xMax = xArray.Max();
+            
+            TextBoxXMin.Text = xMin.ToString(CultureInfo.InvariantCulture);
+            TextBoxXMax.Text = xMax.ToString(CultureInfo.InvariantCulture);
             PlotButton_OnClick(this, new RoutedEventArgs());
         }
     }
