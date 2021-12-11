@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.IO;
 using System.Windows.Controls;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -15,6 +16,7 @@ using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace WpfApp1
 {
@@ -54,6 +56,13 @@ namespace WpfApp1
 
         //Int to store location of click for zooming
         private int _mouseDownXCoord;
+        private int _mouseDownYCoord;
+        
+        //Rectangle to be used for selection of zoom area
+        private readonly Rectangle _selection = new();
+        
+        //boolean of whether mouse is currently held
+        private bool _mouseDown;
 
         //Save time graph was last generated - prevents ghost double mouse releases causing graph to rapidly zoom in
         private long _timeLastGenerated;
@@ -194,8 +203,35 @@ namespace WpfApp1
             //Add mouse event handlers to label as is appears in front of and blocks the graph image
             _cursor.MouseLeftButtonDown += ImageGraph_OnMouseLeftButtonDown;
             _cursor.MouseLeftButtonUp += ImageGraph_OnMouseLeftButtonUp;
+            _cursor.MouseRightButtonDown += ImageGraph_OnMouseRightButtonDown;
             mainGrid.Children.Add(_cursor);
 
+            //Set up selection rectangle for zooming
+            var colour = new System.Windows.Media.Color
+            {
+                R = 0,
+                G = 118,
+                B = 215,
+                A = 127
+            };
+            var brush = new SolidColorBrush(colour);
+            _selection.Fill = brush;
+            _selection.Opacity = 0;
+            colour = new System.Windows.Media.Color
+            {
+                R = 0,
+                G = 84,
+                B = 153,
+                A = 127
+            };
+            _selection.Stroke = new SolidColorBrush(colour);
+            _selection.StrokeThickness = 2;
+            _selection.VerticalAlignment = VerticalAlignment.Top;
+            _selection.HorizontalAlignment = HorizontalAlignment.Left;
+            _selection.MouseLeftButtonDown += ImageGraph_OnMouseLeftButtonDown;
+            _selection.MouseLeftButtonUp += ImageGraph_OnMouseLeftButtonUp;
+            _selection.Visibility = Visibility.Visible;
+            
             // mark graph as unsaved
             _isDataDirty = true;
 
@@ -1020,6 +1056,55 @@ namespace WpfApp1
                 _cursor.Margin = new Thickness(xCoord + 20, ImageHeight - yArrayClone[(int) xCoord] + 17, 0, 0);
                 mainGrid.Children.Add(_cursor);
             }
+            
+            if (_mouseDown)
+            {
+                // Remove zoom selection rectangle so it can be redrawn
+                mainGrid.Children.Remove(_selection);
+                
+                // Mouse moving from top left to bottom right
+                if (_mouseDownXCoord - xCoord < 0 && _mouseDownYCoord - yCoord < 0)
+                {
+                    _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
+                    _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                }
+                // Mouse moving from bottom left to top right
+                else if (_mouseDownXCoord - xCoord < 0 && _mouseDownYCoord - yCoord > 0)
+                {
+                    // Change co-ordinate of top left of rectangle
+                    var selectionMargin = _selection.Margin;
+                    selectionMargin.Top = yCoord + 31;
+                    _selection.Margin = selectionMargin;
+                    
+                    _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
+                    _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                }
+                // Mouse moving from top right to bottom left
+                else if (_mouseDownXCoord - xCoord > 0 && _mouseDownYCoord - yCoord < 0)
+                {
+                    // Change co-ordinate of top left of rectangle
+                    var selectionMargin = _selection.Margin;
+                    selectionMargin.Left = xCoord + 30;
+                    _selection.Margin = selectionMargin;
+                    
+                    _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
+                    _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                }
+                // Mouse moving from bottom right to top left
+                else if (_mouseDownXCoord - xCoord > 0 && _mouseDownYCoord - yCoord > 0)
+                {
+                    // Change co-ordinate of top left of rectangle
+                    var selectionMargin = _selection.Margin;
+                    selectionMargin.Left = xCoord + 30;
+                    selectionMargin.Top = yCoord + 31;
+                    _selection.Margin = selectionMargin;
+                    
+                    _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
+                    _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                }
+                
+                mainGrid.Children.Add(_selection);
+            }
         }
 
         /// <summary>
@@ -1035,8 +1120,21 @@ namespace WpfApp1
         /// </summary>
         private void ImageGraph_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            //Get mouse coords
+            var coords = Mouse.GetPosition(ImageGraph);
+            
             //Store mouse location when pressed
-            _mouseDownXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
+            _mouseDownXCoord = (int) Math.Floor(coords.X);
+            _mouseDownYCoord = (int) Math.Floor(coords.Y);
+            _mouseDown = true;
+            
+            //Start drawing selection rectangle
+            _selection.Width = 0;
+            _selection.Height = 0;
+            _selection.Margin = new Thickness(coords.X + 30, coords.Y + 31, 0, 0);
+            _selection.Opacity = 1;
+            mainGrid.Children.Remove(_selection);
+            mainGrid.Children.Add(_selection);
         }
 
         /// <summary>
@@ -1051,7 +1149,14 @@ namespace WpfApp1
             {
                 return;
             }
-
+            
+            //Remove selection rectangle on mouse release
+            mainGrid.Children.Remove(_selection);
+            _selection.Opacity = 0;
+            _selection.Width = 0;
+            _selection.Height = 0;
+            _mouseDown = false;
+            
             //Get mouse location when mouse released
             var mouseUpXCoord = (int) Math.Floor(Mouse.GetPosition(ImageGraph).X);
 
@@ -1086,6 +1191,25 @@ namespace WpfApp1
             //Emulate user re-plotting graph using top tool bar
             TextBoxXMin.Text = newXMin.ToString(CultureInfo.InvariantCulture);
             TextBoxXMax.Text = newXMax.ToString(CultureInfo.InvariantCulture);
+            PlotButton_OnClick(this, new RoutedEventArgs());
+        }
+
+        private void ImageGraph_OnMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            //If it has been less than 1 second since last zoom, this is probably the result of mouse release ghosting
+            //Therefore the zoom should be cancelled
+            var currentTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            if (currentTime == _timeLastGenerated)
+            {
+                return;
+            }
+            
+            var (function, (xArray, _)) = _functions.First();
+            var xMin = xArray.Min();
+            var xMax = xArray.Max();
+            
+            TextBoxXMin.Text = xMin.ToString(CultureInfo.InvariantCulture);
+            TextBoxXMax.Text = xMax.ToString(CultureInfo.InvariantCulture);
             PlotButton_OnClick(this, new RoutedEventArgs());
         }
     }
