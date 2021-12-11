@@ -20,8 +20,6 @@ exception public CalculateError of string
 /// <summary>Exception thrown when an error is encountered while computing a unary operation.</summary>
 exception public UnaryError of string
 /// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
-exception public GraphingError of string
-/// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
 exception public ExecError of string
 /// <summary>Exception thrown when an error is encountered while executing a function, used specifically for enforcing
 /// more stringent parameters</summary>
@@ -108,7 +106,7 @@ let inline internal toMap kvps =
 /// <param name="terminalVal">A terminal represented by the terminal type.</param>
 ///
 /// <returns>A string representation of the terminal.</returns>
-let internal individualTerminalToString terminalVal =
+let private individualTerminalToString terminalVal =
     match terminalVal with
     | Times -> "*"
     | Divide -> "/"
@@ -148,7 +146,7 @@ let rec internal terminalListToString str list =
 let internal terminalToNum term =
     match term with
     | Number A -> A
-    | _ -> InvalidArgumentError "Invalid Argument Error: Cannot Parse Non Number Terminal As Number" |> raise
+    | _ -> InvalidArgumentError ("Invalid Argument Error: Cannot parse \"" + (individualTerminalToString term) + "\" as Number") |> raise
 
 /// <summary>
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
@@ -198,7 +196,7 @@ let internal getAssociativity operator =
 let rec internal evaluateBrackets opStack (numStack : 'a list) (performOperation : terminal -> 'a list -> 'a list) =
     match opStack with
     | []
-    | Rpar :: _ -> ExecError "Execution Error: Parenthesis encountered as an operator." |> raise
+    | Rpar :: _ -> ExecError "Execution Error: Right parenthesis encountered as an operator." |> raise
     | Lpar :: tail ->
         match numStack with
         | _ :: _ -> tail, numStack
@@ -243,7 +241,7 @@ let rec extractBrackets terminals lparCount out =
         | 1 -> tail, List.rev (Rpar :: out)
         | _ -> extractBrackets tail (lparCount-1) (Rpar::out)
     | any :: tail -> extractBrackets tail lparCount (any::out)
-    | [] -> ExecError "Execution Error: Lpar without matching Rpar." |> raise
+    | [] -> ExecError "Execution Error: Unmatched left parenthesis." |> raise
 
 /// <summary>
 /// Reads a list of terminals, prepending them to an output list, up to a Comma or Rpar terminal.

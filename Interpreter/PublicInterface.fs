@@ -10,6 +10,7 @@ module public Interpreter.PublicInterface
 open Interpreter.Lexer
 open Interpreter.Parser
 open Interpreter.Exec
+open Interpreter.Map
 
 /// <summary>
 /// Interpret function, takes in a string list and an environment of user defined variables and turns it into

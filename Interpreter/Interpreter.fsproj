@@ -19,6 +19,7 @@
     <Compile Include="Lexer.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Exec.fs" />
+    <Compile Include="Map.fs" />
     <Compile Include="PublicInterface.fs" />
     <Compile Include="Tests\UtilTests.fs" />
     <Compile Include="Tests\MathematicalFunctionsTests.fs" />

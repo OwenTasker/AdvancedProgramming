@@ -61,7 +61,7 @@ and private unary terminals =
     match terminals with
     | [UnaryMinus]
     | [UnaryPlus]
-    | [] -> ParseError "Parse Error: Malformed Expression" |> raise
+    | [] -> ParseError "Parse Error: Empty expression at unary BNF state" |> raise
     | UnaryMinus :: terminalsTail
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
@@ -91,7 +91,7 @@ and private factor terminals =
         | _ -> ParseError "Parse Error: Missing Right Parenthesis" |> raise
     | [UnaryMinus]
     | [UnaryPlus] -> ParseError "Parse Error: Trailing Operator" |> raise
-    | _ -> ParseError "Parse Error: Malformed Expression" |> raise
+    | a -> ParseError ("Parse Error: Non-factor expression passed to factor BNF state \"" + (terminalListToString "" a) + "\"" ) |> raise
 
 // arguments ::= var -> expression, arguments | expression, arguments
 and private arguments terminals =
