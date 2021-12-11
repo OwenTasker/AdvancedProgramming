@@ -1,7 +1,9 @@
 ﻿<!-- References https://stackoverflow.com/questions/6745663/how-to-create-make-rounded-corner-buttons-in-wpf 
                 https://docs.microsoft.com/en-us/dotnet/desktop/wpf/controls/listview-overview?view=netframeworkdesktop-4.8            
                 https://docs.microsoft.com/en-us/dotnet/desktop/wpf/controls/how-to-use-templates-to-style-a-listview-that-uses-gridview?view=netframeworkdesktop-4.8 
-                https://social.msdn.microsoft.com/Forums/vstudio/en-US/419eced1-94c0-4b1f-952c-02aefc8f435d/adding-superscript-text-on-button-in-visual-studio?forum=wpf -->
+                https://social.msdn.microsoft.com/Forums/vstudio/en-US/419eced1-94c0-4b1f-952c-02aefc8f435d/adding-superscript-text-on-button-in-visual-studio?forum=wpf 
+                https://stackoverflow.com/questions/37621437/is-there-a-simple-way-to-wrap-text-in-a-wpf-listbox
+                https://stackoverflow.com/questions/39699832/wrap-text-inside-listbox-item -->
 
 <Window x:Class="WpfApp1.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -53,8 +55,14 @@
             <Label x:Name="consoleLabel" Content="Console" Margin="25,0,0,0" Height="35" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" FontFamily="Courier New" FontWeight="Bold" FontSize="16" Foreground="Black"/>
             <TextBox x:Name="consoleText" Text=">>" TextWrapping="NoWrap" Margin="25,25,250,80" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="true" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
 
-            <ListBox x:Name="suggestionDropDown" SelectionChanged="suggestionDropDown_SelectionChanged" MinHeight="25" MaxHeight="150" Background="AliceBlue" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25, 0, 250, 55" FontFamily="Courier New"/>
-            <TextBox x:Name="inputText" Height="30" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Hidden" VerticalAlignment="Bottom" Margin="25,0,346,25" GotFocus="InputTextBoxRemovePrompt" LostFocus="InputTextBoxAddPrompt" KeyDown="EnterKeyClick" TextChanged="inputText_TextChanged" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
+            <ListBox x:Name="suggestionDropDown" SelectionChanged="suggestionDropDown_SelectionChanged" MinHeight="25" MaxHeight="150" Background="AliceBlue" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25, 0, 250, 55" FontFamily="Courier New" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+                <TextBox x:Name="inputText" Height="30" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Hidden" VerticalAlignment="Bottom" Margin="25,0,346,25" GotFocus="InputTextBoxRemovePrompt" LostFocus="InputTextBoxAddPrompt" KeyDown="EnterKeyClick" TextChanged="inputText_TextChanged" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
             
             <Grid Width="205" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 10, 25">
                 <Grid.ColumnDefinitions>
