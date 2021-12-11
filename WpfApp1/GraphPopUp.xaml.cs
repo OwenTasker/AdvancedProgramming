@@ -177,7 +177,7 @@ namespace WpfApp1
             }
 
             //Add axis labels to graph
-            AddLabels(yZero, xZero, xArray, yArray, labels);
+            AddLabels(yZero, xZero, labels);
 
             //Display graph
             var stream = File.OpenRead(path + "MyMathsPal\\graph" + _thisImageId + ".png");
@@ -571,12 +571,11 @@ namespace WpfApp1
         /// <summary>
         /// Method to add labels to image
         /// </summary>
-        private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray, List<(PointF, string)> labels)
+        private void AddLabels(int yZero, int xZero, List<(PointF, string)> labels)
         {
             //This method uses inverted y axis
 
-            //Create axis labels
-
+            //Create zero label
             var zeroLabel = "0";
 
             //Find zero label location:
@@ -586,12 +585,10 @@ namespace WpfApp1
             {
                 zeroPointX -= zeroLabel.Length * 9 + 5;
             }
-
             if (yZero < ImageHeight / 2)
             {
                 zeroPointY -= 18;
             }
-
             var zeroPoint = new PointF(zeroPointX, zeroPointY);
 
             //Don't draw zero label if it will overlap
@@ -609,11 +606,14 @@ namespace WpfApp1
                 {
                     using (var font = new Font("Courier New", 14, GraphicsUnit.Pixel))
                     {
+                        //Draw zero label
                         graphics.DrawString(zeroLabel, font, Brushes.Black, zeroPoint);
-                        for (var i = 0; i < labels.Count; i++)
+                        
+                        //Draw all other axis labels
+                        foreach (var label in labels)
                         {
-                            var (point, label) = labels[i];
-                            graphics.DrawString(label, font, Brushes.Black, point);
+                            var (point, labelText) = label;
+                            graphics.DrawString(labelText, font, Brushes.Black, point);
                         }
                     }
                 }
