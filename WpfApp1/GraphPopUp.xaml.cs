@@ -146,31 +146,32 @@ namespace WpfApp1
 
             //If y is constant, modify axis range
             //var functionRight = trimmedArgsArray[0].Split(">")[^1];
-            var isNumber = false;
-            var isPositive = false;
-            try
-            {
-                if (yArray.Min() - yArray.Max() == 0)
-                {
-                    isNumber = true;
-                    if (yArray.Min() > 0)
-                    {
-                        isPositive = true;
-                    }
-                }
-            }
-            catch (Exception)
-            {
+            //var isNumber = false;
+            //var isPositive = false;
+            //try
+            //{
+                //==4 not 0 becuse of previous padding
+                //if (yArray.Min() - yArray.Max() == 4)
+                //{
+                    //isNumber = true;
+                    //if (yArray.Min() > 0)
+                    //{
+                        //isPositive = true;
+                    //}
+                //}
+            //}
+            //catch (Exception)
+            //{
                 // ignored
-            }
-            if (isNumber && isPositive)
-            {
-                yArray[yMinIndex] = 0;
-            }
-            if (isNumber && !isPositive)
-            {
-                yArray[yMaxIndex] = 0;
-            }
+            //}
+            //if (isNumber && isPositive)
+            //{
+                //yArray[yMinIndex] = 0;
+            //}
+            //if (isNumber && !isPositive)
+            //{
+                //yArray[yMaxIndex] = 0;
+            //}
 
             //Draw axis and get axis positions
             int yZero;
@@ -182,16 +183,16 @@ namespace WpfApp1
 
             double xGridStep;
             double yGridStep;
-            if (isNumber)
-            {
+            //if (isNumber)
+            //{
                 //Get steps for grid lines
-                (xGridStep, yGridStep) = CalculateConstantGridStep(xArray, yArray.Min());
-            }
-            else
-            {
+                //(xGridStep, yGridStep) = CalculateConstantGridStep(xArray, yArray.Min());
+            //}
+            //else
+            //{
                 //Get steps for grid lines
                 (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
-            }
+            //}
 
             //Generate grid lines - y grid lines are parallel with y axis, xZero
             GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
@@ -530,56 +531,56 @@ namespace WpfApp1
         /// <summary>
         /// Method to calculate step of grid lines for both x and y axis when y is constant.
         /// </summary>
-        private (double xGridStep, double yGridStep) CalculateConstantGridStep(double[] xArray, double y)
-        {
-            double xGridStep;
-            double yGridStep;
-
-            //X grid line step
-            switch (Math.Abs(y))
-            {
-                //Special case for range <= 1
-                case <= 1:
-                    xGridStep = 0.2;
-                    break;
-                //Special case for range <= 10
-                case <= 10:
-                    xGridStep = 2;
-                    break;
-                //Default step is a magnitude smaller than range
-                default:
-                {
-                    var yRangeString = ((int) Math.Ceiling(y)).ToString();
-                    var yRangeStringLength = yRangeString.Length - 1;
-                    xGridStep = Math.Pow(10, yRangeStringLength) / 5;
-                    break;
-                }
-            }
-
-            //Y grid line step
-            var xRange = xArray.Max() - xArray.Min();
-            switch (xRange)
-            {
-                //Special case for range <= 1
-                case <= 1:
-                    yGridStep = 0.2;
-                    break;
-                //Special case for range <= 10
-                case <= 10:
-                    yGridStep = 2;
-                    break;
-                //Default step is a magnitude smaller than range
-                default:
-                {
-                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
-                    var xRangeStringLength = xRangeString.Length - 1;
-                    yGridStep = Math.Pow(10, xRangeStringLength) / 5;
-                    break;
-                }
-            }
-
-            return (xGridStep, yGridStep);
-        }
+        // private (double xGridStep, double yGridStep) CalculateConstantGridStep(double[] xArray, double y)
+        // {
+        //     double xGridStep;
+        //     double yGridStep;
+        //
+        //     //X grid line step
+        //     switch (Math.Abs(y))
+        //     {
+        //         //Special case for range <= 1
+        //         case <= 1:
+        //             xGridStep = 0.2;
+        //             break;
+        //         //Special case for range <= 10
+        //         case <= 10:
+        //             xGridStep = 2;
+        //             break;
+        //         //Default step is a magnitude smaller than range
+        //         default:
+        //         {
+        //             var yRangeString = ((int) Math.Ceiling(y)).ToString();
+        //             var yRangeStringLength = yRangeString.Length - 1;
+        //             xGridStep = Math.Pow(10, yRangeStringLength) / 5;
+        //             break;
+        //         }
+        //     }
+        //
+        //     //Y grid line step
+        //     var xRange = xArray.Max() - xArray.Min();
+        //     switch (xRange)
+        //     {
+        //         //Special case for range <= 1
+        //         case <= 1:
+        //             yGridStep = 0.2;
+        //             break;
+        //         //Special case for range <= 10
+        //         case <= 10:
+        //             yGridStep = 2;
+        //             break;
+        //         //Default step is a magnitude smaller than range
+        //         default:
+        //         {
+        //             var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
+        //             var xRangeStringLength = xRangeString.Length - 1;
+        //             yGridStep = Math.Pow(10, xRangeStringLength) / 5;
+        //             break;
+        //         }
+        //     }
+        //
+        //     return (xGridStep, yGridStep);
+        // }
 
         /// <summary>
         /// Method to calculate step of grid lines for both x and y axis.
@@ -1098,28 +1099,28 @@ namespace WpfApp1
                 var yMin = yArrayClone.Min() - 2;
 
                 //Detect if y is a constant
-                var isNumber = false;
-                var isPositive = false;
-                try
-                {
-                    if (yArray.Min() - yArray.Max() == 0)
-                    {
-                        isNumber = true;
-                        if (yArray.Min() >= 0)
-                        {
-                            isPositive = true;
-                        }
-                    }
-                }
-                catch (Exception)
-                {
+                //var isNumber = false;
+                //var isPositive = false;
+                //try
+                //{
+                    //if (yArray.Min() - yArray.Max() == 0)
+                    //{
+                        //isNumber = true;
+                        //if (yArray.Min() >= 0)
+                        //{
+                            //isPositive = true;
+                        //}
+                    //}
+                //}
+                //catch (Exception)
+                //{
                     // ignored
-                }
-                if (isNumber && isPositive)
-                {
-                    yArrayClone[0] = 0;
-                    yMin = 0;
-                }
+                //}
+                //if (isNumber && isPositive)
+                //{
+                    //yArrayClone[0] = 0;
+                    //yMin = 0;
+                //}
 
                 //Start of y array scaling
                 for (var i = 0; i < ImageWidth; i++)
@@ -1129,11 +1130,11 @@ namespace WpfApp1
                 var yMax = yArrayClone.Max() + 2;
 
                 //Continuation of checking if y is constant
-                if (isNumber && !isPositive)
-                {
-                    yArrayClone[0] = 0;
-                    yMax = 0;
-                }
+                //if (isNumber && !isPositive)
+                //{
+                    //yArrayClone[0] = 0;
+                    //yMax = 0;
+                //}
 
                 //Continuation of scaling y values to size of graph
                 double scale;
