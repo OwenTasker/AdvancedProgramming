@@ -1061,49 +1061,52 @@ namespace WpfApp1
             {
                 // Remove zoom selection rectangle so it can be redrawn
                 mainGrid.Children.Remove(_selection);
-                
-                // Mouse moving from top left to bottom right
-                if (_mouseDownXCoord - xCoord < 0 && _mouseDownYCoord - yCoord < 0)
+
+                if (xCoord is >= 0 and <= 749 && yCoord is >= 0 and <= 399)
                 {
-                    _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
-                    _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
-                }
-                // Mouse moving from bottom left to top right
-                else if (_mouseDownXCoord - xCoord < 0 && _mouseDownYCoord - yCoord > 0)
-                {
-                    // Change co-ordinate of top left of rectangle
-                    var selectionMargin = _selection.Margin;
-                    selectionMargin.Top = yCoord + 31;
-                    _selection.Margin = selectionMargin;
+                    // Mouse moving from top left to bottom right
+                    if (_mouseDownXCoord - xCoord < 0 && _mouseDownYCoord - yCoord < 0)
+                    {
+                        _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
+                        _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                    }
+                    // Mouse moving from bottom left to top right
+                    else if (_mouseDownXCoord - xCoord < 0 && _mouseDownYCoord - yCoord > 0)
+                    {
+                        // Change co-ordinate of top left of rectangle
+                        var selectionMargin = _selection.Margin;
+                        selectionMargin.Top = yCoord + 31;
+                        _selection.Margin = selectionMargin;
+                        
+                        _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
+                        _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                    }
+                    // Mouse moving from top right to bottom left
+                    else if (_mouseDownXCoord - xCoord > 0 && _mouseDownYCoord - yCoord < 0)
+                    {
+                        // Change co-ordinate of top left of rectangle
+                        var selectionMargin = _selection.Margin;
+                        selectionMargin.Left = xCoord + 30;
+                        _selection.Margin = selectionMargin;
+                        
+                        _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
+                        _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                    }
+                    // Mouse moving from bottom right to top left
+                    else if (_mouseDownXCoord - xCoord > 0 && _mouseDownYCoord - yCoord > 0)
+                    {
+                        // Change co-ordinate of top left of rectangle
+                        var selectionMargin = _selection.Margin;
+                        selectionMargin.Left = xCoord + 30;
+                        selectionMargin.Top = yCoord + 31;
+                        _selection.Margin = selectionMargin;
+                        
+                        _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
+                        _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                    }
                     
-                    _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
-                    _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
+                    mainGrid.Children.Add(_selection);
                 }
-                // Mouse moving from top right to bottom left
-                else if (_mouseDownXCoord - xCoord > 0 && _mouseDownYCoord - yCoord < 0)
-                {
-                    // Change co-ordinate of top left of rectangle
-                    var selectionMargin = _selection.Margin;
-                    selectionMargin.Left = xCoord + 30;
-                    _selection.Margin = selectionMargin;
-                    
-                    _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
-                    _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
-                }
-                // Mouse moving from bottom right to top left
-                else if (_mouseDownXCoord - xCoord > 0 && _mouseDownYCoord - yCoord > 0)
-                {
-                    // Change co-ordinate of top left of rectangle
-                    var selectionMargin = _selection.Margin;
-                    selectionMargin.Left = xCoord + 30;
-                    selectionMargin.Top = yCoord + 31;
-                    _selection.Margin = selectionMargin;
-                    
-                    _selection.Width = Math.Abs(_mouseDownXCoord - xCoord);
-                    _selection.Height = Math.Abs(_mouseDownYCoord - yCoord);
-                }
-                
-                mainGrid.Children.Add(_selection);
             }
         }
 
