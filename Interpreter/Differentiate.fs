@@ -303,7 +303,7 @@ let private performBinaryOperation operator op1 op2 =
     | Divide -> op1 / op2
     | Exponent -> op1 ** op2
     | _ ->
-        CalculateError "Calculate Error: Invalid operator passed."
+        CalculateError "Calculate Error: Invalid operator recognised as binary operator."
         |> raise
 
 /// <summary>
@@ -323,7 +323,7 @@ let private performUnaryOperation operator operand =
         | Expr (a, b) -> Expr(UnaryMinus :: Lpar :: a @ [ Rpar ], UnaryMinus :: Lpar :: b @ [ Rpar ])
     | UnaryPlus -> operand
     | _ ->
-        UnaryError "Unary Error: Invalid operator passed."
+        UnaryError "Unary Error: Invalid operator recognised as unary operator."
         |> raise
 
 /// <summary>

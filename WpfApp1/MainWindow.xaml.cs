@@ -303,10 +303,10 @@ namespace WpfApp1
                 graphPopUp.ClosePopUp();
                 consoleText.AppendText(inputText.Text + "\n\"" + inputText.Text+ "\"\n" + ex.Data0 + "\n>>");
             }
-            catch (Util.GraphingError ex)
+            catch (ArgumentException ex)
             {
                 graphPopUp.ClosePopUp();
-                consoleText.AppendText(inputText.Text + "\n\"" + inputText.Text+ "\"\n" + ex.Data0 + "\n>>");
+                consoleText.AppendText(inputText.Text + "\n\"" + inputText.Text+ "\"\n" + ex.Message + "\n>>");
             }
             catch (Exception plottingException)
             {
@@ -356,9 +356,9 @@ namespace WpfApp1
             {
                 consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
             }
-            catch (Util.GraphingError ex1)
+            catch (ArgumentException ex1)
             {
-                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Data0 + "\n>>");
+                consoleText.AppendText(input + "\n\"" + input + "\"\n" + ex1.Message + "\n>>");
             }
             catch (Exception ex)
             {

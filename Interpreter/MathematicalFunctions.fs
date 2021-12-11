@@ -28,7 +28,7 @@ let rec private LogEGreaterThanZeroPointFive (input:float) (increment:float) (su
     match increment with
     | 2000.0 -> sum
     | _  -> LogEGreaterThanZeroPointFive input (increment+1.0) (sum+(1.0/increment)*((input-1.0)/input)**increment)
-        
+
 
 /// <summary>
 /// Implements a Taylor-Series in order to approximate a value for LogE
@@ -49,7 +49,7 @@ let rec private LogELessThanOrEqualToZeroPointFive (input:float) (increment:floa
     match input <= 0.0 with
     | true ->
         InvalidArgumentError
-            "Invalid input passed to function, expected value greater than 0 and less than or equal to 5.0 " |> raise
+            "Invalid Argument Error: Invalid input passed to function, expected value greater than 0 and less than or equal to 5.0" |> raise
     | false ->
         match increment with
         | 2000.0 -> sum
@@ -81,10 +81,10 @@ let private LogEFloat input =
 ///
 /// <param name="input">Input to take the logE of</param>
 ///
-/// <returns>the natural log of the input provided in terminal form</returns> 
+/// <returns>the natural log of the input provided in terminal form</returns>
 let internal LogETerminal input =
     LogEFloat input |> Number
-    
+
 /// <summary>
 /// Function to dynamically calculate any given base of any given number using the change of base rule
 /// </summary>
@@ -267,7 +267,7 @@ let internal getGCDWrapper num1 num2 =
     elif areBothInputsIntegers then
         getGCD num1 num2
     else
-        InvalidArgumentError "Ensure both arguments are whole numbers" |> raise
+        InvalidArgumentError "Invalid Argument Error: Ensure both arguments to gcd are whole numbers" |> raise
 
 /// <summary>
 /// Function to calculate the modulo of a number by another number

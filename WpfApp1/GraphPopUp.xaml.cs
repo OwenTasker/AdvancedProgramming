@@ -10,7 +10,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Interpreter;
 using Microsoft.Win32;
 using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
@@ -85,27 +84,16 @@ namespace WpfApp1
             //Save time of generation
             _timeLastGenerated = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-            //Split command into arguments
-            //var trimmedArgsArray = _graphDataCalculator.TrimmedArgsArray(input);
-
-            //Compute evenly spaced values for x axis between given bounds
-            //var xArray =
-                //_graphDataCalculator.ComputeXArray(double.Parse(trimmedArgsArray[1]),
-                    //double.Parse(trimmedArgsArray[2]));
-
-            //Compute values for y axis based on given function and calculated x array
-            //var yArray = _graphDataCalculator.ComputeYArray(trimmedArgsArray, xArray);
-
             var (xArray, yArray, command) = _graphDataCalculator.GetXyArrays(input);
 
             if (xArray.Max() - xArray.Min() > 100000000000)
             {
-                throw new Util.GraphingError(
+                throw new ArgumentException(
                     "Graphing Error: The range given by the x bounds is too large to plot.");
             }
             if (yArray.Max() - yArray.Min() > 100000000000)
             {
-                throw new Util.GraphingError(
+                throw new ArgumentException(
                     "Graphing Error: Computing this function within the given x bounds has resulted in a y axis range too large to plot.");
             }
 
@@ -134,8 +122,7 @@ namespace WpfApp1
                     yMin = yArray[i];
                     yMinIndex = i;
                 }
-
-                if (yArray[i] > yMax)
+                else if (yArray[i] > yMax)
                 {
                     yMax = yArray[i];
                     yMaxIndex = i;
@@ -143,35 +130,6 @@ namespace WpfApp1
             }
             yArray[yMinIndex] -= 2;
             yArray[yMaxIndex] += 2;
-
-            //If y is constant, modify axis range
-            //var functionRight = trimmedArgsArray[0].Split(">")[^1];
-            //var isNumber = false;
-            //var isPositive = false;
-            //try
-            //{
-                //==4 not 0 becuse of previous padding
-                //if (yArray.Min() - yArray.Max() == 4)
-                //{
-                    //isNumber = true;
-                    //if (yArray.Min() > 0)
-                    //{
-                        //isPositive = true;
-                    //}
-                //}
-            //}
-            //catch (Exception)
-            //{
-                // ignored
-            //}
-            //if (isNumber && isPositive)
-            //{
-                //yArray[yMinIndex] = 0;
-            //}
-            //if (isNumber && !isPositive)
-            //{
-                //yArray[yMaxIndex] = 0;
-            //}
 
             //Draw axis and get axis positions
             int yZero;
@@ -183,16 +141,9 @@ namespace WpfApp1
 
             double xGridStep;
             double yGridStep;
-            //if (isNumber)
-            //{
-                //Get steps for grid lines
-                //(xGridStep, yGridStep) = CalculateConstantGridStep(xArray, yArray.Min());
-            //}
-            //else
-            //{
-                //Get steps for grid lines
-                (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
-            //}
+
+            //Get steps for grid lines
+            (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
 
             //Generate grid lines - y grid lines are parallel with y axis, xZero
             GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
@@ -285,7 +236,6 @@ namespace WpfApp1
             {
                 if (i != yAxisXCoord)
                 {
-
                     for (var j = 0; j < ImageHeight; j++)
                     {
                         if (j != xAxisYCoord)
@@ -295,7 +245,6 @@ namespace WpfApp1
                     }
                 }
             }
-
 
             var value = yGridStep*multiplier;
 
@@ -327,7 +276,6 @@ namespace WpfApp1
                             Top = xTop,
                             Bottom = xBottom
                         },
-                        //BorderThickness = new Thickness(0,0,0,0),
                         HorizontalAlignment = HorizontalAlignment.Right,
                         TextAlignment = TextAlignment.Right,
                         Text = string.Format(valueFormat, value),
@@ -380,7 +328,6 @@ namespace WpfApp1
                             Top = xTop,
                             Bottom = xBottom
                         },
-                        //BorderThickness = new Thickness(0,0,0,0),
                         Text = string.Format(valueFormat, value),
                         TextWrapping = TextWrapping.WrapWithOverflow
                     };
@@ -417,6 +364,7 @@ namespace WpfApp1
             {
                 multiplier = 2;
             }
+
             //Plot horizontal grid lines above y axis
             for (var i = xAxisYCoord; i < ImageHeight; i += (int) Math.Round(xGridStep * pixelsPerYNumber)* multiplier)
             {
@@ -429,11 +377,8 @@ namespace WpfApp1
                             PlotPixel(j, i, 127, 127, 127);
                         }
                     }
-
                 }
             }
-
-
 
             value = xGridStep * multiplier;
 
@@ -441,9 +386,14 @@ namespace WpfApp1
             {
                 value += yArray.Min();
             }
+            else if (yArray.Max() < 0)
+            {
+                value = yArray.Max();
+            }
+
 
             valueFormat = "{0:0.#}";
-            if (value < 1)
+            if (Math.Abs(value) < 1)
             {
                 valueFormat = "{0:0.0}";
             }
@@ -465,7 +415,6 @@ namespace WpfApp1
                             Top = ImageHeight - i,
                             Bottom = i - 25
                         },
-                        //BorderThickness = new Thickness(0,0,0,0),
                         Text = string.Format(valueFormat, value),
                         TextWrapping = TextWrapping.WrapWithOverflow
                     };
@@ -475,12 +424,15 @@ namespace WpfApp1
                 }
             }
 
-
-            value = -xGridStep;
+            value = -xGridStep*multiplier;
 
             if (yArray.Max() < 0)
             {
                 value += yArray.Max();
+            }
+            else if (yArray.Min() > 0)
+            {
+                value += yArray.Min() + xGridStep*multiplier;
             }
 
             //Plot horizontal grid lines below y axis
@@ -517,7 +469,6 @@ namespace WpfApp1
                             Top = ImageHeight - i,
                             Bottom = i + 25
                         },
-                        //BorderThickness = new Thickness(0,0,0,0),
                         Text = string.Format(valueFormat, value),
                         TextWrapping = TextWrapping.WrapWithOverflow
                     };
@@ -527,60 +478,6 @@ namespace WpfApp1
                 }
             }
         }
-
-        /// <summary>
-        /// Method to calculate step of grid lines for both x and y axis when y is constant.
-        /// </summary>
-        // private (double xGridStep, double yGridStep) CalculateConstantGridStep(double[] xArray, double y)
-        // {
-        //     double xGridStep;
-        //     double yGridStep;
-        //
-        //     //X grid line step
-        //     switch (Math.Abs(y))
-        //     {
-        //         //Special case for range <= 1
-        //         case <= 1:
-        //             xGridStep = 0.2;
-        //             break;
-        //         //Special case for range <= 10
-        //         case <= 10:
-        //             xGridStep = 2;
-        //             break;
-        //         //Default step is a magnitude smaller than range
-        //         default:
-        //         {
-        //             var yRangeString = ((int) Math.Ceiling(y)).ToString();
-        //             var yRangeStringLength = yRangeString.Length - 1;
-        //             xGridStep = Math.Pow(10, yRangeStringLength) / 5;
-        //             break;
-        //         }
-        //     }
-        //
-        //     //Y grid line step
-        //     var xRange = xArray.Max() - xArray.Min();
-        //     switch (xRange)
-        //     {
-        //         //Special case for range <= 1
-        //         case <= 1:
-        //             yGridStep = 0.2;
-        //             break;
-        //         //Special case for range <= 10
-        //         case <= 10:
-        //             yGridStep = 2;
-        //             break;
-        //         //Default step is a magnitude smaller than range
-        //         default:
-        //         {
-        //             var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
-        //             var xRangeStringLength = xRangeString.Length - 1;
-        //             yGridStep = Math.Pow(10, xRangeStringLength) / 5;
-        //             break;
-        //         }
-        //     }
-        //
-        //     return (xGridStep, yGridStep);
-        // }
 
         /// <summary>
         /// Method to calculate step of grid lines for both x and y axis.
@@ -1008,15 +905,8 @@ namespace WpfApp1
             //Remove all WPF elements except title and graph before redrawing
             mainGrid.Children.RemoveRange(2,mainGrid.Children.Count-1);
 
-            try
-            {
-                var (function, (_, _)) = _functions.Last();
-                GenerateGraph("plot(" + function + "," + TextBoxXMin.Text + "," + TextBoxXMax.Text + ")");
-            }
-            catch (Exception plottingException)
-            {
-                throw new Util.GraphingError("Graphing Error: " + plottingException.Message + "\n>>");
-            }
+            var (function, (_, _)) = _functions.Last();
+            GenerateGraph("plot(" + function + "," + TextBoxXMin.Text + "," + TextBoxXMax.Text + ")");
 
             //Set data as having been modified since last save
             _isDataDirty = true;
@@ -1084,7 +974,7 @@ namespace WpfApp1
             {
                 //Get data for line cursor will be on
                 var (_, (xArray, yArray)) = _functions.Last();
-                var (yZero, functionRight) = _yProcessed.Last();
+                var (yZero, _) = _yProcessed.Last();
 
                 //Set coordinate labels
                 var xCoordText = Math.Round(xArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
@@ -1098,43 +988,12 @@ namespace WpfApp1
                 //Save minimum value of y before any further processing
                 var yMin = yArrayClone.Min() - 2;
 
-                //Detect if y is a constant
-                //var isNumber = false;
-                //var isPositive = false;
-                //try
-                //{
-                    //if (yArray.Min() - yArray.Max() == 0)
-                    //{
-                        //isNumber = true;
-                        //if (yArray.Min() >= 0)
-                        //{
-                            //isPositive = true;
-                        //}
-                    //}
-                //}
-                //catch (Exception)
-                //{
-                    // ignored
-                //}
-                //if (isNumber && isPositive)
-                //{
-                    //yArrayClone[0] = 0;
-                    //yMin = 0;
-                //}
-
                 //Start of y array scaling
                 for (var i = 0; i < ImageWidth; i++)
                 {
                     yArrayClone[i] -= yMin;
                 }
                 var yMax = yArrayClone.Max() + 2;
-
-                //Continuation of checking if y is constant
-                //if (isNumber && !isPositive)
-                //{
-                    //yArrayClone[0] = 0;
-                    //yMax = 0;
-                //}
 
                 //Continuation of scaling y values to size of graph
                 double scale;

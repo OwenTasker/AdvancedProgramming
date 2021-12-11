@@ -32,7 +32,7 @@ let private symbolRegexString =
 /// <summary>Function to match valid number characters passed to tokenize.</summary>
 ///
 /// <remarks>Reference: https://sodocumentation.net/fsharp/topic/962/active-patterns</remarks>
-/// 
+///
 /// <param name="input">A character as a string.</param>
 ///
 /// <returns>An Option containing the input string if it was a number or a period, or None otherwise.</returns>
@@ -45,7 +45,7 @@ let private (|IntegerOrPeriodMatch|_|) (input:string) =
 /// <summary>Function to match numbers passed to scan.</summary>
 ///
 /// <remarks>https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers</remarks>
-/// 
+///
 /// <param name="input">A string to query for its composition.</param>
 ///
 /// <returns>An Option containing the input string if it was a number, or None otherwise.</returns>
@@ -124,7 +124,7 @@ let rec private tokenize input =
                     // Build single digit number, lex next element
                 else head :: tokenize tail
             )else [head]
-        | _ -> raise (TokenizeError "Tokenize Error: Invalid Token recognized")
+        | a -> TokenizeError ("Tokenize Error: Invalid Token recognized \"" + a + "\"") |> raise
 
 /// <summary>Function to read a list of tokens and output a list of equivalent terminals.</summary>
 ///
@@ -172,7 +172,7 @@ let rec private scan tokens output  =
             match tokensTail with
             | "(" :: _ -> scan tokensTail (Function tokenHead :: output)
             | _ -> scan tokensTail (Word tokenHead :: output)
-        | _ -> raise (ScanError "Scan Error: Malformed Token")
+        | a -> ScanError ("Scan Error: Malformed Token \"" + a + "\"") |> raise
 
 /// <summary>Function to lex an input list of characters as strings by calling tokenize then scan.</summary>
 ///
