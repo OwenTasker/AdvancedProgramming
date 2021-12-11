@@ -250,19 +250,17 @@ namespace WpfApp1
             //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
             var pixelsPerXNumber = ImageWidth / xRange;
+
+            //Adjust coordinates of x axis labels up/down depending on axis location
             var labelAbove = xAxisYCoord < ImageHeight - xAxisYCoord;
-
-
             var xTop = ImageHeight - xAxisYCoord + 30;
-            var xBottom = xAxisYCoord - 25 - 30;
             if (labelAbove)
             {
                 xTop -= 17;
-                xBottom += 25;
             }
 
+            //Space out grid lines if they would be too close together
             var multiplier = 1;
-
             if (pixelsPerXNumber*yGridStep < 25)
             {
                 multiplier = 4;
@@ -283,56 +281,28 @@ namespace WpfApp1
                 }
             }
 
+            //Generate x axis labels to right of y axis
             var value = yGridStep*multiplier;
-
             if (xArray.Min() > 0)
             {
                 value += xArray.Min();
             }
-
             var valueFormat = "{0:0.#}";
             if (value < 1)
             {
                 valueFormat = "{0:0.0}";
             }
-
             for (double i = yAxisXCoord; i <= ImageWidth; i += yGridStep * pixelsPerXNumber * multiplier)
             {
                 if ((int)Math.Round(i) != yAxisXCoord)
                 {
+                    //Calculate location and content
                     var offset = string.Format(valueFormat, value).Length * 9;
                     labels.Add((new PointF((int) i - 2 - offset, xTop - 30), string.Format(valueFormat, value)));
-                    var axisLabel = new TextBlock()
-                    {
-                        Width = 25,
-                        Height = 25,
-                        VerticalAlignment = VerticalAlignment.Top,
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        Margin = new Thickness
-                        {
-                            Left = i - 30,
-                            Right = ImageWidth - i + 30,
-                            Top = xTop,
-                            Bottom = xBottom
-                        },
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        TextAlignment = TextAlignment.Right,
-                        Text = string.Format(valueFormat, value),
-                        TextWrapping = TextWrapping.WrapWithOverflow
-                    };
-
-                    //mainGrid.Children.Add(axisLabel);
 
                     value += yGridStep*multiplier;
                 }
 
-            }
-
-            value = -yGridStep*multiplier;
-
-            if (xArray.Max() < 0)
-            {
-                value += xArray.Max();
             }
 
             //Plot vertical grid lines to left of y axis
@@ -350,29 +320,19 @@ namespace WpfApp1
                 }
             }
 
+            //Generate x axis labels to left of y axis
+            value = -yGridStep*multiplier;
+            if (xArray.Max() < 0)
+            {
+                value += xArray.Max();
+            }
             for (double i = yAxisXCoord; i >= 0; i -= yGridStep * pixelsPerXNumber*multiplier)
             {
                 if ((int)Math.Round(i) != yAxisXCoord)
                 {
+                    //Calculate location and content
                     labels.Add((new PointF((int) i - 1, xTop - 30), string.Format(valueFormat, value)));
-                    var axisLabel = new TextBlock()
-                    {
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        Width = 25,
-                        Height = 25,
-                        VerticalAlignment = VerticalAlignment.Top,
-                        Margin = new Thickness
-                        {
-                            Left = i + 1,
-                            Right = ImageWidth - 25 - (i - 1),
-                            Top = xTop,
-                            Bottom = xBottom
-                        },
-                        Text = string.Format(valueFormat, value),
-                        TextWrapping = TextWrapping.WrapWithOverflow
-                    };
-
-                    //mainGrid.Children.Add(axisLabel);
+                    
                     value -= yGridStep*multiplier;
                 }
             }
@@ -385,21 +345,18 @@ namespace WpfApp1
             {
                 dataRangeHeight -= 40;
             }
-
             var pixelsPerYNumber = dataRangeHeight / yRange;
 
+            //Adjust coordinates of y axis labels left/right depending on axis location
             var labelRight = yAxisXCoord < (ImageWidth - yAxisXCoord);
-
             var yLeft = yAxisXCoord - 50 - 1;
-            var yRight = ImageWidth - yAxisXCoord + 1 + 25;
             if (labelRight)
             {
                 yLeft += 15;
-                yRight -= 26;
             }
 
+            //Space out grid lines if they would be too close together
             multiplier = 1;
-
             if (pixelsPerYNumber*xGridStep < 25)
             {
                 multiplier = 4;
@@ -420,8 +377,8 @@ namespace WpfApp1
                 }
             }
 
+            //Generate y axis labels above x axis
             value = xGridStep * multiplier;
-
             if (yArray.Min() > 0)
             {
                 value += yArray.Min();
@@ -430,55 +387,25 @@ namespace WpfApp1
             {
                 value = yArray.Max();
             }
-
-
             valueFormat = "{0:0.#}";
             if (Math.Abs(value) < 1)
             {
                 valueFormat = "{0:0.0}";
             }
-
             for (double i = xAxisYCoord; i < ImageHeight; i += xGridStep * pixelsPerYNumber*multiplier)
             {
                 if ((int)Math.Round(i) != xAxisYCoord)
                 {
+                    //Calculate location and content
                     var offset = 9;
                     if (!labelRight)
                     {
                         offset = string.Format(valueFormat, value).Length * 9;
                     }
                     labels.Add((new PointF(yLeft + 47 - offset, ImageHeight - (int) i), string.Format(valueFormat, value)));
-                    var label = new TextBlock()
-                    {
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        Width = 25,
-                        Height = 25,
-                        Margin = new Thickness
-                        {
-                            Left = yLeft,
-                            Right = yRight,
-                            Top = ImageHeight - i,
-                            Bottom = i - 25
-                        },
-                        Text = string.Format(valueFormat, value),
-                        TextWrapping = TextWrapping.WrapWithOverflow
-                    };
-
-                    //mainGrid.Children.Add(label);
+                    
                     value += xGridStep*multiplier;
                 }
-            }
-
-            value = -xGridStep*multiplier;
-
-            if (yArray.Max() < 0)
-            {
-                value += yArray.Max();
-            }
-            else if (yArray.Min() > 0)
-            {
-                value += yArray.Min() + xGridStep*multiplier;
             }
 
             //Plot horizontal grid lines below y axis
@@ -495,37 +422,29 @@ namespace WpfApp1
                     }
                 }
             }
-
-            //Plot horizontal grid lines below y axis
+            
+            //Generate y axis labels below x axis
+            value = -xGridStep*multiplier;
+            if (yArray.Max() < 0)
+            {
+                value += yArray.Max();
+            }
+            else if (yArray.Min() > 0)
+            {
+                value += yArray.Min() + xGridStep*multiplier;
+            }
             for (double i = xAxisYCoord; i > 0; i -= xGridStep * pixelsPerYNumber*multiplier)
             {
                 if ((int)Math.Round(i) != xAxisYCoord)
                 {
+                    //Calculate location and content
                     var offset = 9;
                     if (!labelRight)
                     {
                         offset = string.Format(valueFormat, value).Length * 9;
                     }
                     labels.Add((new PointF(yLeft + 47 - offset, ImageHeight - (int) i - 19), string.Format(valueFormat, value)));
-                    var label = new TextBlock()
-                    {
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        VerticalAlignment = VerticalAlignment.Bottom,
-                        Width = 25,
-                        Height = 25,
-                        Margin = new Thickness
-                        {
-                            Left = yLeft,
-                            Right = yRight,
-                            Top = ImageHeight - i,
-                            Bottom = i + 25
-                        },
-                        Text = string.Format(valueFormat, value),
-                        TextWrapping = TextWrapping.WrapWithOverflow
-                    };
-
-                    //mainGrid.Children.Add(label);
+                    
                     value -= xGridStep*multiplier;
                 }
             }
