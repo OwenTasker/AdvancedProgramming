@@ -817,8 +817,6 @@ namespace WpfApp1
         {
             var (function, _) = _functions.Last();
 
-            SaveFileDialog fileToSaveTo = null; // Initialise
-
             // Check for forbidden characters in Windows filenames
             if (function.Contains("*"))
             {
@@ -831,7 +829,7 @@ namespace WpfApp1
             }
 
             // Prepare file to save to
-            fileToSaveTo =
+            var fileToSaveTo =
                 SaverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph_" + function[3..] + ".png");
 
 
