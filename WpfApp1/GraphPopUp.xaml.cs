@@ -1013,6 +1013,10 @@ namespace WpfApp1
                 _cursor.Opacity = 1;
                 _cursor.Margin = new Thickness(xCoord + 20, ImageHeight - yArrayClone[(int) xCoord] + 17, 0, 0);
                 mainGrid.Children.Add(_cursor);
+
+                //Dereference clone of array to stop memory build up
+                //Static analyser would get this, but doesn't run often enough
+                yArrayClone = null;
             }
 
             if (_mouseDown)
