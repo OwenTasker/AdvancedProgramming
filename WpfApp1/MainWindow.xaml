@@ -55,7 +55,7 @@
 
         <Grid Grid.Row="1">
             <Label x:Name="consoleLabel" Content="Console" Margin="25,0,0,0" Height="35" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" FontFamily="Courier New" FontWeight="Bold" FontSize="16" Foreground="Black"/>
-            <TextBox x:Name="consoleText" Text=">>" TextWrapping="NoWrap" Margin="25,25,250,80" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="true" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
+            <TextBox x:Name="consoleText" Text=">>" TextWrapping="Wrap" Margin="25,25,250,80" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="true" FontFamily="Courier New" FontSize="16" Background="#DEEBF7" BorderBrush="Black" BorderThickness="1px"/>
 
             <ListBox x:Name="suggestionDropDown" SelectionChanged="suggestionDropDown_SelectionChanged" MinHeight="25" MaxHeight="150" Background="AliceBlue" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25, 0, 250, 55" FontFamily="Courier New" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListBox.ItemTemplate>
