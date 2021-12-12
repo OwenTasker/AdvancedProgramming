@@ -10,7 +10,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
 using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
