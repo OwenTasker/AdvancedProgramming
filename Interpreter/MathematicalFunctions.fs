@@ -49,7 +49,7 @@ let rec private LogELessThanOrEqualToZeroPointFive (input:float) (increment:floa
     match input <= 0.0 with
     | true ->
         InvalidArgumentError
-            "Invalid Argument Error: Invalid input passed to function, expected value greater than 0 and less than or equal to 5.0" |> raise
+            "Invalid Argument Error: Invalid input passed to function, expected value greater than 0" |> raise
     | false ->
         match increment with
         | 2000.0 -> sum
