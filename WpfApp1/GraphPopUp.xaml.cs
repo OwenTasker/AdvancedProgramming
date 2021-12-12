@@ -1175,7 +1175,7 @@ namespace WpfApp1
                 return;
             }
 
-            var (function, (xArray, _)) = _functions.First();
+            var (_, (xArray, _)) = _functions.First();
             var xMin = xArray.Min();
             var xMax = xArray.Max();
 
