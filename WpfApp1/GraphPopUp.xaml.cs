@@ -7,11 +7,9 @@ using System.Linq;
 using System.Windows;
 using System.IO;
 using System.Windows.Controls;
-using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
 using Brushes = System.Drawing.Brushes;
 using FontFamily = System.Windows.Media.FontFamily;
 using Image = System.Drawing.Image;
@@ -49,7 +47,7 @@ namespace WpfApp1
 
         //Lists of all plotted functions, their arrays, and key axis locations (starts as just one)
         private readonly List<(string, (double[], double[]))> _functions = new();
-        private readonly List<(int, string)> _yProcessed = new();
+        private readonly List<int> _yZeroUnPadded = new();
 
         //Create cursor for hovering
         private readonly Label _cursor = new();
@@ -67,6 +65,7 @@ namespace WpfApp1
         //Save time graph was last generated - prevents ghost double mouse releases causing graph to rapidly zoom in
         private long _timeLastGenerated;
 
+        //Instance variable of graph data calculator for this popup
         private readonly IGraphDataCalculator _graphDataCalculator;
 
         /// <summary>
@@ -77,6 +76,7 @@ namespace WpfApp1
             //Set data to unchanged as none is generated yet
             _isDataDirty = false;
 
+            //Assign instance variable to graphDataCalculator
             _graphDataCalculator = graphDataCalculator;
 
             //Show window
@@ -145,7 +145,7 @@ namespace WpfApp1
             int xZero;
             int yZeroUnPadded;
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
-            _yProcessed.Add((yZeroUnPadded, "functionRight"));
+            _yZeroUnPadded.Add(yZeroUnPadded);
             
             double xGridStep;
             double yGridStep;
@@ -237,6 +237,171 @@ namespace WpfApp1
             // set graph title to function plotted
             var (function, _) = _functions.Last();
             functionLabel.Content = function;
+        }
+
+        /// <summary>
+        /// Method to draw x and y axis in correct locations
+        /// </summary>
+        private ((int yZero, int xZero), int yZeroUnPadded) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
+        {
+            //Find yArray index of y=0, x axis, default to below graph
+            var yZero = 0;
+
+            //y=0 is above graph
+            if (yArray.Max() <= 0.0)
+            {
+                yZero = yArray.Count - 1;
+            }
+            //y=0 is within graph
+            else
+            {
+                var yMin = yArray.Min();
+                var yMax = yArray.Max();
+                var range = yMax - yMin;
+                var step = range / yArray.Count;
+                for (var i = 0; i < yArray.Count; i++)
+                {
+                    //if y=0 exists exactly
+                    if (yMin + (i * step) == 0)
+                    {
+                        yZero = i;
+                        break;
+                    }
+
+                    //if y=0 is skipped, set to line to left
+                    if (yMin + (i * step) > 0.0)
+                    {
+                        yZero = i - 1;
+                        break;
+                    }
+                }
+            }
+
+            //Scale y=0 line to image size
+            var temp = yZero / (double) yArray.Count;
+            temp *= ImageHeight;
+            yZero = (int) temp;
+
+            //Pad yZero if it would be too close to edge of screen
+            var yZeroUnPadded = yZero;
+            if (yZero < 20)
+            {
+                yZero += 20;
+            }
+            else if (yZero > ImageHeight - 20)
+            {
+                yZero -= 20;
+            }
+
+            //Draw y=0 line
+            for (var i = 0; i < ImageWidth; i++)
+            {
+                PlotPixel(i, yZero);
+            }
+
+            //Find xArray index of x=0, y axis, default to left of graph
+            var xZero = 0;
+            if (xArray.Min() > 0.0)
+            {
+                //Do nothing: xZero defaults to correct value
+            }
+            //x=0 is to right of graph
+            else if (xArray.Max() <= 0.0)
+            {
+                xZero = xArray.Count - 1;
+            }
+            //x=0 is within graph
+            else
+            {
+                var xMin = xArray.Min();
+                var xMax = xArray.Max();
+                var range = xMax - xMin;
+                var step = range / xArray.Count;
+                for (var i = 0; i < xArray.Count; i++)
+                {
+                    //if x=0 exists exactly
+                    if (xMin + i * step == 0)
+                    {
+                        xZero = i;
+                        break;
+                    }
+
+                    //if x=0 is skipped, set to line to left
+                    if (xMin + i * step > 0.0)
+                    {
+                        xZero = i - 1;
+                        break;
+                    }
+                }
+            }
+
+            //Scale x=0 line to image size
+            temp = xZero / (double) xArray.Count;
+            temp *= ImageWidth;
+            xZero = (int) temp;
+
+            //Draw x=0 line
+            for (var i = 0; i < ImageHeight; i++)
+            {
+                PlotPixel(xZero, i);
+            }
+
+            return ((yZero, xZero), yZeroUnPadded);
+        }
+        
+        /// <summary>
+        /// Method to calculate step of grid lines for both x and y axis.
+        /// </summary>
+        private (double xGridStep, double yGridStep) CalculateGridStep(double[] xArray, double[] yArray)
+        {
+            double xGridStep;
+            double yGridStep;
+
+            //X grid line step
+            var yRange = yArray.Max() - yArray.Min();
+            switch (yRange)
+            {
+                //Special case for range <= 1
+                case <= 1:
+                    xGridStep = 0.1;
+                    break;
+                //Special case for range <= 10
+                case <= 10:
+                    xGridStep = 1;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var yRangeString = ((int) Math.Ceiling(yRange)).ToString();
+                    var yRangeStringLength = yRangeString.Length - 1;
+                    xGridStep = Math.Pow(10, yRangeStringLength) / 5;
+                    break;
+                }
+            }
+
+            //Y grid line step
+            var xRange = xArray.Max() - xArray.Min();
+            switch (xRange)
+            {
+                //Special case for range <= 1
+                case <= 1:
+                    yGridStep = 0.1;
+                    break;
+                //Special case for range <= 10
+                case <= 10:
+                    yGridStep = 1;
+                    break;
+                //Default step is a magnitude smaller than range
+                default:
+                {
+                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
+                    var xRangeStringLength = xRangeString.Length - 1;
+                    yGridStep = Math.Pow(10, xRangeStringLength) / 5;
+                    break;
+                }
+            }
+
+            return (xGridStep, yGridStep);
         }
 
         /// <summary>
@@ -453,119 +618,48 @@ namespace WpfApp1
         }
 
         /// <summary>
-        /// Method to calculate step of grid lines for both x and y axis.
+        /// Method to plot a graph from arrays of x and y values
         /// </summary>
-        private (double xGridStep, double yGridStep) CalculateGridStep(double[] xArray, double[] yArray)
+        private void GenerateLine(IList<double> yArray, int yZero)
         {
-            double xGridStep;
-            double yGridStep;
-
-            //X grid line step
-            var yRange = yArray.Max() - yArray.Min();
-            switch (yRange)
+            //Scale y values to size of graph
+            var yMin = yArray.Min();
+            for (var i = 0; i < ImageWidth; i++)
             {
-                //Special case for range <= 1
-                case <= 1:
-                    xGridStep = 0.1;
-                    break;
-                //Special case for range <= 10
-                case <= 10:
-                    xGridStep = 1;
-                    break;
-                //Default step is a magnitude smaller than range
-                default:
+                yArray[i] -= yMin;
+            }
+            var yMax = yArray.Max();
+            double scale;
+            //Add some padding if x axis is near edge of screen
+            if (yZero is < 20 or > ImageHeight - 20)
+            {
+                scale = (ImageHeight - 41) / yMax;
+            }
+            else
+            {
+                scale = (ImageHeight - 1) / yMax;
+            }
+            for (var i = 0; i < ImageWidth; i++)
+            {
+                yArray[i] *= scale;
+                if (yZero is < 20 or > ImageHeight - 20)
                 {
-                    var yRangeString = ((int) Math.Ceiling(yRange)).ToString();
-                    var yRangeStringLength = yRangeString.Length - 1;
-                    xGridStep = Math.Pow(10, yRangeStringLength) / 5;
-                    break;
+                    yArray[i] += 20;
                 }
             }
 
-            //Y grid line step
-            var xRange = xArray.Max() - xArray.Min();
-            switch (xRange)
+            //Plot line
+            for (var i = 0; i < ImageWidth; i++)
             {
-                //Special case for range <= 1
-                case <= 1:
-                    yGridStep = 0.1;
-                    break;
-                //Special case for range <= 10
-                case <= 10:
-                    yGridStep = 1;
-                    break;
-                //Default step is a magnitude smaller than range
-                default:
+                //Plot line
+                PlotPixel(i, (int) yArray[i], 53, 179, 242);
+
+                //Plot pixel above line to make it thicker
+                if ((int) yArray[i] < ImageHeight - 2)
                 {
-                    var xRangeString = ((int) Math.Ceiling(xRange)).ToString();
-                    var xRangeStringLength = xRangeString.Length - 1;
-                    yGridStep = Math.Pow(10, xRangeStringLength) / 5;
-                    break;
+                    PlotPixel(i, (int) yArray[i] + 1, 53, 179, 242);
                 }
             }
-
-            return (xGridStep, yGridStep);
-        }
-
-        /// <summary>
-        /// Method to mirror graph along x axis to correct for different coordinate systems.
-        /// </summary>
-        private void InvertGraph()
-        {
-            for (var i = 0; i < ImageHeight / 2; i++)
-            {
-                var temp = new byte[ImageWidth * BytesPerPixel];
-                Array.Copy(_imageBuffer, i * ImageWidth * BytesPerPixel, temp, 0, ImageWidth * BytesPerPixel);
-                Array.Copy(_imageBuffer,
-                    ImageHeight * ImageWidth * BytesPerPixel - i * ImageWidth * BytesPerPixel -
-                    ImageWidth * BytesPerPixel, _imageBuffer, i * ImageWidth * BytesPerPixel,
-                    ImageWidth * BytesPerPixel);
-                Array.Copy(temp, 0, _imageBuffer,
-                    ImageHeight * ImageWidth * BytesPerPixel - i * ImageWidth * BytesPerPixel -
-                    ImageWidth * BytesPerPixel, ImageWidth * BytesPerPixel);
-            }
-        }
-
-        /// <summary>
-        /// Method to plot a black pixel at (x,y)
-        /// </summary>
-        private void PlotPixel(int x, int y)
-        {
-            //Calculate starting byte of pixel
-            var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
-
-            //Set BGR to black
-            _imageBuffer[offset] = _imageBuffer[offset + 1] = _imageBuffer[offset + 2] = 0;
-        }
-
-        /// <summary>
-        /// Method to plot a coloured pixel at (x,y)
-        /// </summary>
-        private void PlotPixel(int x, int y, int red, int green, int blue)
-        {
-            if (y == 400)
-            {
-                y--;
-            }
-            if (y == -1)
-            {
-                y++;
-            }
-            if (x == 750)
-            {
-                x--;
-            }
-            if (x == -1)
-            {
-                x++;
-            }
-            //Calculate starting byte of pixel
-            var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
-
-            //Set BGR to black
-            _imageBuffer[offset] = (byte) blue;
-            _imageBuffer[offset + 1] = (byte) green;
-            _imageBuffer[offset + 2] = (byte) red;
         }
 
         /// <summary>
@@ -626,160 +720,52 @@ namespace WpfApp1
         }
 
         /// <summary>
-        /// Method to plot a graph from arrays of x and y values
+        /// Method to mirror graph along x axis to correct for different coordinate systems.
         /// </summary>
-        private void GenerateLine(IList<double> yArray, int yZero)
+        private void InvertGraph()
         {
-            //Scale y values to size of graph
-            var yMin = yArray.Min();
-            for (var i = 0; i < ImageWidth; i++)
+            for (var i = 0; i < ImageHeight / 2; i++)
             {
-                yArray[i] -= yMin;
-            }
-            var yMax = yArray.Max();
-            double scale;
-            //Add some padding if x axis is near edge of screen
-            if (yZero is < 20 or > ImageHeight - 20)
-            {
-                scale = (ImageHeight - 41) / yMax;
-            }
-            else
-            {
-                scale = (ImageHeight - 1) / yMax;
-            }
-            for (var i = 0; i < ImageWidth; i++)
-            {
-                yArray[i] *= scale;
-                if (yZero is < 20 or > ImageHeight - 20)
-                {
-                    yArray[i] += 20;
-                }
-            }
-
-            //Plot line
-            for (var i = 0; i < ImageWidth; i++)
-            {
-                //Plot line
-                PlotPixel(i, (int) yArray[i], 53, 179, 242);
-
-                //Plot pixel above line to make it thicker
-                if ((int) yArray[i] < ImageHeight - 2)
-                {
-                    PlotPixel(i, (int) yArray[i] + 1, 53, 179, 242);
-                }
+                var temp = new byte[ImageWidth * BytesPerPixel];
+                Array.Copy(_imageBuffer, i * ImageWidth * BytesPerPixel, temp, 0, ImageWidth * BytesPerPixel);
+                Array.Copy(_imageBuffer, ImageHeight * ImageWidth * BytesPerPixel - i * ImageWidth * BytesPerPixel - ImageWidth * BytesPerPixel, _imageBuffer, i * ImageWidth * BytesPerPixel, ImageWidth * BytesPerPixel);
+                Array.Copy(temp, 0, _imageBuffer,ImageHeight * ImageWidth * BytesPerPixel - i * ImageWidth * BytesPerPixel - ImageWidth * BytesPerPixel, ImageWidth * BytesPerPixel);
             }
         }
 
         /// <summary>
-        /// Method to draw x and y axis in correct locations
+        /// Method to plot a coloured pixel at (x,y)
+        /// Defaults to black
         /// </summary>
-        private ((int yZero, int xZero), int yZeroUnPadded) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
+        private void PlotPixel(int x, int y, int red = 0, int green = 0, int blue = 0)
         {
-            //Find yArray index of y=0, x axis, default to below graph
-            var yZero = 0;
-
-            //y=0 is above graph
-            if (yArray.Max() <= 0.0)
+            if (y == 400)
             {
-                yZero = yArray.Count - 1;
+                y--;
             }
-            //y=0 is within graph
-            else
+            if (y == -1)
             {
-                var yMin = yArray.Min();
-                var yMax = yArray.Max();
-                var range = yMax - yMin;
-                var step = range / yArray.Count;
-                for (var i = 0; i < yArray.Count; i++)
-                {
-                    //if y=0 exists exactly
-                    if (yMin + (i * step) == 0)
-                    {
-                        yZero = i;
-                        break;
-                    }
-
-                    //if y=0 is skipped, set to line to left
-                    if (yMin + (i * step) > 0.0)
-                    {
-                        yZero = i - 1;
-                        break;
-                    }
-                }
+                y++;
             }
-
-            //Scale y=0 line to image size
-            var temp = yZero / (double) yArray.Count;
-            temp *= ImageHeight;
-            yZero = (int) temp;
-
-            //Pad yZero if it would be too close to edge of screen
-            var yZeroUnPadded = yZero;
-            if (yZero < 20)
+            if (x == 750)
             {
-                yZero += 20;
+                x--;
             }
-            else if (yZero > ImageHeight - 20)
+            if (x == -1)
             {
-                yZero -= 20;
+                x++;
             }
+            //Calculate starting byte of pixel
+            var offset = ((ImageWidth * BytesPerPixel) * y) + (x * BytesPerPixel);
 
-            //Draw y=0 line
-            for (var i = 0; i < ImageWidth; i++)
-            {
-                PlotPixel(i, yZero);
-            }
-
-            //Find xArray index of x=0, y axis, default to left of graph
-            var xZero = 0;
-            if (xArray.Min() > 0.0)
-            {
-                //Do nothing: xZero defaults to correct value
-            }
-            //x=0 is to right of graph
-            else if (xArray.Max() <= 0.0)
-            {
-                xZero = xArray.Count - 1;
-            }
-            //x=0 is within graph
-            else
-            {
-                var xMin = xArray.Min();
-                var xMax = xArray.Max();
-                var range = xMax - xMin;
-                var step = range / xArray.Count;
-                for (var i = 0; i < xArray.Count; i++)
-                {
-                    //if x=0 exists exactly
-                    if (xMin + i * step == 0)
-                    {
-                        xZero = i;
-                        break;
-                    }
-
-                    //if x=0 is skipped, set to line to left
-                    if (xMin + i * step > 0.0)
-                    {
-                        xZero = i - 1;
-                        break;
-                    }
-                }
-            }
-
-            //Scale x=0 line to image size
-            temp = xZero / (double) xArray.Count;
-            temp *= ImageWidth;
-            xZero = (int) temp;
-
-            //Draw x=0 line
-            for (var i = 0; i < ImageHeight; i++)
-            {
-                PlotPixel(xZero, i);
-            }
-
-            return ((yZero, xZero), yZeroUnPadded);
+            //Set BGR to black
+            _imageBuffer[offset] = (byte) blue;
+            _imageBuffer[offset + 1] = (byte) green;
+            _imageBuffer[offset + 2] = (byte) red;
         }
 
+        //All methods following this point are action listeners for GraphPopUp.xaml
+        
         /// <summary>
         /// Method to check if user wants to save before closing if they haven't already
         /// </summary>
@@ -818,8 +804,6 @@ namespace WpfApp1
         {
             var (function, _) = _functions.Last();
 
-            SaveFileDialog fileToSaveTo = null; // Initialise
-
             // Check for forbidden characters in Windows filenames
             if (function.Contains("*"))
             {
@@ -832,7 +816,7 @@ namespace WpfApp1
             }
 
             // Prepare file to save to
-            fileToSaveTo =
+            var fileToSaveTo =
                 SaverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph_" + function[3..] + ".png");
 
 
@@ -968,7 +952,7 @@ namespace WpfApp1
             {
                 //Get data for line cursor will be on
                 var (_, (xArray, yArray)) = _functions.Last();
-                var (yZero, _) = _yProcessed.Last();
+                var yZero = _yZeroUnPadded.Last();
 
                 //Set coordinate labels
                 var xCoordText = Math.Round(xArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
@@ -1013,6 +997,11 @@ namespace WpfApp1
                 _cursor.Opacity = 1;
                 _cursor.Margin = new Thickness(xCoord + 20, ImageHeight - yArrayClone[(int) xCoord] + 17, 0, 0);
                 mainGrid.Children.Add(_cursor);
+
+                //Dereference clone of array to stop memory build up
+                //Static analyser would get this, but doesn't run often enough
+                // ReSharper disable once RedundantAssignment
+                yArrayClone = null;
             }
 
             if (_mouseDown)
@@ -1072,14 +1061,6 @@ namespace WpfApp1
                     _selection.Opacity = 0;
                 }
             }
-        }
-
-        /// <summary>
-        /// Public wrapper for .Close().
-        /// </summary>
-        public void ClosePopUp()
-        {
-            Close();
         }
 
         /// <summary>
@@ -1174,7 +1155,7 @@ namespace WpfApp1
                 return;
             }
 
-            var (function, (xArray, _)) = _functions.First();
+            var (_, (xArray, _)) = _functions.First();
             var xMin = xArray.Min();
             var xMax = xArray.Max();
 
@@ -1189,6 +1170,14 @@ namespace WpfApp1
         private void GraphPopUp_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             _mouseDown = false;
+        }
+
+        /// <summary>
+        /// Public wrapper for .Close().
+        /// </summary>
+        public void ClosePopUp()
+        {
+            Close();
         }
     }
 }
