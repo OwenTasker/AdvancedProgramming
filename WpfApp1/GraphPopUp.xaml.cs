@@ -47,7 +47,7 @@ namespace WpfApp1
 
         //Lists of all plotted functions, their arrays, and key axis locations (starts as just one)
         private readonly List<(string, (double[], double[]))> _functions = new();
-        private readonly List<(int, string)> _yProcessed = new();
+        private readonly List<int> _yZeroUnPadded = new();
 
         //Create cursor for hovering
         private readonly Label _cursor = new();
@@ -65,6 +65,7 @@ namespace WpfApp1
         //Save time graph was last generated - prevents ghost double mouse releases causing graph to rapidly zoom in
         private long _timeLastGenerated;
 
+        //Instance variable of graph data calculator for this popup
         private readonly IGraphDataCalculator _graphDataCalculator;
 
         /// <summary>
@@ -75,6 +76,7 @@ namespace WpfApp1
             //Set data to unchanged as none is generated yet
             _isDataDirty = false;
 
+            //Assign instance variable to graphDataCalculator
             _graphDataCalculator = graphDataCalculator;
 
             //Show window
@@ -143,7 +145,7 @@ namespace WpfApp1
             int xZero;
             int yZeroUnPadded;
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
-            _yProcessed.Add((yZeroUnPadded, "functionRight"));
+            _yZeroUnPadded.Add(yZeroUnPadded);
             
             double xGridStep;
             double yGridStep;
@@ -964,7 +966,7 @@ namespace WpfApp1
             {
                 //Get data for line cursor will be on
                 var (_, (xArray, yArray)) = _functions.Last();
-                var (yZero, _) = _yProcessed.Last();
+                var yZero = _yZeroUnPadded.Last();
 
                 //Set coordinate labels
                 var xCoordText = Math.Round(xArray[(int) xCoord], 2).ToString(CultureInfo.InvariantCulture);
