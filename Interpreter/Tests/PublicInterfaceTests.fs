@@ -3,7 +3,6 @@
 open NUnit.Framework
 open Interpreter.Util
 open Interpreter.PublicInterface
-open NUnit.Framework
 
 /// <summary>Example environment for testing.</summary>
 let env =
