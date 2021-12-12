@@ -27,6 +27,7 @@
     <Compile Include="Tests\ParserTests.fs" />
     <Compile Include="Tests\DifferentiateTests.fs" />
     <Compile Include="Tests\ExecTests.fs" />
+    <Compile Include="Tests\PublicInterfaceTests.fs" />
   </ItemGroup>
 
 </Project>
