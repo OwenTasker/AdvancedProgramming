@@ -339,7 +339,6 @@ let moduloInvalidInputs =
         TestCaseData(-15.0, 0.0)
     ]
 
-
 [<TestCaseSource(nameof moduloValidInputsOutputs)>]
 let givenModuloCalc_ProvidedValidInputs_ReturnCorrectOutput input1 input2 output =
     let calc = moduloCalc input1 input2 |> terminalToNum

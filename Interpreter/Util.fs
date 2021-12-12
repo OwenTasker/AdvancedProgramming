@@ -152,7 +152,7 @@ let internal terminalToNum term =
 /// Map containing the precedence and associativity of operators accepted by the performUnaryOperation and
 /// performBinaryOperation functions.
 /// </summary>
-let internal precedenceAssociativityMap =
+let private precedenceAssociativityMap =
     Map [(UnaryMinus, (4, "r"))
          (UnaryPlus, (4, "r"))
          (Exponent, (3, "r"))

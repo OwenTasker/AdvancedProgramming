@@ -474,14 +474,14 @@ let OrderOfOperationsCases =
       ) ]
 
 /// <summary>Test to ensure that exec returns the correct output with valid input without variables.</summary>
-[<TestCaseSource("SimpleAdditionCases")>]
-[<TestCaseSource("SimpleSubtractionCases")>]
-[<TestCaseSource("SimpleMultiplicationCases")>]
-[<TestCaseSource("SimpleDivisionCases")>]
-[<TestCaseSource("SimpleExponentiationCases")>]
-[<TestCaseSource("SimpleUnaryCases")>]
-[<TestCaseSource("ChainedUnaryCases")>]
-[<TestCaseSource("OrderOfOperationsCases")>]
+[<TestCaseSource(nameof SimpleAdditionCases)>]
+[<TestCaseSource(nameof SimpleSubtractionCases)>]
+[<TestCaseSource(nameof SimpleMultiplicationCases)>]
+[<TestCaseSource(nameof SimpleDivisionCases)>]
+[<TestCaseSource(nameof SimpleExponentiationCases)>]
+[<TestCaseSource(nameof SimpleUnaryCases)>]
+[<TestCaseSource(nameof ChainedUnaryCases)>]
+[<TestCaseSource(nameof OrderOfOperationsCases)>]
 let GivenExec_WhenPassedSimpleExpressionWithoutVariables_ReturnCorrectAnswer
     (
         tokens: terminal list,
@@ -536,7 +536,7 @@ let InvalidReduceCases =
       TestCaseData([ Word "x"; Assign ]) ]
 
 /// <summary>Test to ensure that exec returns the correct output with invalid input.</summary>
-[<TestCaseSource("InvalidReduceCases")>]
+[<TestCaseSource(nameof InvalidReduceCases)>]
 let GivenExed_WhenPassedInvalidTokens_RaiseExecError (tokens: terminal list) =
     Assert.Throws<ExecError>(fun () -> exec Map.empty tokens |> ignore)
     |> ignore
@@ -560,7 +560,7 @@ let ClosedCases =
       TestCaseData([ Word "x"; Plus; Word "z" ], false) ]
 
 /// <summary>Test to ensure that closed correctly recognises closed and free expressions.</summary>
-[<TestCaseSource("ClosedCases")>]
+[<TestCaseSource(nameof ClosedCases)>]
 let GivenClosed_WhenPassedExpression_ReturnCorrectBoolean (terminals: terminal list, expected: bool) =
     let result = closed env terminals
     Assert.That(result, Is.EqualTo(expected))
@@ -579,7 +579,7 @@ let ValidExecAssignCases =
       ) ]
 
 /// <summary>Test to ensure that exec correctly updates environment when passed valid assign.</summary>
-[<TestCaseSource("ValidExecAssignCases")>]
+[<TestCaseSource(nameof ValidExecAssignCases)>]
 let GivenExec_WhenPassedValidAssign_ThenAddToEnvAndReturn (terminals: terminal list, entry: string * terminal list) =
     let result = exec env terminals
     Assert.That(result, Is.EqualTo((terminals, (env.Add entry))))
@@ -645,7 +645,7 @@ let UserFunctionCases =
       ) ]
 
 /// <summary>Test to ensure that exec returns correctly result with valid user function call.</summary>
-[<TestCaseSource("UserFunctionCases")>]
+[<TestCaseSource(nameof UserFunctionCases)>]
 let GivenExec_WhenPassedValidUserFunctionCall_ReturnCorrectResult
     (
         terminals: terminal list,
@@ -704,7 +704,7 @@ let UserFunctionErrorCases =
       ) ]
 
 /// <summary>Test to ensure that exec correctly throws exception with invalid user function call.</summary>
-[<TestCaseSource("UserFunctionErrorCases")>]
+[<TestCaseSource(nameof UserFunctionErrorCases)>]
 let GivenExec_WhenPassedInvalidUserFunctionCall_RaiseExecError
     (
         terminals: terminal list,
@@ -1299,7 +1299,7 @@ let SystemFunctionCases =
           [ Number 9.0 ]
       ) ]
 
-[<TestCaseSource("SystemFunctionCases")>]
+[<TestCaseSource(nameof SystemFunctionCases)>]
 let GivenExec_WhenPassedValidSystemFunctionExpression_ReturnCorrectResult
     (
         input: terminal list,
@@ -1374,7 +1374,7 @@ let LogarithmCases =
           0.000002
       ) ]
 
-[<TestCaseSource("LogarithmCases")>]
+[<TestCaseSource(nameof LogarithmCases)>]
 let GivenExec_WhenPassedValidLogarithmExpression_ReturnResultWithinBounds
     (
         input: terminal list,
@@ -1489,7 +1489,7 @@ let DifferentiateCases =
           [ Number 3.7280096073576723 ]
       ) ]
 
-[<TestCaseSource("DifferentiateCases")>]
+[<TestCaseSource(nameof DifferentiateCases)>]
 let GivenExec_WhenPassedValidDifferentiation_ReturnCorrectResult (input: terminal list, expected: terminal list) =
     let result, _ = exec Map.empty input
     Assert.That(result, Is.EqualTo(expected))
@@ -1538,11 +1538,11 @@ let RootErrorCases =
         TestCaseData([Function "sqrt"; Lpar; UnaryMinus; Number 2.0; Rpar;])
     ]
 
-[<TestCaseSource("GeneralErrorCases")>]
+[<TestCaseSource(nameof GeneralErrorCases)>]
 let GivenExec_WhenPassedInvalidStatement_RaiseExecError(input: terminal list) =
     Assert.Throws<ExecError>(fun () -> exec env input |> ignore) |> ignore
 
-[<TestCaseSource("RootErrorCases")>]
+[<TestCaseSource(nameof RootErrorCases)>]
 let GivenExec_WhenPassedRootWithInvalidArgument_RaiseInvalidArgumentError(input: terminal list) =
     Assert.Throws<InvalidArgumentError>(fun () -> exec env input |> ignore) |> ignore
 

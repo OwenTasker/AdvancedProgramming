@@ -36,13 +36,13 @@ let ValidGetAssociativityData =
     ]
 
 /// <summary>Test to ensure that getPrecedence performs correctly under valid input.</summary>
-[<TestCaseSource("ValidGetPrecedenceData")>]
+[<TestCaseSource(nameof ValidGetPrecedenceData)>]
 let GivenGetPrecedence_WhenPassedOperatorWithPrecedence_ReturnCorrectPrecedence(operator: terminal, precedence: int) =
     let result = getPrecedence operator
     Assert.That(result, Is.EqualTo(precedence))
 
 /// <summary>Test to ensure that getAssociativity performs correctly under valid input.</summary>
-[<TestCaseSource("ValidGetAssociativityData")>]
+[<TestCaseSource(nameof ValidGetAssociativityData)>]
 let GivenGetAssociativity_WhenPassedOperatorWithAssociativity_ReturnCorrectAssociativity(operator: terminal, associativity: string) =
     let result = getAssociativity operator
     Assert.That(result, Is.EqualTo(associativity))
@@ -56,11 +56,65 @@ let InvalidGetPrecedenceAssociativityCases =
     ]
 
 /// <summary>Test to ensure that getPrecedence correctly throws exception with invalid input.</summary>
-[<TestCaseSource("InvalidGetPrecedenceAssociativityCases")>]
+[<TestCaseSource(nameof InvalidGetPrecedenceAssociativityCases)>]
 let GivenGetPrecedence_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(operator: terminal) =
     Assert.Throws<KeyNotFoundException>(fun () -> getPrecedence operator |> ignore) |> ignore
 
 /// <summary>Test to ensure that getAssociativity correctly throws exception with invalid input.</summary>
-[<TestCaseSource("InvalidGetPrecedenceAssociativityCases")>]
+[<TestCaseSource(nameof InvalidGetPrecedenceAssociativityCases)>]
 let GivenGetAssociativity_WhenPassedOperatorNotInMap_RaiseKeyNotFoundException(operator: terminal) =
     Assert.Throws<KeyNotFoundException>(fun () -> getAssociativity operator |> ignore) |> ignore
+
+/// <summary>List of test cases for converting terminals to strings.</summary>
+let terminalsToStringInputAndOutput = [
+    TestCaseData([Plus], "+")
+    TestCaseData([UnaryPlus], "+")
+    TestCaseData([Minus], "-")
+    TestCaseData([UnaryMinus], "-")
+    TestCaseData([Times], "*")
+    TestCaseData([Divide], "/")
+    TestCaseData([Exponent], "^")
+    TestCaseData([Lpar], "(")
+    TestCaseData([Rpar], ")")
+    TestCaseData([Assign], "->")
+    TestCaseData([Comma], ",")
+    TestCaseData([Function "This"], "This")
+    TestCaseData([Word "This"], "This")
+    TestCaseData([Number 5.5], "5.5")
+    TestCaseData([Number 5.5;Comma;Number 3.0], "5.5,3")
+    TestCaseData([Number 5.5;Plus;Number 5.5], "5.5+5.5")
+    TestCaseData([Number 5.5;Plus;UnaryPlus;UnaryMinus;Number 5.5;Minus;Word "x";Times;Function "floor";Lpar
+                  Number 3.2;Rpar;], "5.5++-5.5-x*floor(3.2)")
+    TestCaseData(([]:terminal list), "")
+]
+
+/// <summary>Test to ensure that individualTerminalToString returns the correct string.</summary>
+[<TestCaseSource(nameof terminalsToStringInputAndOutput)>]
+let givenTerminalListToString_WhenProvidedTerminal_ReturnCorrectString(input:terminal list, output:string) =
+    Assert.That(terminalListToString "" input, Is.EqualTo(output))
+    
+let terminalToNumValidInputsOutputs =
+    [
+        TestCaseData(Number 0.0, 0.0)
+        TestCaseData(Number -0.0, 0.0)
+        TestCaseData(Number -100.0, -100.0)
+        TestCaseData(Number 100.0, 100.0)
+        TestCaseData(Number 100.0, 100.0)
+    ]
+
+let terminalToNumInvalidCases =
+    [
+        TestCaseData(Word "Invalid")
+        TestCaseData(Function "Invalid")
+        TestCaseData(Comma)
+        TestCaseData(Lpar)
+        TestCaseData(Plus)
+        TestCaseData(Times)
+    ]
+
+[<TestCaseSource(nameof terminalToNumInvalidCases)>]
+let givenTerminalToNum_ProvidedInvalidInput_ThrowInvalidArgumentError input =
+    Assert.Throws<InvalidArgumentError>(fun () -> terminalToNum input |> ignore) |> ignore
+    
+let toMapCases =
+    TestCaseData
