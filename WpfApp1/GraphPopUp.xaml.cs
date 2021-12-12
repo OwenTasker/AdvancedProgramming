@@ -146,16 +146,15 @@ namespace WpfApp1
             int yZeroUnPadded;
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
             _yProcessed.Add((yZeroUnPadded, "functionRight"));
-
-
+            
             double xGridStep;
             double yGridStep;
 
             //Get steps for grid lines
             (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
 
-            //Generate grid lines - y grid lines are parallel with y axis, xZero
-            GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
+            //Generate grid lines and get labels - y grid lines are parallel with y axis, xZero
+            var labels = GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
@@ -178,7 +177,7 @@ namespace WpfApp1
             }
 
             //Add axis labels to graph
-            AddLabels(yZero, xZero, xArray, yArray);
+            AddLabels(yZero, xZero, labels);
 
             //Display graph
             var stream = File.OpenRead(path + "MyMathsPal\\graph" + _thisImageId + ".png");
@@ -243,28 +242,28 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot grid lines on the graph.
         /// </summary>
-        private void GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord,
+        private List<(PointF, string)> GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord,
             int xAxisYCoordUnPadded, double xGridStep, double[] yArray)
         {
+            var labels = new List<(PointF, string)>();
+
             //Get number of pixels per number along the x axis
             var xRange = xArray.Max() - xArray.Min();
             var pixelsPerXNumber = ImageWidth / xRange;
+
+            //Adjust coordinates of x axis labels up/down depending on axis location
             var labelAbove = xAxisYCoord < ImageHeight - xAxisYCoord;
-
-
             var xTop = ImageHeight - xAxisYCoord + 30;
-            var xBottom = xAxisYCoord - 25 - 30;
             if (labelAbove)
             {
-                xTop -= 25;
-                xBottom += 25;
+                xTop -= 17;
             }
 
+            //Space out grid lines if they would be too close together
             var multiplier = 1;
-
             if (pixelsPerXNumber*yGridStep < 25)
             {
-                multiplier = 2;
+                multiplier = 4;
             }
 
             //Plot vertical grid lines to right of y axis
@@ -282,54 +281,28 @@ namespace WpfApp1
                 }
             }
 
+            //Generate x axis labels to right of y axis
             var value = yGridStep*multiplier;
-
             if (xArray.Min() > 0)
             {
                 value += xArray.Min();
             }
-
             var valueFormat = "{0:0.#}";
             if (value < 1)
             {
                 valueFormat = "{0:0.0}";
             }
-
             for (double i = yAxisXCoord; i <= ImageWidth; i += yGridStep * pixelsPerXNumber * multiplier)
             {
                 if ((int)Math.Round(i) != yAxisXCoord)
                 {
-                    var axisLabel = new TextBlock()
-                    {
-                        Width = 25,
-                        Height = 25,
-                        VerticalAlignment = VerticalAlignment.Top,
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        Margin = new Thickness
-                        {
-                            Left = i - 30,
-                            Right = ImageWidth - i + 30,
-                            Top = xTop,
-                            Bottom = xBottom
-                        },
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        TextAlignment = TextAlignment.Right,
-                        Text = string.Format(valueFormat, value),
-                        TextWrapping = TextWrapping.WrapWithOverflow
-                    };
-
-                    mainGrid.Children.Add(axisLabel);
+                    //Calculate location and content
+                    var offset = string.Format(valueFormat, value).Length * 9;
+                    labels.Add((new PointF((int) i - 2 - offset, xTop - 30), string.Format(valueFormat, value)));
 
                     value += yGridStep*multiplier;
                 }
 
-            }
-
-            value = -yGridStep*multiplier;
-
-            if (xArray.Max() < 0)
-            {
-                value += xArray.Max();
             }
 
             //Plot vertical grid lines to left of y axis
@@ -347,28 +320,19 @@ namespace WpfApp1
                 }
             }
 
+            //Generate x axis labels to left of y axis
+            value = -yGridStep*multiplier;
+            if (xArray.Max() < 0)
+            {
+                value += xArray.Max();
+            }
             for (double i = yAxisXCoord; i >= 0; i -= yGridStep * pixelsPerXNumber*multiplier)
             {
                 if ((int)Math.Round(i) != yAxisXCoord)
                 {
-                    var axisLabel = new TextBlock()
-                    {
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        Width = 25,
-                        Height = 25,
-                        VerticalAlignment = VerticalAlignment.Top,
-                        Margin = new Thickness
-                        {
-                            Left = i + 1,
-                            Right = ImageWidth - 25 - (i - 1),
-                            Top = xTop,
-                            Bottom = xBottom
-                        },
-                        Text = string.Format(valueFormat, value),
-                        TextWrapping = TextWrapping.WrapWithOverflow
-                    };
-
-                    mainGrid.Children.Add(axisLabel);
+                    //Calculate location and content
+                    labels.Add((new PointF((int) i - 1, xTop - 30), string.Format(valueFormat, value)));
+                    
                     value -= yGridStep*multiplier;
                 }
             }
@@ -381,24 +345,21 @@ namespace WpfApp1
             {
                 dataRangeHeight -= 40;
             }
-
             var pixelsPerYNumber = dataRangeHeight / yRange;
 
+            //Adjust coordinates of y axis labels left/right depending on axis location
             var labelRight = yAxisXCoord < (ImageWidth - yAxisXCoord);
-
             var yLeft = yAxisXCoord - 50 - 1;
-            var yRight = ImageWidth - yAxisXCoord + 1 + 25;
             if (labelRight)
             {
-                yLeft += 26;
-                yRight -= 26;
+                yLeft += 15;
             }
 
+            //Space out grid lines if they would be too close together
             multiplier = 1;
-
             if (pixelsPerYNumber*xGridStep < 25)
             {
-                multiplier = 2;
+                multiplier = 4;
             }
 
             //Plot horizontal grid lines above y axis
@@ -416,8 +377,8 @@ namespace WpfApp1
                 }
             }
 
+            //Generate y axis labels above x axis
             value = xGridStep * multiplier;
-
             if (yArray.Min() > 0)
             {
                 value += yArray.Min();
@@ -426,49 +387,25 @@ namespace WpfApp1
             {
                 value = yArray.Max();
             }
-
-
             valueFormat = "{0:0.#}";
             if (Math.Abs(value) < 1)
             {
                 valueFormat = "{0:0.0}";
             }
-
             for (double i = xAxisYCoord; i < ImageHeight; i += xGridStep * pixelsPerYNumber*multiplier)
             {
                 if ((int)Math.Round(i) != xAxisYCoord)
                 {
-                    var label = new TextBlock()
+                    //Calculate location and content
+                    var offset = 9;
+                    if (!labelRight)
                     {
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        Width = 25,
-                        Height = 25,
-                        Margin = new Thickness
-                        {
-                            Left = yLeft,
-                            Right = yRight,
-                            Top = ImageHeight - i,
-                            Bottom = i - 25
-                        },
-                        Text = string.Format(valueFormat, value),
-                        TextWrapping = TextWrapping.WrapWithOverflow
-                    };
-
-                    mainGrid.Children.Add(label);
+                        offset = string.Format(valueFormat, value).Length * 9;
+                    }
+                    labels.Add((new PointF(yLeft + 47 - offset, ImageHeight - (int) i), string.Format(valueFormat, value)));
+                    
                     value += xGridStep*multiplier;
                 }
-            }
-
-            value = -xGridStep*multiplier;
-
-            if (yArray.Max() < 0)
-            {
-                value += yArray.Max();
-            }
-            else if (yArray.Min() > 0)
-            {
-                value += yArray.Min() + xGridStep*multiplier;
             }
 
             //Plot horizontal grid lines below y axis
@@ -485,34 +422,34 @@ namespace WpfApp1
                     }
                 }
             }
-
-            //Plot horizontal grid lines below y axis
+            
+            //Generate y axis labels below x axis
+            value = -xGridStep*multiplier;
+            if (yArray.Max() < 0)
+            {
+                value += yArray.Max();
+            }
+            else if (yArray.Min() > 0)
+            {
+                value += yArray.Min() + xGridStep*multiplier;
+            }
             for (double i = xAxisYCoord; i > 0; i -= xGridStep * pixelsPerYNumber*multiplier)
             {
                 if ((int)Math.Round(i) != xAxisYCoord)
                 {
-                    var label = new TextBlock()
+                    //Calculate location and content
+                    var offset = 9;
+                    if (!labelRight)
                     {
-                        Background = System.Windows.Media.Brushes.Transparent,
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        VerticalAlignment = VerticalAlignment.Bottom,
-                        Width = 25,
-                        Height = 25,
-                        Margin = new Thickness
-                        {
-                            Left = yLeft,
-                            Right = yRight,
-                            Top = ImageHeight - i,
-                            Bottom = i + 25
-                        },
-                        Text = string.Format(valueFormat, value),
-                        TextWrapping = TextWrapping.WrapWithOverflow
-                    };
-
-                    mainGrid.Children.Add(label);
+                        offset = string.Format(valueFormat, value).Length * 9;
+                    }
+                    labels.Add((new PointF(yLeft + 47 - offset, ImageHeight - (int) i - 19), string.Format(valueFormat, value)));
+                    
                     value -= xGridStep*multiplier;
                 }
             }
+
+            return labels;
         }
 
         /// <summary>
@@ -634,12 +571,11 @@ namespace WpfApp1
         /// <summary>
         /// Method to add labels to image
         /// </summary>
-        private void AddLabels(int yZero, int xZero, double[] xArray, double[] yArray)
+        private void AddLabels(int yZero, int xZero, List<(PointF, string)> labels)
         {
             //This method uses inverted y axis
 
-            //Create axis labels
-
+            //Create zero label
             var zeroLabel = "0";
 
             //Find zero label location:
@@ -649,12 +585,10 @@ namespace WpfApp1
             {
                 zeroPointX -= zeroLabel.Length * 9 + 5;
             }
-
             if (yZero < ImageHeight / 2)
             {
                 zeroPointY -= 18;
             }
-
             var zeroPoint = new PointF(zeroPointX, zeroPointY);
 
             //Don't draw zero label if it will overlap
@@ -672,7 +606,15 @@ namespace WpfApp1
                 {
                     using (var font = new Font("Courier New", 14, GraphicsUnit.Pixel))
                     {
+                        //Draw zero label
                         graphics.DrawString(zeroLabel, font, Brushes.Black, zeroPoint);
+                        
+                        //Draw all other axis labels
+                        foreach (var label in labels)
+                        {
+                            var (point, labelText) = label;
+                            graphics.DrawString(labelText, font, Brushes.Black, point);
+                        }
                     }
                 }
 
