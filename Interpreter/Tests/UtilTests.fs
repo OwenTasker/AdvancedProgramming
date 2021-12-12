@@ -115,3 +115,6 @@ let terminalToNumInvalidCases =
 [<TestCaseSource(nameof terminalToNumInvalidCases)>]
 let givenTerminalToNum_ProvidedInvalidInput_ThrowInvalidArgumentError input =
     Assert.Throws<InvalidArgumentError>(fun () -> terminalToNum input |> ignore) |> ignore
+    
+let toMapCases =
+    TestCaseData

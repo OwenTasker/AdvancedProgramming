@@ -1188,20 +1188,20 @@ let ComplexCases =
             Rpar ]
       ) ]
 
-[<TestCaseSource("DifferentiateCases")>]
-[<TestCaseSource("SimplePlusCases")>]
-[<TestCaseSource("SimpleMinusCases")>]
-[<TestCaseSource("SimpleTimesCases")>]
-[<TestCaseSource("SimpleDivideCases")>]
-[<TestCaseSource("SimpleExponentCases")>]
-[<TestCaseSource("ExpressionPlusCases")>]
-[<TestCaseSource("ExpressionMinusCases")>]
-[<TestCaseSource("ExpressionTimesCases")>]
-[<TestCaseSource("ExpressionDivideCases")>]
-[<TestCaseSource("ExpressionExponentCases")>]
-[<TestCaseSource("FunctionCases")>]
-[<TestCaseSource("UnaryCases")>]
-[<TestCaseSource("ComplexCases")>]
+[<TestCaseSource(nameof DifferentiateCases)>]
+[<TestCaseSource(nameof SimplePlusCases)>]
+[<TestCaseSource(nameof SimpleMinusCases)>]
+[<TestCaseSource(nameof SimpleTimesCases)>]
+[<TestCaseSource(nameof SimpleDivideCases)>]
+[<TestCaseSource(nameof SimpleExponentCases)>]
+[<TestCaseSource(nameof ExpressionPlusCases)>]
+[<TestCaseSource(nameof ExpressionMinusCases)>]
+[<TestCaseSource(nameof ExpressionTimesCases)>]
+[<TestCaseSource(nameof ExpressionDivideCases)>]
+[<TestCaseSource(nameof ExpressionExponentCases)>]
+[<TestCaseSource(nameof FunctionCases)>]
+[<TestCaseSource(nameof UnaryCases)>]
+[<TestCaseSource(nameof ComplexCases)>]
 let GivenDifferentiate_WhenPassedValidExpression_ReturnFirstDerivative
     (
         expression: terminal list,
@@ -1241,7 +1241,7 @@ let ErrorCases =
             Word "y" ]
       ) ]
 
-[<TestCaseSource("ErrorCases")>]
+[<TestCaseSource(nameof ErrorCases)>]
 let GivenDifferentiate_WhenPassedInvalidExpression_RaiseExecError (expression: terminal list) =
     Assert.Throws<ExecError>(fun () -> differentiate expression |> ignore)
     |> ignore

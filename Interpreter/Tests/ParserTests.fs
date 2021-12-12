@@ -66,7 +66,7 @@ let ValidCases =
         TestCaseData([Function "plot"; Lpar; Word "y"; Assign; Function "mod"; Lpar; Number 2.0; Comma; Word "x"; Rpar; Comma; Number 10.0; Comma; Number -10.0; Rpar])
     ]
 
-[<TestCaseSource("ValidCases")>]
+[<TestCaseSource(nameof ValidCases)>]
 let GivenParse_WhenPassedValidStatement_Returninput(input: terminal list) =
     Assert.That(parse input, Is.EqualTo(input))
 
@@ -122,7 +122,7 @@ let InvalidCases =
         TestCaseData([Function "floor"; Lpar; Word "x"; Assign; Number 2.0; Comma; Word "x"; Assign; Number 2.0; Plus; Number 1.0])
     ]
 
-[<TestCaseSource("InvalidCases")>]
+[<TestCaseSource(nameof InvalidCases)>]
 let GivenParse_WhenPassedInvalidStatement_RaiseParseException(input: terminal list) =
     Assert.Throws<ParseError>(fun () -> parse input |> ignore) |> ignore
 
