@@ -764,6 +764,8 @@ namespace WpfApp1
             _imageBuffer[offset + 2] = (byte) red;
         }
 
+        //All methods following this point are action listeners for GraphPopUp.xaml
+        
         /// <summary>
         /// Method to check if user wants to save before closing if they haven't already
         /// </summary>
