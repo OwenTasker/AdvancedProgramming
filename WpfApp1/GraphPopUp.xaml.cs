@@ -1016,6 +1016,7 @@ namespace WpfApp1
 
                 //Dereference clone of array to stop memory build up
                 //Static analyser would get this, but doesn't run often enough
+                // ReSharper disable once RedundantAssignment
                 yArrayClone = null;
             }
 
