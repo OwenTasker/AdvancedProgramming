@@ -667,6 +667,12 @@ namespace WpfApp1
                 {
                     PlotPixel(i, (int) yArray[i] + 1, 53, 179, 242);
                 }
+                
+                //Plot pixel below line to make it thicker
+                if ((int) yArray[i] > 1)
+                {
+                    PlotPixel(i, (int) yArray[i] - 1, 53, 179, 242);
+                }
             }
         }
 
