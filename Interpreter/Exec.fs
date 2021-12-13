@@ -353,7 +353,7 @@ and private handleFunction funcName bracketedExpression env : terminal =
                         "Execution Error: Zero Crossings can only take place with respect to at most one variable, prior variable assignments are not recognised for this purpose"
                     |> raise
                 else
-                    zeroCrossings expression reducedSeed A
+                    zeroCrossings expression reducedSeed A 0
 
     | "sqrt" -> handleRootFunction env bracketedExpression [ Number 2.0 ]
     | "cbrt" -> handleRootFunction env bracketedExpression [ Number 3.0 ]
@@ -388,31 +388,36 @@ and private handleFunction funcName bracketedExpression env : terminal =
             ExecError "Execution Error: Assignments given in function call do not close expression."
             |> raise
 
-and private zeroCrossings expression seed variable =
-    let resultA =
-        reduce expression (Map.empty.Add(variable, [ seed ]))
-
-    let resultB =
-        reduce (differentiate expression) (Map.empty.Add(variable, [ seed ]))
-
-    let resultC =
-        reduce
-            [ seed
-              Minus
-              resultA
-              Divide
-              resultB ]
-            Map.empty
-
-    match resultC, seed with
-    | Number A, Number B ->
-        if abs (A - B) < 0.01 then
-            A |> Number
-        else
-            zeroCrossings expression resultC variable
+and private zeroCrossings expression seed variable count=
+    match count with
+    | 200 -> ExecError
+                 ("Execution Error: Could Not Find a root for function : \"" + terminalListToString "" expression + "\" Please try another estimate or plot the function to see if there are any crossings")
+             |> raise
     | _ ->
-        ExecError "Execution Error: Zero Crossings Could Not Find A Proper root"
-        |> raise
+        let resultA =
+            reduce expression (Map.empty.Add(variable, [ seed ]))
+
+        let resultB =
+            reduce (differentiate expression) (Map.empty.Add(variable, [ seed ]))
+
+        let resultC =
+            reduce
+                [ seed
+                  Minus
+                  resultA
+                  Divide
+                  resultB ]
+                Map.empty
+
+        match resultC, seed with
+        | Number A, Number B ->
+            if abs (A - B) < 0.01 then
+                A |> Number
+            else
+                zeroCrossings expression resultC variable (count+1)
+        | _ ->
+            ExecError "Execution Error: Zero Crossings Could Not Find A Proper root"
+            |> raise
 
 and private calculateIntegral expression variable lowerBound (current: float) step sum : terminal =
     if current <= lowerBound then
