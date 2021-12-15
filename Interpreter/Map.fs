@@ -1,8 +1,21 @@
-﻿module Interpreter.Map
+﻿/// <summary>
+/// Module containing functions for mapping a function onto an array of values.
+/// </summary>
+///
+/// <namespacedoc>
+///     <summary>Interpreter</summary>
+/// </namespacedoc>
+module Interpreter.Map
 
 open Interpreter.Util
 open Interpreter.Exec
 
+/// <summary>Function to compute a linear spaced list of 750 gloats between a lower and upper bound. </summary>
+///
+/// <param name="lowerBound">The inclusive lowerBound for the array.</param>
+/// <param name="upperBound">The inclusive upperBound for the array.</param>
+///
+/// <returns>A linear space list of 750 floats.</returns>
 let private computeXArray lowerBound upperBound =
     let step = (upperBound - lowerBound) / 749.0
     let result = [ lowerBound .. step .. upperBound ]
@@ -15,6 +28,12 @@ let private computeXArray lowerBound upperBound =
         ExecError "Execution Error: Bounds values gave an invalid x array step."
         |> raise
 
+/// <summary> Function to convert a list of terminals into a list of floats. </summary>
+///
+/// <param name="terminalList">A list of Number terminals to be converted.</param>
+/// <param name="outList">A list of floats as yet converted.</param>
+///
+/// <returns>A list of floats mirroring the input Number list.</returns>
 let rec private terminalListAsFloatList terminalList outList =
     match terminalList with
     | Number a :: tail -> terminalListAsFloatList tail (a :: outList)
@@ -23,13 +42,19 @@ let rec private terminalListAsFloatList terminalList outList =
         ExecError "Execution Error: Reduction of point did not result in Number"
         |> raise
 
-let rec private fillArrayVariable
-    expression
-    (env: Map<string, terminal list>)
-    variable
-    values
-    (outList: terminal list)
-    : float list =
+/// <summary>
+/// Function to fill an array with the executed value of an expression in a given variable assigned to a given list of
+/// values
+/// </summary>
+///
+/// <param name="expression">The expression to be executed.</param>
+/// <param name="env">The execution environment for the expression.</param>
+/// <param name="variable">The variable contained within the expression.</param>
+/// <param name="values">A list of values that the variable is to take.</param>
+/// <param name="outList">A list of floats as yet computed by executing the expression with each value</param>
+///
+/// <returns>A list of floats computed for the expression and the list of values.</returns>
+let rec private fillArrayVariable expression (env: Map<string, terminal list>) variable values outList =
     match values with
     | a :: tail ->
         let result, _ =
@@ -38,6 +63,16 @@ let rec private fillArrayVariable
         fillArrayVariable expression env variable tail (outList @ result)
     | [] -> terminalListAsFloatList outList []
 
+/// <summary>
+/// Function to fill an array with the executed value of an expression given a list of values.
+/// </summary>
+///
+/// <param name="expression">The expression to be executed.</param>
+/// <param name="env">The execution environment for the expression.</param>
+/// <param name="values">A list of values.</param>
+/// <param name="outList">A list of floats as yet computed by executing the expression</param>
+///
+/// <returns>A list of floats computed for the expression.</returns>
 let rec private fillArray expression (env: Map<string, terminal list>) values outList =
     match values with
     | _ :: tail ->
@@ -45,7 +80,13 @@ let rec private fillArray expression (env: Map<string, terminal list>) values ou
         fillArray expression env tail (outList @ result)
     | [] -> terminalListAsFloatList outList []
 
-let private computeYArray statement (xArray: float list) : float list =
+/// <summary>Function to compute a y array by mapping a statement onto an x array.</summary>
+///
+/// <param name="statement">The statement to be mapped.</param>
+/// <param name="xArray">The values on which the statement is to be mapped.</param>
+///
+/// <returns>A list of floats representing the mapping of the statement onto the x array.</returns>
+let private computeYArray statement xArray=
     match statement with
     | Word a :: Assign :: tail ->
         let env = Map.empty.Add(a, tail)
@@ -71,11 +112,22 @@ let private computeYArray statement (xArray: float list) : float list =
         ExecError "Execution Error: Plotting requires that the first argument be in assignment form."
         |> raise
 
-
+/// <summary>
+/// Function to control the execution of a list of terminals as a computation of a linearly space array followed by
+/// given lower and upper bounds followed by a mapping of an expression onto the linearly spaced array
+/// </summary>
+///
+/// <param name="terminals">
+/// A list of terminals containing the expression to map, a lower bound, and an upper bound.
+/// </param>
+///
+/// <returns>
+/// A thruple containing the linear space array, the mapped array, and the expression that controlled the mapping.
+/// </returns>
 let internal map terminals =
     match terminals with
     | Function "plot" :: tail ->
-        let paramList, remaining = extractParameters tail [] Map.empty
+        let paramList, remaining = extractParameters tail []
 
         if remaining.Length > 0 then
             ExecError "Execution Error: Operation cannot be combined with a call to plot"

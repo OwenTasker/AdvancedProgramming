@@ -3,6 +3,8 @@
 /// statements in Bachus-Naur Form as a set of functions.
 /// </summary>
 ///
+/// <remarks>reference: https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf</remarks>
+///
 /// <namespacedoc>
 ///     <summary>Interpreter</summary>
 /// </namespacedoc>
@@ -10,12 +12,11 @@ module internal Interpreter.Parser
 
 open Interpreter.Util
 
-// statement ::= variable -> expression | expression
+
 /// <summary>
-/// Function to parse a statement, follows the BNF For our program to the letter
+/// Function to parse a statement, expresses the following BNF statement
+/// statement ::= variable -> expression | expression
 /// </summary>
-///
-/// <remarks>reference: https://www.itu.dk/~sestoft/parsernotes-fsharp.pdf</remarks>
 ///
 /// <param name="terminals">A list of terminal values representing an input</param>
 ///
@@ -27,36 +28,99 @@ let rec private statement terminals =
     | Word _ :: Assign :: tail -> expression tail
     | _ -> expression terminals
 
-// expression ::= term expression'
+/// <summary>
+/// Function to parse an expression, expresses the following BNF statement
+/// expression ::= term expression'
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and private expression terminals = (term >> expressionP) terminals
 
-// expression' ::= + term expression' | - term expression' | empty
+/// <summary>
+/// Function to parse an expression', expresses the following BNF statement
+/// expression' ::= + term expression' | - term expression' | empty
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and private expressionP terminals =
     match terminals with
     | Plus :: terminalsTail
     | Minus :: terminalsTail -> (term >> expressionP) terminalsTail
     | _ -> terminals
 
-// term ::= exponent term'
+/// <summary>
+/// Function to parse a term, expresses the following BNF statement
+/// term ::= exponent term'
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and private term terminals = (exponent >> termP) terminals
 
-// term' ::= * factor term' | / factor term' | empty
+/// <summary>
+/// Function to parse a term', expresses the following BNF statement
+/// term' ::= * exponent term' | / exponent term' | empty
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and private termP terminals =
     match terminals with
     | Times :: terminalsTail
     | Divide :: terminalsTail -> (exponent >> termP) terminalsTail
     | _ -> terminals
 
-// exponent ::= unary exponent'
+/// <summary>
+/// Function to parse an exponeent, expresses the following BNF statement
+/// exponent ::= unary exponent'
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and private exponent terminals = (unary >> exponentP) terminals
 
-// exponent' ::= ^ unary exponent'
+/// <summary>
+/// Function to parse a statement, expresses the following BNF statement
+/// exponent' ::= ^ unary exponent' | empty
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and exponentP terminals =
     match terminals with
     | Exponent :: terminalsTail -> (unary >> exponentP) terminalsTail
     | _ -> terminals
 
-// unary ::= -unary | +unary | factor
+/// <summary>
+/// Function to parse a unary, expresses the following BNF statement
+/// unary ::= -unary | +unary | factor | empty
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and private unary terminals =
     match terminals with
     | [UnaryMinus]
@@ -66,7 +130,16 @@ and private unary terminals =
     | UnaryPlus :: terminalsTail -> unary terminalsTail
     | _ -> factor terminals
 
-// factor ::= var | Number | Function (ARGS) | ( expression )
+/// <summary>
+/// Function to parse a factor, expresses the following BNF statement
+/// factor ::= var | Number | Function (ARGS) | ( expression )
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and private factor terminals =
     match terminals with
     | [] -> []
@@ -93,7 +166,16 @@ and private factor terminals =
     | [UnaryPlus] -> ParseError "Parse Error: Trailing Operator" |> raise
     | a -> ParseError ("Parse Error: Non-factor expression passed to factor BNF state \"" + (terminalListToString "" a) + "\"" ) |> raise
 
-// arguments ::= var -> expression, arguments | expression, arguments
+/// <summary>
+/// Function to parse arguments, expresses the following BNF statement
+/// arguments ::= var -> expression, arguments | expression, arguments
+/// </summary>
+///
+/// <param name="terminals">A list of terminal values representing an input</param>
+///
+/// <returns>
+/// Returns an empty list if parsing is complete, this means there are no dangling operators or similar
+/// </returns>
 and private arguments terminals =
     match terminals with
     | Word _ :: Assign :: tail -> expression tail |> arguments

@@ -21,8 +21,10 @@ exception public CalculateError of string
 exception public UnaryError of string
 /// <summary>Exception thrown when an error is encountered while executing an expression.</summary>
 exception public ExecError of string
-/// <summary>Exception thrown when an error is encountered while executing a function, used specifically for enforcing
-/// more stringent parameters</summary>
+/// <summary>
+/// Exception thrown when an error is encountered while executing a function, used specifically for enforcing
+/// more stringent parameters
+/// </summary>
 exception public InvalidArgumentError of string
 
 /// <summary>A type representing terminal characters accepted by the Interpreter.</summary>
@@ -266,13 +268,21 @@ let rec extractAssignment inList outList nestCount =
     | any :: inTail -> extractAssignment inTail (any :: outList) nestCount
     | [] -> inList, List.rev outList
 
-and extractParameters terminals (paramList : terminal list list) env =
+/// <summary>
+/// Extracts a list of expressions as terminal lists representing parameters provided to a function.
+/// </summary>
+/// <param name="terminals">
+/// A list of terminals representing zero or more comma separated assignments followed by a right parenthesis.
+/// </param>
+/// <param name="paramList">A list of terminal lists representing the parameters as yet extracted.</param>
+/// <returns> A list of terminal lists representing the parameters in the input expression. </returns>
+and extractParameters terminals (paramList : terminal list list) =
     match terminals with
     | Rpar :: tail -> List.rev paramList, tail
     | Comma :: tail
     | Lpar :: tail ->
         let remaining, parameter = extractAssignment tail [] 0
-        extractParameters remaining (parameter :: paramList) env
+        extractParameters remaining (parameter :: paramList)
     | [] -> ExecError "Execution Error: Unmatched left parenthesis" |> raise
     | _ -> ExecError "Execution Error: Unmatched right parenthesis" |> raise
 

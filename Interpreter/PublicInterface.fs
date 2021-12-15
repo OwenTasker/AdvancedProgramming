@@ -17,7 +17,7 @@ open Interpreter.Map
 /// a terminal list representing a valid MMP expression
 /// </summary>
 ///
-/// <param name="input">A string list represting an input, this will ultimately be turned into a terminal list</param>
+/// <param name="input">A string list representing an input, this will ultimately be turned into a terminal list</param>
 /// <param name="env">
 /// A tuple of strings and terminal lists, this contains all user defined functions that currently
 /// exist in the program
@@ -72,5 +72,10 @@ let public terminalListToString input =
 let public toMap kvps =
     Util.toMap kvps
 
+/// <summary> Function to retrieve x and y arrays based on a given input string. </summary>
+///
+/// <param name="terminals">A list of strings to be parsed as an expression.</param>
+///
+/// <returns>x and y arrays based on the value of the interpreted expression.</returns>
 let public getXYValues terminals =
     lexer terminals |> parse |> map

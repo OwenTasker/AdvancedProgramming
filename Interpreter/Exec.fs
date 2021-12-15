@@ -166,17 +166,17 @@ let rec internal closed (env: Map<string, terminal list>) terminals =
         match a with
         | "zeroCrossing"
         | "integrate" ->
-            let _, remaining = extractParameters tail [] env
+            let _, remaining = extractParameters tail []
             closed env remaining
         | "differentiate" ->
-            let parameters, remaining = extractParameters tail [] env
+            let parameters, remaining = extractParameters tail []
 
             if differentiationClosed parameters env then
                 closed env remaining
             else
                 false
         | FunctionMatch _ ->
-            let parameters, remaining = extractParameters tail [] env
+            let parameters, remaining = extractParameters tail []
 
             if systemFunctionClosed parameters env then
                 closed env remaining
@@ -193,6 +193,14 @@ let rec internal closed (env: Map<string, terminal list>) terminals =
                 |> raise
     | _ :: tail -> closed env tail
 
+/// <summary>Function to check whether a differentiation expression is closed.</summary>
+///
+/// <param name="parameters">
+///     A list of terminal lists representing the parameters to a differentiation expression.
+/// </param>
+/// <param name="env">The environment in which to check if this expression is closed.</param>
+///
+/// <returns>A boolean value representing whether the expression is closed.</returns>
 and private differentiationClosed (parameters: terminal list list) (env: Map<string, terminal list>) =
     if parameters.Length > 1 then
         if checkUniqueVariables parameters.[0] Set.empty then
@@ -207,6 +215,14 @@ and private differentiationClosed (parameters: terminal list list) (env: Map<str
     else
         closed env (differentiate parameters.[0])
 
+/// <summary>Function to check whether a system function expression is closed.</summary>
+///
+/// <param name="parameters">
+///     A list of terminal lists representing the parameters to a system function expression.
+/// </param>
+/// <param name="env">The environment in which to check if this expression is closed.</param>
+///
+/// <returns>A boolean value representing whether the expression is closed.</returns>
 and private systemFunctionClosed (parameters: terminal list list) (env: Map<string, terminal list>) =
     match parameters with
     | [] -> true
@@ -278,12 +294,18 @@ let rec private reduceRecursive terminals opStack numStack (env: Map<string, ter
             |> raise
         | head :: tail -> reduceRecursive terminals tail (performOperation head numStack) env
 
-
-and private handleFunction funcName bracketedExpression env : terminal =
+/// <summary>Function to handle the reduction of functions.</summary>
+///
+/// <param name="funcName">The function to be computed.</param>
+/// <param name="bracketedExpression">The parameters to the function.</param>
+/// <param name="env">The environment in which to reduce the function.</param>
+///
+/// <returns>A Number terminal representing the reduced value of the function.</returns>
+and private handleFunction funcName bracketedExpression env =
     match funcName with
     | "integrate" ->
         let extractedParams, _ =
-            extractParameters bracketedExpression [] env
+            extractParameters bracketedExpression []
 
         if extractedParams.Length <> 3 then
             ExecError "Execution Error: Integration requires three arguments"
@@ -312,7 +334,7 @@ and private handleFunction funcName bracketedExpression env : terminal =
                         |> raise
     | "differentiate" ->
         let extractedParams, _ =
-            extractParameters bracketedExpression [] env
+            extractParameters bracketedExpression []
 
         if extractedParams.Length = 2 then
             if checkUniqueVariables extractedParams.[0] Set.empty then
@@ -330,7 +352,7 @@ and private handleFunction funcName bracketedExpression env : terminal =
             |> raise
     | "zeroCrossing" ->
         let extractedParams, _ =
-            extractParameters bracketedExpression [] env
+            extractParameters bracketedExpression []
 
         if extractedParams.Length <> 2 then
             ExecError "Execution Error: Zero Crossing requires exactly two arguments"
@@ -359,7 +381,7 @@ and private handleFunction funcName bracketedExpression env : terminal =
     | "cbrt" -> handleRootFunction env bracketedExpression [ Number 3.0 ]
     | "xrt" ->
         let extractedParams, _ =
-            extractParameters bracketedExpression [] env
+            extractParameters bracketedExpression []
 
         handleRootFunction env extractedParams.[0] extractedParams.[1]
     | "ln" -> handleSingleArgumentFunction env LogETerminal bracketedExpression
@@ -388,6 +410,17 @@ and private handleFunction funcName bracketedExpression env : terminal =
             ExecError "Execution Error: Assignments given in function call do not close expression."
             |> raise
 
+
+/// <summary>
+/// Function to control the evaluation of a zero crossing of a single variate function.
+/// </summary>
+///
+/// <param name="expression">The expression for which to find the zero crossing.</param>
+/// <param name="seed">The seed value to be used to finding the zero crossing.</param>
+/// <param name="variable">The variable in which this function is in.</param>
+/// <param name="count">The number of executions of zero crossings so far, to prevent infinite looping.</param>
+///
+/// <returns>A Number terminal containing the zero crossing.</returns>
 and private zeroCrossings expression seed variable count=
     match count with
     | 200 -> ExecError
@@ -419,7 +452,19 @@ and private zeroCrossings expression seed variable count=
             ExecError "Execution Error: Zero Crossings Could Not Find A Proper root"
             |> raise
 
-and private calculateIntegral expression variable lowerBound (current: float) step sum : terminal =
+/// <summary>
+/// Function to control the calculation of an integral of a single variate function using the trapezoid rule.
+/// </summary>
+///
+/// <param name="expression">The expression for which to find the integral.</param>
+/// <param name="variable">The variable in which this function is in.</param>
+/// <param name="lowerBound">The lowerBound of the definite integral.</param>
+/// <param name="current">The highest value for which a trapezoid area has not been calculated.</param>
+/// <param name="step">The trapezoid width.</param>
+/// <param name="sum">The current area calculated.</param>
+///
+/// <returns>An estimate of the area under the curve between the lowerBound and the initial upper bound.</returns>
+and private calculateIntegral expression variable lowerBound current step sum  =
     if current <= lowerBound then
         Number sum
     else
@@ -436,7 +481,16 @@ and private calculateIntegral expression variable lowerBound (current: float) st
             ExecError "Execution Error: Reduction did not result in Numbers"
             |> raise
 
-and private handleRootFunction (env: Map<string, terminal list>) operand exponent =
+/// <summary>
+/// Function to control the calculation of a root.
+/// </summary>
+///
+/// <param name="env">The environment to be used for any variables.</param>
+/// <param name="operand">The operand in the root expression.</param>
+/// <param name="exponent">The denominator of the exponent in the root expression.</param>
+///
+/// <returns>A number terminal representing the value of the root function..</returns>
+and private handleRootFunction env operand exponent =
     let reducedOperand = reduce operand env
     let reducedExponent = reduce exponent env
 
@@ -454,8 +508,18 @@ and private handleRootFunction (env: Map<string, terminal list>) operand exponen
                 env
     | _ -> ExecError "error" |> raise
 
+/// <summary>
+/// Function to handle predefined functions with one arguments, contains logic to ensure exactly one argument is
+/// passed.
+/// </summary>
+///
+/// <param name="env">A list of terminals representing an expression in infix notation.</param>
+/// <param name="func">The execution environment for any variables in the expression.</param>
+/// <param name="expression">The expression to be evaluated.</param>
+///
+/// <returns>A Number terminal containing the outcome of the expression.</returns>
 and private handleSingleArgumentFunction env func expression =
-    let extractedParams, _ = extractParameters expression [] env
+    let extractedParams, _ = extractParameters expression []
 
     if extractedParams.Length <> 1
        || extractedParams.[0].Length = 0 then
@@ -470,16 +534,16 @@ and private handleSingleArgumentFunction env func expression =
 
 /// <summary>
 /// Function to handle predefined functions with two arguments, contains logic to ensure exactly two arguments are
-/// passed. Is a higher order function as it
+/// passed.
 /// </summary>
 ///
 /// <param name="env">A list of terminals representing an expression in infix notation.</param>
 /// <param name="func">The execution environment for any variables in the expression.</param>
-/// <param name="expression">The execution environment for any variables in the expression.</param>
+/// <param name="expression">The expression to be evaluated.</param>
 ///
 /// <returns>A Number terminal containing the outcome of the expression.</returns>
 and private handleTwoArgumentFunction env func expression =
-    let extractedParams, _ = extractParameters expression [] env
+    let extractedParams, _ = extractParameters expression []
 
     if extractedParams.Length <> 2 then
         ExecError "Execution Error: Function requires two arguments."
@@ -519,7 +583,7 @@ and private reduce terminals (env: Map<string, terminal list>) = reduceRecursive
 let rec private expandDifferentiates terminalsIn terminalsOut env =
     match terminalsIn with
     | head :: tail when head = Function "differentiate" ->
-        let parameters, remaining = extractParameters tail [] env
+        let parameters, remaining = extractParameters tail []
 
         if parameters.Length = 1 then
             expandDifferentiates
@@ -539,6 +603,15 @@ let rec private expandDifferentiates terminalsIn terminalsOut env =
     | head :: tail -> expandDifferentiates tail (terminalsOut @ [ head ]) env
     | [] -> terminalsOut
 
+/// <summary>
+/// Function to check whether an assignment expression forms a circular assignment.
+/// </summary>
+///
+/// <param name="environment">The environment in which to check for circular assignment</param>
+/// <param name="variable">The variable that is being assigned.</param>
+/// <param name="assignment">The assignment being made to this variable.</param>
+///
+/// <returns>A tuple containing the result of the expression and an updated execution environment.</returns>
 let rec private checkCircularAssignment (environment: Map<string, terminal list>) variable assignment =
     match assignment with
     | Word a :: tail ->
@@ -551,6 +624,7 @@ let rec private checkCircularAssignment (environment: Map<string, terminal list>
             checkCircularAssignment environment variable tail
     | _ :: tail -> checkCircularAssignment environment variable tail
     | [] -> true
+
 /// <summary>
 /// Computes a result, as a terminal list, and an updated execution environment given a terminal list representing
 /// a valid statement and an execution environment.

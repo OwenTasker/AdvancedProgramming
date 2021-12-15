@@ -25,15 +25,24 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow
     {
+        /// <summary>
+        /// The dependency injection kernel. Uses Bindings.cs to recognise how to build objects.
+        /// </summary>
         private readonly StandardKernel _kernel;
 
         /// <summary>
-        /// Execution environment for this session.
+        /// The interpreter to be used for this session
         /// </summary>
         private readonly IInterpreter _interpreter;
 
+        /// <summary>
+        /// The saverloader to control saving and loading.
+        /// </summary>
         private readonly ISaverLoader _saverLoader;
 
+        /// <summary>
+        /// The autocompleter to control checking for matches based on user input.
+        /// </summary>
         private readonly IAutoCompleter _autoCompleter;
 
         /// <summary>
@@ -290,6 +299,9 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Method to control the action of generating and showing a graph.
+        /// </summary>
         private void ShowGraph()
         {
             var graphPopUp = _kernel.Get<IGraphPopUp>();
@@ -315,6 +327,9 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Method to control the action of calculating user input.
+        /// </summary>
         private void Calculate()
         {
             var input = inputText.Text;
