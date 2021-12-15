@@ -419,7 +419,7 @@ let rec private autoDifferentiate terminals opStack numStack =
                      )
                      :: numStack)
             | "logX" ->
-                let paramList, _ = extractParameters expression [] Map.empty
+                let paramList, _ = extractParameters expression []
 
                 autoDifferentiate
                     remainingTerminals
@@ -484,6 +484,12 @@ let rec private autoDifferentiate terminals opStack numStack =
                 |> raise
         | head :: tail -> autoDifferentiate terminals tail (performOperation head numStack)
 
+/// <summary>Function to expand an expression beginning with a root function into its list of terminals.</summary>
+///
+/// <param name="expressionIn">A list of terminals comprised of a root function and its parameters.</param>
+/// <param name="expressionOut">A list of terminals representing the expanded terminals.</param>
+///
+/// <returns>A list of terminals representing the expanded terminals.</returns>
 let rec expandRoots expressionIn expressionOut =
     match expressionIn with
     | Function a :: tail ->
@@ -492,7 +498,7 @@ let rec expandRoots expressionIn expressionOut =
         | "sqrt" -> RootToTerminals bracketedExpression [Number 2.0]
         | "cbrt" -> RootToTerminals bracketedExpression [Number 3.0]
         | "xrt" ->
-            let extractedParams, _ = extractParameters bracketedExpression [] Map.empty
+            let extractedParams, _ = extractParameters bracketedExpression []
             let result = RootToTerminals extractedParams.[0] extractedParams.[1]
             expandRoots remaining (expressionOut @ result)
         | _ -> expandRoots tail (expressionOut @ [Function a])

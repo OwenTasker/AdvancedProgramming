@@ -68,16 +68,19 @@ namespace WpfApp1
         //Instance variable of graph data calculator for this popup
         private readonly IGraphDataCalculator _graphDataCalculator;
 
+        private readonly ISaverLoader _saverLoader;
+
         /// <summary>
         /// Entry point, initializes the graph window, generates and displays graph.
         /// </summary>
-        public GraphPopUp(IGraphDataCalculator graphDataCalculator)
+        public GraphPopUp(IGraphDataCalculator graphDataCalculator, ISaverLoader saverLoader)
         {
             //Set data to unchanged as none is generated yet
             _isDataDirty = false;
 
-            //Assign instance variable to graphDataCalculator
+            //Assign instance variables to graphDataCalculator
             _graphDataCalculator = graphDataCalculator;
+            _saverLoader = saverLoader;
 
             //Show window
             InitializeComponent();
@@ -88,6 +91,8 @@ namespace WpfApp1
         /// <summary>
         /// Do everything required to plot/re-plot a graph.
         /// </summary>
+        /// <param name="input">The string to control the drawing of the graph.</param>
+        /// <exception cref="ArgumentException">If the input string generates values that cannot be plot.</exception>
         public void GenerateGraph(string input)
         {
             //Save time of generation
@@ -146,7 +151,7 @@ namespace WpfApp1
             int yZeroUnPadded;
             ((yZero, xZero), yZeroUnPadded) = DrawAxis(xArray, yArray);
             _yZeroUnPadded.Add(yZeroUnPadded);
-            
+
             double xGridStep;
             double yGridStep;
 
@@ -154,7 +159,7 @@ namespace WpfApp1
             (xGridStep, yGridStep) = CalculateGridStep(xArray, yArray);
 
             //Generate grid lines and get labels - y grid lines are parallel with y axis, xZero
-            var labels = GenerateGridLines(xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep, yArray);
+            var labels = GenerateGridLines(yArray, xZero, yGridStep, xArray, yZero, yZeroUnPadded, xGridStep);
 
             //Generate line of a function
             //.Clone() to avoid accidental pass-by-reference
@@ -242,6 +247,9 @@ namespace WpfApp1
         /// <summary>
         /// Method to draw x and y axis in correct locations
         /// </summary>
+        /// <param name="xArray">The x values for this graph.</param>
+        /// <param name="yArray">The y values for this graph.</param>
+        /// <returns>The positions of the zero values in each input array.</returns>
         private ((int yZero, int xZero), int yZeroUnPadded) DrawAxis(IReadOnlyCollection<double> xArray, IReadOnlyCollection<double> yArray)
         {
             //Find yArray index of y=0, x axis, default to below graph
@@ -348,10 +356,13 @@ namespace WpfApp1
 
             return ((yZero, xZero), yZeroUnPadded);
         }
-        
+
         /// <summary>
         /// Method to calculate step of grid lines for both x and y axis.
         /// </summary>
+        /// <param name="xArray">The x values for this graph.</param>
+        /// <param name="yArray">The y values for this graph.</param>
+        /// <returns>The step of gridlines in the x and y directions.</returns>
         private (double xGridStep, double yGridStep) CalculateGridStep(double[] xArray, double[] yArray)
         {
             double xGridStep;
@@ -407,8 +418,16 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot grid lines on the graph.
         /// </summary>
-        private List<(PointF, string)> GenerateGridLines(int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord,
-            int xAxisYCoordUnPadded, double xGridStep, double[] yArray)
+        /// <param name="yArray">The y values for this graph.</param>
+        /// <param name="yAxisXCoord">The x position of the y axis.</param>
+        /// <param name="yGridStep">The step value to be used to generate the y gridlines.</param>
+        /// <param name="xArray">The x values for this graph. </param>
+        /// <param name="xAxisYCoord">The y position of the x axis.</param>
+        /// <param name="xAxisYCoordUnPadded">The unpadded y position of the x axis.</param>
+        /// <param name="xGridStep">The step value to be used to generate the x gridlines. </param>
+        /// <returns>A list of points and labels to be used for drawing axis labels.</returns>
+        private List<(PointF, string)> GenerateGridLines( double[] yArray, int yAxisXCoord, double yGridStep, double[] xArray, int xAxisYCoord,
+            int xAxisYCoordUnPadded, double xGridStep)
         {
             var labels = new List<(PointF, string)>();
 
@@ -497,7 +516,7 @@ namespace WpfApp1
                 {
                     //Calculate location and content
                     labels.Add((new PointF((int) i - 1, xTop - 30), string.Format(valueFormat, value)));
-                    
+
                     value -= yGridStep*multiplier;
                 }
             }
@@ -568,7 +587,7 @@ namespace WpfApp1
                         offset = string.Format(valueFormat, value).Length * 9;
                     }
                     labels.Add((new PointF(yLeft + 47 - offset, ImageHeight - (int) i), string.Format(valueFormat, value)));
-                    
+
                     value += xGridStep*multiplier;
                 }
             }
@@ -587,7 +606,7 @@ namespace WpfApp1
                     }
                 }
             }
-            
+
             //Generate y axis labels below x axis
             value = -xGridStep*multiplier;
             if (yArray.Max() < 0)
@@ -609,7 +628,7 @@ namespace WpfApp1
                         offset = string.Format(valueFormat, value).Length * 9;
                     }
                     labels.Add((new PointF(yLeft + 47 - offset, ImageHeight - (int) i - 19), string.Format(valueFormat, value)));
-                    
+
                     value -= xGridStep*multiplier;
                 }
             }
@@ -620,6 +639,8 @@ namespace WpfApp1
         /// <summary>
         /// Method to plot a graph from arrays of x and y values
         /// </summary>
+        /// <param name="yArray">The y values for this graph.</param>
+        /// <param name="yZero">The position index of y = 0.</param>
         private void GenerateLine(IList<double> yArray, int yZero)
         {
             //Scale y values to size of graph
@@ -665,7 +686,10 @@ namespace WpfApp1
         /// <summary>
         /// Method to add labels to image
         /// </summary>
-        private void AddLabels(int yZero, int xZero, List<(PointF, string)> labels)
+        /// <param name="yZero">The position of y = zero in the graph.</param>
+        /// <param name="xZero">The position of x = zero in the graph.</param>
+        /// <param name="labels">The labels to be drawn on the graph.</param>
+        private void AddLabels(int yZero, int xZero, IEnumerable<(PointF, string)> labels)
         {
             //This method uses inverted y axis
 
@@ -702,7 +726,7 @@ namespace WpfApp1
                     {
                         //Draw zero label
                         graphics.DrawString(zeroLabel, font, Brushes.Black, zeroPoint);
-                        
+
                         //Draw all other axis labels
                         foreach (var label in labels)
                         {
@@ -737,6 +761,11 @@ namespace WpfApp1
         /// Method to plot a coloured pixel at (x,y)
         /// Defaults to black
         /// </summary>
+        /// <param name="x">The x position of the pixel.</param>
+        /// <param name="y">The y position of the pixel.</param>
+        /// <param name="red">The red value for the pixel.</param>
+        /// <param name="green">The green value for the pixel.</param>
+        /// <param name="blue">The blue value for the pixel.</param>
         private void PlotPixel(int x, int y, int red = 0, int green = 0, int blue = 0)
         {
             if (y == 400)
@@ -764,8 +793,16 @@ namespace WpfApp1
             _imageBuffer[offset + 2] = (byte) red;
         }
 
+        /// <summary>
+        /// Public wrapper for .Close().
+        /// </summary>
+        public void ClosePopUp()
+        {
+            Close();
+        }
+
         //All methods following this point are action listeners for GraphPopUp.xaml
-        
+
         /// <summary>
         /// Method to check if user wants to save before closing if they haven't already
         /// </summary>
@@ -817,7 +854,7 @@ namespace WpfApp1
 
             // Prepare file to save to
             var fileToSaveTo =
-                SaverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph_" + function[3..] + ".png");
+                _saverLoader.DetermineFileToSaveTo("PNG Image (*.png)|*.png", "graph_" + function[3..] + ".png");
 
 
             //fileToSaveTo is null if user chooses cancel above
@@ -1170,14 +1207,6 @@ namespace WpfApp1
         private void GraphPopUp_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             _mouseDown = false;
-        }
-
-        /// <summary>
-        /// Public wrapper for .Close().
-        /// </summary>
-        public void ClosePopUp()
-        {
-            Close();
         }
     }
 }
